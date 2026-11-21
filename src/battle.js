@@ -92,14 +92,13 @@ const Battle = {
   setPhase(p) { this.phase = p; this.phaseT = 0; },
   async countdown() {
     const el = $('#count');
-    const seq = ['3', '2', '1', '旋鋒出擊！'];
-    const voice = ['三', '二', '一', '旋鋒出擊！'];
+    const seq = ['3', '2', '1', 'GET FIGHT!'];
     this.goAt = 0;
     const token = (this._cd = Symbol());
     for (let i = 0; i < seq.length; i++) {
       if (this._cd !== token || !this.active) return;
       el.textContent = seq[i]; el.classList.toggle('long', i === 3); el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
-      SFX.beep(i === 3); SFX.say(voice[i], { rate: i === 3 ? 1.25 : 1.3, pitch: i === 3 ? 1.15 : 1 });
+      SFX.beep(i === 3); SFX.announce(i);
       if (i === 3) { this.goAt = performance.now(); this.setPhase('go'); }
       await wait(i === 3 ? 650 : 700);
     }
@@ -233,8 +232,10 @@ const Battle = {
     $('#cnInk').innerHTML = Array.from({ length: 14 }, () => `<i style="left:${rand(5, 95).toFixed(1)}%;top:${rand(15, 85).toFixed(1)}%;--s:${rand(0.4, 1.6).toFixed(2)};--d:${rand(0, 0.25).toFixed(2)}s"></i>`).join('');
     void el.offsetWidth; el.classList.add('on', 'charge');
     const T = (ms, fn) => this.cine.timers.push(setTimeout(fn, ms));
-    T(480, () => this.cineCut());
-    T(1450, () => this.cineBurst());
+    $('#cnBeast').innerHTML = [3, 2, 1, 0].map((k) => `<div class="cn-bst g${k}">${beastSVG(cfg.b, sp.color)}</div>`).join('');
+    T(450, () => this.cineCut());
+    T(1150, () => this.cineBeast());
+    T(2150, () => this.cineBurst());
     this.renderSpecial();
   },
   cineCut() {
@@ -242,15 +243,21 @@ const Battle = {
     c.stage = 'cut';
     const el = $('#cine'); el.classList.remove('charge'); el.classList.add('cut');
     SFX.specialCut();
-    SFX.say(c.sp.name.replace('・', '，'), { rate: 1.2, pitch: c.side ? 0.9 : 1.1 });
     GL.battle.shake = 0.5;
+  },
+  cineBeast() {
+    const c = this.cine; if (!c || c.stage !== 'cut') return;
+    c.stage = 'beast';
+    const el = $('#cine'); el.classList.remove('cut'); el.classList.add('beast');
+    SFX.roar(BEAST_OF[(c.side ? this.cur[1] : this.cur[0]).b]);
+    GL.battle.shake = 0.6;
   },
   cineBurst() {
     const c = this.cine; if (!c || c.stage === 'burst') return;
     c.stage = 'burst';
     c.timers.forEach(clearTimeout); c.timers = [];
     const sc = GL.battle, b = this.arena.beys[c.side], y = surfH(Math.hypot(b.x, b.z));
-    const el = $('#cine'); el.classList.remove('charge', 'cut'); el.classList.add('burst');
+    const el = $('#cine'); el.classList.remove('charge', 'cut', 'beast'); el.classList.add('burst');
     sc.cine = null;
     sc.fx.specialBurst(b.x, y, b.z, c.sp.color);
     sc.fx.dome(b.x, y, b.z, c.sp.color);

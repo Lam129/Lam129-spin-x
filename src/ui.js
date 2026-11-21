@@ -247,7 +247,7 @@ function bindEvents() {
     if (t.dataset.go) return UI.go(t.dataset.go);
     if (t.hasAttribute('data-settings')) return UI.toggleSettings();
     if (t.id === 'setClose') return UI.toggleSettings(false);
-    if (t.id === 'voiceTest') { SFX.ensure(); return SFX.say('三、二、一，旋鋒出擊！'); }
+    if (t.id === 'voiceTest') { SFX.ensure(); [0, 1, 2, 3].forEach((k) => setTimeout(() => SFX.announce(k), k * 700)); return; }
     if (t.dataset.starter) { UI.starter = t.dataset.starter; SFX.click(); return UI.renderAuth(); }
     if (t.dataset.ptab) { UI.asmTab = t.dataset.ptab; SFX.click(); return UI.renderAssembly(false); }
     if (t.dataset.part) { SFX.click(); return UI.pickPart(t.dataset.part); }

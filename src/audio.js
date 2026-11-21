@@ -3,23 +3,61 @@ const SFX = {
   ctx: null, master: null, noiseBuf: null, grind: null, hums: [],
   vol: (() => { try { return Object.assign({ master: 0.8, sfx: 0.8, voice: 0.9 }, JSON.parse(localStorage.getItem('spinx-vol') || '{}')); } catch (e) { return { master: 0.8, sfx: 0.8, voice: 0.9 }; } })(),
   setVol(k, v) { this.vol[k] = v; try { localStorage.setItem('spinx-vol', JSON.stringify(this.vol)); } catch (e) {} if (this.master) this.master.gain.value = 0.7 * this.vol.master * this.vol.sfx; },
-  /* spoken call-outs via the browser's speech engine (Traditional Chinese voice when available) */
+  /* Announcer: recorded clips in assets/voice/ win if present; otherwise an English browser voice tuned for hype,
+     layered with a synthesized stinger so it hits harder than plain text-to-speech. */
+  clips: {}, clipsTried: false,
+  async loadClips() {
+    if (this.clipsTried || !this.ctx) return; this.clipsTried = true;
+    for (const k of ['3', '2', '1', 'getfight']) {
+      try {
+        const r = await fetch(`assets/voice/${k}.mp3`); if (!r.ok) continue;
+        this.clips[k] = await this.ctx.decodeAudioData(await r.arrayBuffer());
+      } catch (e) {}
+    }
+  },
+  playClip(k) {
+    const buf = this.clips[k]; if (!buf || !this.ctx) return false;
+    const src = this.ctx.createBufferSource(); src.buffer = buf;
+    const g = this.ctx.createGain(); g.gain.value = 1.3 * this.vol.voice;
+    src.connect(g); g.connect(this.master); src.start(); return true;
+  },
   voiceObj: null,
+  pickVoice() {
+    if (this.voiceObj || !('speechSynthesis' in window)) return this.voiceObj;
+    const vs = window.speechSynthesis.getVoices().filter((v) => /^en/i.test(v.lang));
+    const pref = [/Google US English/i, /Daniel/i, /Alex/i, /Guy/i, /Davis/i, /Christopher/i, /Eric/i, /Mark/i, /David/i, /Male/i, /en-US/i, /en-GB/i];
+    for (const re of pref) { const v = vs.find((x) => re.test(x.name) || re.test(x.lang)); if (v) return (this.voiceObj = v); }
+    return (this.voiceObj = vs[0] || null);
+  },
   say(text, opts = {}) {
     const vv = this.vol.master * this.vol.voice;
     if (!('speechSynthesis' in window) || vv <= 0.01) return;
     try {
-      const synth = window.speechSynthesis;
-      if (!this.voiceObj) {
-        const vs = synth.getVoices();
-        this.voiceObj = vs.find((v) => /zh[-_]TW/i.test(v.lang)) || vs.find((v) => /zh[-_]HK/i.test(v.lang)) || vs.find((v) => /^zh/i.test(v.lang)) || null;
-      }
+      const synth = window.speechSynthesis, v = this.pickVoice();
       if (opts.cancel !== false) synth.cancel();
       const u = new SpeechSynthesisUtterance(text);
-      u.lang = this.voiceObj ? this.voiceObj.lang : 'zh-TW'; if (this.voiceObj) u.voice = this.voiceObj;
-      u.rate = opts.rate || 1.15; u.pitch = opts.pitch || 1.05; u.volume = vv;
+      u.lang = v ? v.lang : 'en-US'; if (v) u.voice = v;
+      u.rate = opts.rate || 1.1; u.pitch = opts.pitch || 1; u.volume = vv;
       synth.speak(u);
     } catch (e) {}
+  },
+  /* countdown call: i = 0..3 */
+  announce(i) {
+    const key = ['3', '2', '1', 'getfight'][i];
+    if (!this.playClip(key)) {
+      if (i < 3) this.say(['Three!', 'Two!', 'One!'][i], { rate: 1.25, pitch: 0.85 });
+      else this.say('Get... FIGHT!', { rate: 1.05, pitch: 1.25 });
+    }
+    if (i === 3) this.hype();
+  },
+  /* stinger under GET FIGHT: drum hit, power chord, crowd swell */
+  hype() {
+    if (!this.ctx) return;
+    this.tone(55, 0.5, 0.45, 'sine', 0, 35);
+    this.noise(0.18, 180, 0.7, 0.5, 'lowpass');
+    [[110, 165, 220], [147, 220, 294]].forEach((ch, k) => ch.forEach((f) => this.tone(f, 0.55, 0.06, 'sawtooth', 0.05 + k * 0.28)));
+    const n = this.noise(1.4, 900, 0.4, 0.0001, 'bandpass', 0.1);
+    if (n) { const t = this.ctx.currentTime + 0.1; n.g.gain.cancelScheduledValues(t); n.g.gain.setValueAtTime(0.0001, t); n.g.gain.exponentialRampToValueAtTime(0.18, t + 0.35); n.g.gain.exponentialRampToValueAtTime(0.0001, t + 1.4); }
   },
   ensure() {
     if (this.ctx) { if (this.ctx.state === 'suspended') this.ctx.resume(); return true; }
@@ -34,6 +72,7 @@ const SFX = {
       this.noiseBuf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
       const d = this.noiseBuf.getChannelData(0);
       for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+      this.loadClips();
       return true;
     } catch (e) { this.ctx = null; return false; }
   },
@@ -91,6 +130,24 @@ const SFX = {
     this.noise(0.25, 2500, 0.6, 0.35, 'highpass');
     [392, 523, 659].forEach((f, i) => this.tone(f, 0.5, 0.08, 'square', i * 0.04));
     this.tone(55, 0.9, 0.3, 'sine', 0, 40);
+  },
+  /* synthesized beast cry: howl / screech / roar by family */
+  roar(kind) {
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    const cry = (f0, f1, f2, dur, type, vib) => {
+      const o = this.ctx.createOscillator(); o.type = type;
+      o.frequency.setValueAtTime(f0, t); o.frequency.linearRampToValueAtTime(f1, t + dur * 0.35); o.frequency.linearRampToValueAtTime(f2, t + dur);
+      const l = this.ctx.createOscillator(); l.frequency.value = vib; const lg = this.ctx.createGain(); lg.gain.value = f1 * 0.03; l.connect(lg); lg.connect(o.frequency);
+      const bp = this.ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = f1 * 2; bp.Q.value = 1.2;
+      const g = this.ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.32, t + 0.08); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(bp); bp.connect(g); g.connect(this.master); o.start(t); l.start(t); o.stop(t + dur + 0.05); l.stop(t + dur + 0.05);
+    };
+    if (kind === 'wolf') { cry(420, 760, 520, 1.0, 'sawtooth', 6); cry(430, 770, 530, 1.0, 'triangle', 5); }
+    else if (['bird', 'crane', 'owl', 'phoenix'].includes(kind)) { cry(1400, 2600, 1800, 0.6, 'sawtooth', 18); }
+    else if (['dragon', 'tiger', 'rhino'].includes(kind)) { cry(90, 160, 70, 0.9, 'sawtooth', 9); this.noise(0.9, 300, 0.6, 0.45, 'lowpass'); }
+    else { cry(200, 340, 160, 0.7, 'square', 12); this.noise(0.5, 1200, 0.7, 0.2, 'bandpass'); }
+    this.noise(0.8, 2000, 0.5, 0.18, 'highpass');
   },
   specialBurst() {
     this.noise(1.2, 90, 0.6, 0.8, 'lowpass'); this.noise(0.6, 3000, 0.7, 0.45);
