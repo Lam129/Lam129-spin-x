@@ -164,6 +164,13 @@ function beastSVG(bladeId, color) {
   const eyes = [B.eye, B.eye2].filter(Boolean).map(([[x0, y0], [x1, y1]]) => `<path d="M${x0},${y0} L${x1},${y1}" stroke="#fff" stroke-width="5" stroke-linecap="round"/><path d="M${x0},${y0} L${x1},${y1}" stroke="${c}" stroke-width="2" stroke-linecap="round" opacity="0.8"/>`).join('');
   const body = (extra = '') => `<path d="${B.body}" fill="url(#${id}g)" stroke="#fff" stroke-width="3" stroke-linejoin="round" ${extra}/>`;
   const wings = B.wings ? `<g class="bw-back" style="transform-origin:250px 118px"><path d="${B.wings2 || B.wings}" fill="url(#${id}g)" stroke="#fff" stroke-width="2" opacity="0.7"/></g><g class="bw" style="transform-origin:250px 118px"><path d="${B.wings}" fill="url(#${id}g)" stroke="#fff" stroke-width="3" stroke-linejoin="round"/></g>` : '';
+  const rig = typeof rigMarkup === 'function' ? rigMarkup(key, color, id) : null;
+  if (rig) {
+    return `<svg class="beast rigged" viewBox="-20 -30 440 300" aria-hidden="true">
+    <defs><linearGradient id="${id}g" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="0.35" stop-color="${c}"/><stop offset="1" stop-color="${new THREE.Color(color).multiplyScalar(0.35).getStyle()}"/></linearGradient>
+    <filter id="${id}f" x="-20%" y="-20%" width="140%" height="140%"><feMorphology in="SourceAlpha" operator="dilate" radius="5" result="d"/><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="5"><animate attributeName="baseFrequency" dur="0.5s" values="0.03;0.055;0.03" repeatCount="indefinite"/></feTurbulence><feDisplacementMap in="d" scale="20" result="w"/><feFlood flood-color="${c}"/><feComposite in2="w" operator="in" result="aura"/><feGaussianBlur in="aura" stdDeviation="3" result="ab"/><feMerge><feMergeNode in="ab"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+    <g filter="url(#${id}f)">${rig}</g></svg>`;
+  }
   return `<svg class="beast mode-${B.mode}" viewBox="-20 -30 440 300" aria-hidden="true">
     <defs>
       <linearGradient id="${id}g" x1="1" y1="0" x2="0" y2="1">

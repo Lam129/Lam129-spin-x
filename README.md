@@ -36,3 +36,8 @@ node blender/pack.js
 ```
 
 發布時 `dist/index.html` 與 `assets/parts_*.txt`、`assets/parts.json` 需放在同一層（頁面會用相對路徑載入 `assets/`）。
+
+## 授權說明
+
+- 倒數語音 `assets/voice/*.mp3`：使用開源 Piper TTS 引擎與 `en_US-joe-medium` 語音模型（訓練資料為 CC0）生成，再經 ffmpeg 音效處理。
+- Three.js：MIT 授權。字型：Google Fonts（SIL Open Font License）。

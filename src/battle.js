@@ -250,6 +250,7 @@ const Battle = {
     c.stage = 'beast';
     const el = $('#cine'); el.classList.remove('cut'); el.classList.add('beast');
     SFX.roar(BEAST_OF[(c.side ? this.cur[1] : this.cur[0]).b]);
+    playRigs($('#cnBeast'), 1200);
     GL.battle.shake = 0.6;
   },
   cineBurst() {

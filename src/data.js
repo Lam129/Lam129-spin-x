@@ -169,21 +169,21 @@ const STADIUMS = {
 /* Opponents: original characters. av = avatar recipe. */
 const OPPONENTS = [
   { id: 'o1', name: '阿哲', title: '見習旋鬥士', type: 'bal', stadium: 'training', deck: [['phoenix', '4-60', 'T'], ['moon', '5-60', 'B'], ['wolf', '3-60', 'F']], pow: [0.45, 0.7], smart: 0.25, reward: 120,
-    av: { hair: 'spiky', hairC: '#6a3a1e', skin: '#f6d2b4', eye: '#3a7aff', eyes: 'round', brow: 'firm', mouth: 'grin', acc: 'band', accC: '#ff6a1a', bg: '#f6b432' } },
+    av: { hair: 'spiky', hairC: '#6a3a1e', skin: '#f6d2b4', eye: '#3a7aff', eyes: 'round', brow: 'firm', mouth: 'grin', acc: 'band', accC: '#ff6a1a', bg: '#f6b432', pose: 'fist' } },
   { id: 'o2', name: '小晴', title: '月下舞者', type: 'sta', stadium: 'lake', deck: [['moon', '6-60', 'B'], ['crane', '4-60', 'O'], ['mantis', '3-60', 'T']], pow: [0.5, 0.75], smart: 0.4, reward: 150,
-    av: { hair: 'long', hairC: '#7a5ad8', skin: '#fbe0cc', eye: '#a07aff', eyes: 'round', brow: 'soft', mouth: 'smile', acc: 'flower', accC: '#ffd84a', bg: '#3ad28a' } },
+    av: { hair: 'long', hairC: '#7a5ad8', skin: '#fbe0cc', eye: '#a07aff', eyes: 'round', brow: 'soft', mouth: 'smile', acc: 'flower', accC: '#ffd84a', bg: '#3ad28a', pose: 'wave' } },
   { id: 'o3', name: '鐵拳・剛', title: '不動要塞', type: 'def', stadium: 'fortress', deck: [['turtle', '5-60', 'N'], ['rhino', '4-70', 'P'], ['silver', '6-60', 'B']], pow: [0.55, 0.8], smart: 0.5, reward: 180,
-    av: { hair: 'buzz', hairC: '#26262c', skin: '#d8a070', eye: '#5a3a24', eyes: 'narrow', brow: 'angry', mouth: 'calm', acc: 'scar', accC: '#a04a3a', bg: '#3d7bdf' } },
+    av: { hair: 'buzz', hairC: '#26262c', skin: '#d8a070', eye: '#5a3a24', eyes: 'narrow', brow: 'angry', mouth: 'calm', acc: 'scar', accC: '#a04a3a', bg: '#3d7bdf', pose: 'punch' } },
   { id: 'o4', name: '疾風・凜', title: '疾風迅雷', type: 'atk', stadium: 'gale', deck: [['thunder', '3-60', 'R'], ['hawk', '4-60', 'LF'], ['phoenix', '5-60', 'T']], pow: [0.6, 0.86], smart: 0.6, reward: 220,
-    av: { hair: 'pony', hairC: '#1a7a5a', skin: '#f6d2b4', eye: '#2affb0', eyes: 'sharp', brow: 'cocky', mouth: 'smirk', acc: 'scarf', accC: '#e8ff7a', bg: '#e83a3a' } },
+    av: { hair: 'pony', hairC: '#1a7a5a', skin: '#f6d2b4', eye: '#2affb0', eyes: 'sharp', brow: 'cocky', mouth: 'smirk', acc: 'scarf', accC: '#e8ff7a', bg: '#e83a3a', pose: 'point' } },
   { id: 'o5', name: '星羅', title: '雙子星', type: 'bal', stadium: 'twin', deck: [['darkstar', '5-70', 'P'], ['phantom', '4-60', 'GB'], ['tiger', '3-80', 'F']], pow: [0.66, 0.9], smart: 0.7, reward: 260,
-    av: { hair: 'twin', hairC: '#f0a8ff', skin: '#fde4d4', eye: '#ff4fd8', eyes: 'round', brow: 'soft', mouth: 'grin', acc: 'star', accC: '#ffd84a', bg: '#8a5ae8' } },
+    av: { hair: 'twin', hairC: '#f0a8ff', skin: '#fde4d4', eye: '#ff4fd8', eyes: 'round', brow: 'soft', mouth: 'grin', acc: 'star', accC: '#ffd84a', bg: '#8a5ae8', pose: 'bey' } },
   { id: 'o6', name: '雪乃', title: '冰之女王', type: 'sta', stadium: 'ice', deck: [['jelly', '9-60', 'B'], ['crab', '5-60', 'HN'], ['owl', '6-70', 'O']], pow: [0.72, 0.93], smart: 0.8, reward: 300,
-    av: { hair: 'bob', hairC: '#dcecfa', skin: '#fdeee6', eye: '#36c8ff', eyes: 'narrow', brow: 'soft', mouth: 'calm', acc: 'crown', accC: '#9ae0ff', bg: '#4ab0d8' } },
+    av: { hair: 'bob', hairC: '#dcecfa', skin: '#fdeee6', eye: '#36c8ff', eyes: 'narrow', brow: 'soft', mouth: 'calm', acc: 'crown', accC: '#9ae0ff', bg: '#4ab0d8', pose: 'chest' } },
   { id: 'o7', name: '獅堂', title: '狂嵐之王', type: 'atk', stadium: 'lava', deck: [['flame', '1-60', 'RF'], ['scorpion', '3-80', 'A'], ['fortress', '9-60', 'N']], pow: [0.78, 0.96], smart: 0.88, reward: 360,
-    av: { hair: 'mane', hairC: '#e05a1a', skin: '#e8b080', eye: '#ffb020', eyes: 'sharp', brow: 'angry', mouth: 'shout', acc: 'earring', accC: '#ffd27a', bg: '#d83a1a' } },
+    av: { hair: 'mane', hairC: '#e05a1a', skin: '#e8b080', eye: '#ffb020', eyes: 'sharp', brow: 'angry', mouth: 'shout', acc: 'earring', accC: '#ffd27a', bg: '#d83a1a', pose: 'fist' } },
   { id: 'o8', name: '黑曜', title: '旋鋒王者', type: 'bal', stadium: 'throne', deck: [['darkstar', '7-60', 'P'], ['scorpion', '1-60', 'RF'], ['jelly', '5-70', 'GN']], pow: [0.85, 1.0], smart: 0.95, reward: 500,
-    av: { hair: 'slick', hairC: '#1c1628', skin: '#f0d0b8', eye: '#c04cff', eyes: 'sharp', brow: 'cocky', mouth: 'smirk', acc: 'mask', accC: '#2a2236', bg: '#b08a2a' } },
+    av: { hair: 'slick', hairC: '#1c1628', skin: '#f0d0b8', eye: '#c04cff', eyes: 'sharp', brow: 'cocky', mouth: 'smirk', acc: 'mask', accC: '#2a2236', bg: '#b08a2a', pose: 'temple' } },
 ];
 
 const FINISH = {

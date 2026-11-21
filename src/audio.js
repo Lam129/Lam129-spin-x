@@ -44,11 +44,13 @@ const SFX = {
   /* countdown call: i = 0..3 */
   announce(i) {
     const key = ['3', '2', '1', 'getfight'][i];
-    if (!this.playClip(key)) {
+    const clip = this.playClip(key);
+    if (!clip) {
       if (i < 3) this.say(['Three!', 'Two!', 'One!'][i], { rate: 1.25, pitch: 0.85 });
       else this.say('Get... FIGHT!', { rate: 1.05, pitch: 1.25 });
     }
-    if (i === 3) this.hype();
+    // stinger lands on the word FIGHT (≈0.5 s into the recorded clip)
+    if (i === 3) setTimeout(() => this.hype(), clip ? 500 : 0);
   },
   /* stinger under GET FIGHT: drum hit, power chord, crowd swell */
   hype() {
