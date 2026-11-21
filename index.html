@@ -21,6 +21,9 @@ body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15
 #ui .screen{position:absolute;inset:0;pointer-events:none}
 #ui .screen > *{pointer-events:auto}
 #ui .screen .pe-none{pointer-events:none}
+/* full-screen overlays must never swallow clicks unless active */
+#ui .screen > .cine,#ui .screen > .cutin,#ui .screen > .banner,#ui .screen > .toast,#ui .screen > .count,#ui .screen > .hud-top,#ui .screen > .gauge{pointer-events:none}
+#ui .screen > .cine.on{pointer-events:auto}
 button{font-family:inherit;color:inherit;cursor:pointer;border:0;background:none}
 button:focus-visible,input:focus-visible{outline:2px solid var(--ice);outline-offset:2px}
 .num{font-family:var(--f-disp);font-variant-numeric:tabular-nums}
