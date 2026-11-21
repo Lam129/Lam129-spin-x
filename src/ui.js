@@ -19,7 +19,6 @@ const UI = {
       $('#hubGreet').textContent = `歡迎回來，${P.name}`;
       $('#hubBeyName').textContent = `${beyName(d)} ${beyCode(d)}`;
       $('#hubBeyTags').innerHTML = `<span class="tag t-${st.type}">${TYPES[st.type].name}</span><span class="tag" style="color:var(--dim)">${st.weight} g</span><span class="tag" style="color:var(--dim)">${P.stats.w} 勝 ${P.stats.l} 敗</span>`;
-      $('#hubColl').textContent = `已收集 ${this.ownedCount()} / ${BLADES.length + RATCHETS.length + BITS.length} 種零件`;
     }
     if (name === 'assembly') { sh.setOffset(0); this.renderAssembly(true); }
     if (name === 'select') { sh.setOffset(-0.22); this.renderSelect(); }
@@ -31,12 +30,22 @@ const UI = {
     const P = Store.profile; if (!P) return '';
     const titles = { assembly: '組裝工坊', select: '對戰', gacha: '扭蛋機', collection: '收藏圖鑑', rules: '比賽規則' };
     const back = name !== 'hub' ? `<button class="btn cut" data-go="hub" style="padding:8px 14px">‹ 大廳</button>` : '';
-    return `${back}<div class="brand">旋鋒對決 <b>X</b>${titles[name] ? `<small>／ ${titles[name]}</small>` : ''}</div><div class="spacer"></div>
+    return `${back}<div class="brand">旋鋒對決<small style="font-family:var(--f-disp);color:var(--hot);margin-left:6px;letter-spacing:.2em">SPIN DUEL</small>${titles[name] ? `<small>／ ${titles[name]}</small>` : ''}</div><div class="spacer"></div>
       <div class="chip"><span class="dot ${Store.mode === 'cloud' ? '' : 'off'}"></span><span>${esc(P.name)}</span><span style="color:var(--mute);font-size:12px">${Store.mode === 'cloud' ? '雲端存檔' : '本機存檔'}</span></div>
-      <div class="chip"><span class="coin"></span><b class="num" id="coinNum">${P.coins.toLocaleString('en-US')}</b></div>`;
+      <div class="chip"><span class="coin"></span><b class="num" id="coinNum">${P.coins.toLocaleString('en-US')}</b></div>
+      <div class="corner">
+        <button class="ibtn" data-go="collection" title="收藏圖鑑" aria-label="收藏圖鑑"><svg viewBox="0 0 24 24"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg><span>圖鑑 ${this.ownedCount()}/${BLADES.length + RATCHETS.length + BITS.length}</span></button>
+        <button class="ibtn" data-go="rules" title="比賽規則" aria-label="比賽規則"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6zM9 10h7M9 14h7M9 18h5"/></svg><span>規則</span></button>
+        <button class="ibtn" data-settings title="設定" aria-label="設定"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg><span>設定</span></button>
+      </div>`;
   },
   refreshCoins() { const el = $('#coinNum'); if (el) el.textContent = Store.profile.coins.toLocaleString('en-US'); },
   ownedCount() { const inv = Store.profile.inv; return ['blade', 'ratchet', 'bit'].reduce((n, k) => n + Object.values(inv[k]).filter((c) => c > 0).length, 0); },
+  toggleSettings(force) {
+    const el = $('#settings'); const on = force ?? el.hidden;
+    el.hidden = !on;
+    if (on) for (const k of ['master', 'sfx', 'voice']) $('#vol-' + k).value = Math.round(SFX.vol[k] * 100);
+  },
   toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(this._tt); this._tt = setTimeout(() => t.classList.remove('show'), 2200); },
   toastTop(msg) { this.toast(msg); },
   banner(en, zh, pts, blue) {
@@ -67,11 +76,11 @@ const UI = {
     const items = K.list.filter((p) => owns(this.asmTab, p.id));
     $('#plist').innerHTML = items.map((p) => {
       const sel = d[K.key] === p.id;
-      const meta = this.asmTab === 'blade' ? `<span class="t-${p.type}">${TYPES[p.type].name}</span><span>${p.wt}g</span>` : this.asmTab === 'ratchet' ? `<span>抗爆 ${Math.round(p.burst * 52)}</span><span>${p.wt}g</span>` : `<span class="t-${p.type}">${TYPES[p.type].name}</span><span>衝刺 ${p.dash}</span>`;
+      const meta = this.asmTab === 'blade' ? `<span class="t-${p.type}">${TYPES[p.type].name}</span><span>${p.wt}g</span>` : this.asmTab === 'ratchet' ? `<span>抗解體 ${Math.round(p.burst * 52)}</span><span>${p.wt}g</span>` : `<span class="t-${p.type}">${TYPES[p.type].name}</span><span>衝刺 ${p.dash}</span>`;
       return `<button class="pcard cut ${usedBy[p.id] ? 'used' : ''}" data-part="${p.id}" aria-pressed="${sel}">
         ${usedBy[p.id] ? `<span class="usedby">${usedBy[p.id]} 號機使用中</span>` : ''}<span class="cnt">×${P.inv[this.asmTab][p.id]}</span>
         <img src="${Thumbs.get(this.asmTab, p.id)}" alt="">
-        <span class="pn">${esc(this.asmTab === 'bit' ? `${p.name} ${p.code}` : this.asmTab === 'ratchet' ? p.id : p.name)}</span>
+        <span class="pn">${esc(partName(this.asmTab, p))}</span>
         <span class="pm"><span class="r-${p.rarity}">${RARITY[p.rarity].name}</span>${meta}</span></button>`;
     }).join('') || '<div class="desc">還沒有這類零件，去扭蛋機抽抽看吧。</div>';
     this.renderAsmInfo();
@@ -86,16 +95,16 @@ const UI = {
     $('#asmName').textContent = beyName(d);
     $('#asmCode').textContent = beyCode(d);
     $('#asmType').innerHTML = `<span class="tag t-${st.type}">${TYPES[st.type].name}</span>`;
-    const rows = [['攻擊', st.atk], ['防禦', st.def], ['持久', st.sta], ['衝刺', st.dash], ['抗爆裂', st.burst]];
+    const rows = [['攻擊', st.atk], ['防禦', st.def], ['持久', st.sta], ['衝刺', st.dash], ['抗解體', st.burst]];
     $('#asmStats').innerHTML = rows.map(([k, v]) => `<div class="stat"><span>${k}</span><div class="bar"><i style="width:${v}%"></i></div><span class="num">${v}</span></div>`).join('') + `<div class="stat"><span>總重量</span><span class="num" style="color:var(--fg)">${st.weight} g</span><span></span></div>`;
     const K = KINDS[this.asmTab], part = K.map[d[K.key]];
-    $('#asmDesc').innerHTML = `<b style="color:var(--fg)">${esc(K.name)}・${esc(this.asmTab === 'ratchet' ? part.id : part.name)}</b><br>${esc(part.desc)}`;
+    $('#asmDesc').innerHTML = `<b style="color:var(--fg)">${esc(K.name)}・${esc(partName(this.asmTab, part))}</b><br>${esc(part.desc)}`;
   },
   deckDupes() {
     const P = Store.profile, out = [];
     for (const [k, K] of Object.entries(KINDS)) {
       const ids = P.decks.map((d) => d[K.key]);
-      ids.forEach((id, i) => { if (ids.indexOf(id) !== i) out.push(k === 'ratchet' ? id : K.map[id].name); });
+      ids.forEach((id, i) => { if (ids.indexOf(id) !== i) out.push(partName(k, K.map[id])); });
     }
     return [...new Set(out)].join('、');
   },
@@ -119,14 +128,17 @@ const UI = {
       const locked = i > P.ladder, cleared = i < P.ladder;
       return `<button class="opp cut ${locked ? 'locked' : ''}" data-opp="${i}" aria-pressed="${i === this.oppSel}">
         <span class="lv num">${String(i + 1).padStart(2, '0')}</span>
-        <span class="av" style="background:${TYPES[o.type].css}">${esc(o.name[o.name.length - 1])}</span>
+        <span class="av">${locked ? '<span class="avq">?</span>' : oppAvatar(o, 56)}</span>
         <span class="on">${locked ? '？？？' : esc(o.name)}</span><span class="ot">${esc(o.title)}・${TYPES[o.type].name}</span>
         <span class="ot"><span class="coin" style="display:inline-block;width:11px;height:11px;vertical-align:-1px"></span> ${o.reward}</span>
         ${cleared ? '<span class="clr">已擊敗</span>' : ''}</button>`;
     }).join('');
     const o = OPPONENTS[this.oppSel];
     $('#oppName').textContent = `${o.name}・${o.title}`;
-    const od = o.deck.map(([b, r, t]) => `${BLADE[b].name} ${r}${BIT[t].code}`);
+    $('#oppAv').innerHTML = oppAvatar(o, 84);
+    const S = STADIUMS[o.stadium];
+    $('#oppStadium').innerHTML = `<b>${esc(S.name)}</b>・${esc(S.desc)}<br><span style="color:var(--mute)">裂界區 ${S.pockets.filter((p) => p.kind === 'rift').length} 個・場外區 ${S.pockets.filter((p) => p.kind === 'out').length} 個</span>`;
+    const od = o.deck.map(([b, r, t]) => `${BLADE[b].name} ${beyCode({ b, r, t })}`);
     $('#oppInfo').innerHTML = `擅長：${TYPES[o.type].name}<br>牌組：${od.map(esc).join('／')}<br>勝利獎金 ${o.reward} 金幣${this.oppSel >= P.ladder ? '，首次擊敗再加 200' : ''}`;
     $$('#modeSeg button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.mode === this.mode));
     const decks = this.mode === '3v3' ? P.decks : [P.decks[0]];
@@ -183,7 +195,7 @@ const UI = {
     const best = res.slice().sort((a, b) => ['common', 'rare', 'sr'].indexOf(b.rarity) - ['common', 'rare', 'sr'].indexOf(a.rarity))[0];
     for (let i = 0; i < res.length; i++) {
       const r = res[i];
-      const nm = r.kind === 'bit' ? `${r.part.name} ${r.part.code}` : r.kind === 'ratchet' ? r.part.id : r.part.name;
+      const nm = partName(r.kind, r.part);
       const el = document.createElement('div'); el.className = 'pull-item'; el.style.animationDelay = `${i * 0.06}s`;
       el.innerHTML = `<img src="${Thumbs.get(r.kind, r.part.id)}" alt=""><div><div style="font-weight:700">${esc(nm)} ${r.isNew ? '<span class="new">NEW</span>' : ''}</div><div style="font-size:12px;color:var(--dim)">${KINDS[r.kind].name}${r.dup ? '・重複 → +30 金幣' : ''}</div></div><span class="r-${r.rarity}" style="font-weight:700;font-size:12px">${RARITY[r.rarity].name}</span>`;
       list.appendChild(el);
@@ -192,7 +204,7 @@ const UI = {
     GL.show.showPart(show.kind, show.part.id);
     GL.show.spinSpeed = 1.2;
     $('#revEye').innerHTML = `<span class="r-${show.rarity}">${RARITY[show.rarity].name}</span>・${KINDS[show.kind].name}`;
-    $('#revName').textContent = show.kind === 'bit' ? `${show.part.name} ${show.part.code}` : show.kind === 'ratchet' ? show.part.id : show.part.name;
+    $('#revName').textContent = partName(show.kind, show.part);
     SFX.rareJingle(show.rarity);
     const sc = GL.show; sc.flash = show.rarity === 'sr' ? 2 : 1;
     this.refreshCoins();
@@ -209,17 +221,17 @@ const UI = {
     if (!this.collSel || this.collSel.kind !== this.collTab) this.collSel = { kind: this.collTab, id: K.list[0].id };
     $('#collGrid').innerHTML = K.list.map((p) => {
       const has = inv[p.id] > 0;
-      const nm = this.collTab === 'bit' ? `${p.name} ${p.code}` : this.collTab === 'ratchet' ? p.id : p.name;
+      const nm = partName(this.collTab, p);
       return `<button class="pcard cut ${has ? '' : 'locked'}" data-cpart="${p.id}" aria-pressed="${this.collSel.id === p.id}"><span class="cnt">${has ? '×' + inv[p.id] : ''}</span><img src="${Thumbs.get(this.collTab, p.id)}" alt=""><span class="pn">${has ? esc(nm) : '？？？'}</span><span class="pm"><span class="r-${p.rarity}">${RARITY[p.rarity].name}</span></span></button>`;
     }).join('');
     this.renderCollInfo();
   },
   renderCollInfo() {
     const { kind, id } = this.collSel, K = KINDS[kind], p = K.map[id], has = (Store.profile.inv[kind][id] | 0) > 0;
-    const nm = kind === 'bit' ? `${p.name} ${p.code}` : kind === 'ratchet' ? p.id : p.name;
+    const nm = partName(kind, p);
     let stats = '';
     if (kind === 'blade') stats = [['攻擊', p.atk], ['防禦', p.def], ['持久', p.sta]].map(([k, v]) => `<div class="stat"><span>${k}</span><div class="bar"><i style="width:${v}%"></i></div><span class="num">${v}</span></div>`).join('') + `<div class="stat"><span>重量</span><span class="num">${p.wt} g</span><span></span></div>`;
-    if (kind === 'ratchet') stats = `<div class="stat"><span>卡榫數</span><span class="num">${p.prongs}</span><span></span></div><div class="stat"><span>高度</span><span class="num">${(p.h / 10).toFixed(1)} mm</span><span></span></div><div class="stat"><span>抗爆裂</span><div class="bar"><i style="width:${Math.round(p.burst * 52)}%"></i></div><span class="num">${Math.round(p.burst * 52)}</span></div>`;
+    if (kind === 'ratchet') stats = `<div class="stat"><span>卡榫數</span><span class="num">${p.prongs}</span><span></span></div><div class="stat"><span>高度</span><span class="num">${(p.h / 10).toFixed(1)} mm</span><span></span></div><div class="stat"><span>抗解體</span><div class="bar"><i style="width:${Math.round(p.burst * 52)}%"></i></div><span class="num">${Math.round(p.burst * 52)}</span></div>`;
     if (kind === 'bit') stats = [['衝刺', p.dash], ['移動性', Math.round(p.mob * 80)], ['穩定性', Math.round(p.stab * 100)]].map(([k, v]) => `<div class="stat"><span>${k}</span><div class="bar"><i style="width:${v}%"></i></div><span class="num">${v}</span></div>`).join('');
     $('#collInfo').innerHTML = `<div class="eyebrow">${K.name}・<span class="r-${p.rarity}">${RARITY[p.rarity].name}</span></div><h2 style="font-size:24px;font-weight:900">${has ? esc(nm) : '尚未取得'}</h2>${p.type ? `<div><span class="tag t-${p.type}">${TYPES[p.type].name}</span></div>` : ''}${has ? stats : ''}<div class="desc">${has ? esc(p.desc) : '在扭蛋機抽到這個零件後就能看到完整資料。'}</div>`;
     GL.show.showPart(kind, id);
@@ -233,6 +245,9 @@ function bindEvents() {
     const t = e.target.closest('button'); if (!t) return;
     SFX.ensure();
     if (t.dataset.go) return UI.go(t.dataset.go);
+    if (t.hasAttribute('data-settings')) return UI.toggleSettings();
+    if (t.id === 'setClose') return UI.toggleSettings(false);
+    if (t.id === 'voiceTest') { SFX.ensure(); return SFX.say('三、二、一，旋鋒出擊！'); }
     if (t.dataset.starter) { UI.starter = t.dataset.starter; SFX.click(); return UI.renderAuth(); }
     if (t.dataset.ptab) { UI.asmTab = t.dataset.ptab; SFX.click(); return UI.renderAssembly(false); }
     if (t.dataset.part) { SFX.click(); return UI.pickPart(t.dataset.part); }
@@ -254,10 +269,12 @@ function bindEvents() {
   $('#startBattle').addEventListener('click', () => Battle.start(OPPONENTS[UI.oppSel], UI.mode));
   $('#quitBattle').addEventListener('click', () => Battle.quit());
   $('#spBtn').addEventListener('click', () => Battle.useSpecial(0));
-  window.addEventListener('keydown', (e) => { if (e.code === 'Space' && Battle.active) { e.preventDefault(); Battle.useSpecial(0); } });
+  window.addEventListener('keydown', (e) => { if (!Battle.active) return; if (Battle.cine) { e.preventDefault(); return Battle.skipCine(); } if (e.code === 'Space') { e.preventDefault(); Battle.useSpecial(0); } });
+  $('#cine').addEventListener('pointerdown', () => Battle.skipCine());
   $('#resAgain').addEventListener('click', () => Battle.start(Battle.opp, Battle.mode));
   $('#resHome').addEventListener('click', () => UI.go('hub'));
   $('#pull1').addEventListener('click', () => UI.pull(1));
+  $$('[data-vol]').forEach((el) => el.addEventListener('input', () => SFX.setVol(el.dataset.vol, el.value / 100)));
   $('#pull10').addEventListener('click', () => UI.pull(10));
   Launcher.init();
 }

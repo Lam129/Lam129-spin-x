@@ -1,6 +1,6 @@
-<title>旋鋒對決 X-DRIVE</title>
+<title>旋鋒對決</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@900&display=swap">
 <style>
 /* Layout: one full-screen WebGL stage behind angular esports HUD panels. Deliberately single dark theme (arena at night). */
 :root{
@@ -45,11 +45,31 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .chip{display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--panel);border:1px solid var(--line);font-size:14px}
 .coin{width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3b0,#ffc531 45%,#b77800);box-shadow:0 0 6px rgba(255,190,40,.6);flex:none}
 .back{position:absolute;top:70px;left:22px}
+.corner{display:flex;gap:6px}
+.ibtn{display:flex;align-items:center;gap:6px;padding:6px 10px;background:var(--panel);border:1px solid var(--line);font-size:13px;color:var(--dim);transition:border-color .15s,color .15s}
+.ibtn:hover{border-color:var(--hot);color:var(--fg)}
+.ibtn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linejoin:round;stroke-linecap:round}
+.settings{position:fixed;top:64px;right:22px;z-index:5;width:280px;padding:16px;display:grid;gap:8px;font-size:13px}
+.settings input{accent-color:var(--hot)}
+.opp .av{width:56px;height:56px;display:block}
+.opp .av .avq{display:grid;place-items:center;width:56px;height:56px;font-size:24px;font-weight:900;color:var(--mute);background:#0b0f1a;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.hav{display:block;width:40px;height:40px;flex:none}
+.deckrow{display:flex;gap:6px;margin-bottom:4px}
+.gauge.r .deckrow{justify-content:flex-end}
+.dk{position:relative;display:grid;justify-items:center;width:46px;opacity:.55;transition:opacity .2s,transform .2s}
+.dk img{width:42px;height:42px;border:1px solid var(--line2);background:#0b0f1a}
+.dk i{position:absolute;top:-4px;left:-4px;font-style:normal;font-family:var(--f-disp);font-size:11px;font-weight:700;background:var(--line2);padding:0 4px}
+.dk em{font-style:normal;font-family:var(--f-disp);font-size:11px;color:var(--hot2);min-height:14px}
+.dk.cur{opacity:1;transform:scale(1.12)}
+.dk.cur img{border-color:var(--hot);box-shadow:0 0 12px rgba(255,106,26,.6)}
+.gauge.r .dk.cur img{border-color:var(--ice);box-shadow:0 0 12px rgba(54,211,255,.6)}
+.res-av{display:flex;align-items:center;justify-content:center;gap:18px}
+.res-av .vs{font-family:var(--f-disp);font-weight:700;font-size:22px;color:var(--mute)}
 /* ===== Auth ===== */
 #s-auth{display:grid;place-items:center}
 .auth-card{width:min(520px,calc(100% - 32px));padding:34px 34px 30px;display:grid;gap:18px}
 .auth-logo{font-family:var(--f-disp);font-size:44px;font-weight:700;line-height:1;letter-spacing:.04em}
-.auth-logo b{color:var(--hot)}
+.auth-logo .auth-sub{display:block;font-size:15px;letter-spacing:.5em;color:var(--hot);margin-top:8px}
 .auth-card label{font-size:13px;color:var(--dim)}
 .inp{width:100%;padding:12px 14px;background:#0a0e18;border:1px solid var(--line2);color:var(--fg);font-size:16px;font-family:var(--f-body)}
 .starter-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
@@ -157,6 +177,7 @@ h1,h2,h3{margin:0;text-wrap:balance}
 @keyframes bannerIn{0%{opacity:0;transform:scale(1.6) skewX(-8deg)}12%{opacity:1;transform:scale(1) skewX(-8deg)}80%{opacity:1;transform:scale(1.02) skewX(-8deg)}100%{opacity:0;transform:scale(1.08) skewX(-8deg)}}
 .count{position:absolute;left:0;right:0;top:30%;text-align:center;font-family:var(--f-disp);font-weight:700;font-size:clamp(60px,11vw,150px);line-height:1;pointer-events:none;color:#fff;text-shadow:0 0 30px rgba(255,140,40,.8)}
 .count.pop{animation:pop .6s ease-out}
+.count.long{font-family:var(--f-body);font-weight:900;font-size:clamp(48px,7.5vw,104px);letter-spacing:.06em}
 @keyframes pop{0%{transform:scale(1.8);opacity:0}30%{transform:scale(1);opacity:1}100%{transform:scale(.92);opacity:.9}}
 .launcher{position:absolute;right:22px;top:50%;transform:translateY(-46%);width:260px;padding:14px 16px 16px;display:grid;gap:10px;justify-items:center}
 .launcher .hint{font-size:12px;color:var(--dim);text-align:center;line-height:1.5}
@@ -177,7 +198,7 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .spg.ready .spbar i{animation:spglow .5s ease-in-out infinite alternate}
 .spg.used .spbar{opacity:.4}
 @keyframes spglow{to{filter:brightness(1.6)}}
-.spbtn{position:absolute;left:22px;bottom:168px;display:flex;gap:10px;align-items:center;padding:10px 16px;background:var(--panel);border:1px solid var(--line2);text-align:left;pointer-events:auto;transition:transform .15s}
+.spbtn{position:absolute;left:22px;bottom:252px;display:flex;gap:10px;align-items:center;padding:10px 16px;background:var(--panel);border:1px solid var(--line2);text-align:left;pointer-events:auto;transition:transform .15s}
 .spbtn .k{font-family:var(--f-disp);font-size:11px;padding:3px 6px;border:1px solid var(--line2);color:var(--dim)}
 .spbtn b{display:block;font-size:16px}.spbtn small{display:block;font-size:11px;color:var(--dim)}
 .spbtn[disabled]{opacity:.45;cursor:default}
@@ -199,6 +220,46 @@ h1,h2,h3{margin:0;text-wrap:balance}
 @keyframes ciFade{0%{opacity:0}8%{opacity:1}80%{opacity:1}100%{opacity:0}}
 @keyframes ciIn{0%{translate:-60% 0}14%{translate:0 0}80%{translate:3% 0}100%{translate:60% 0}}
 @keyframes ciInR{0%{translate:60% 0}14%{translate:0 0}80%{translate:-3% 0}100%{translate:-60% 0}}
+.cine{position:absolute;inset:0;pointer-events:none;opacity:0;--sc:#ff6a1a;overflow:hidden;z-index:4}
+.cine.on{opacity:1;pointer-events:auto;cursor:pointer}
+.cn-dark{position:absolute;inset:0;background:radial-gradient(circle at 50% 55%,transparent 0 18%,color-mix(in srgb,var(--sc) 25%,#000) 55%,#000 100%);opacity:0;transition:opacity .25s}
+.cine.charge .cn-dark,.cine.cut .cn-dark{opacity:.85}
+.cn-lines{position:absolute;inset:-20%;background:repeating-conic-gradient(from 0deg at 50% 50%,transparent 0 2.2deg,color-mix(in srgb,var(--sc) 40%,#fff) 2.2deg 2.6deg);opacity:0;mask:radial-gradient(circle at 50% 50%,transparent 0 22%,#000 60%);-webkit-mask:radial-gradient(circle at 50% 50%,transparent 0 22%,#000 60%)}
+.cine.cut .cn-lines{opacity:.5;animation:cnSpin 1s linear infinite}
+@keyframes cnSpin{to{transform:rotate(8deg)}}
+.cn-panel{position:absolute;top:0;bottom:0;width:58%;display:grid;place-items:center;opacity:0;transition:transform .32s cubic-bezier(.2,.9,.2,1),opacity .2s}
+.cn-a{left:0;clip-path:polygon(0 0,100% 0,72% 100%,0 100%);background:linear-gradient(120deg,color-mix(in srgb,var(--sc) 70%,#000),#08060a 70%);transform:translateX(-100%)}
+.cn-b{right:0;clip-path:polygon(28% 0,100% 0,100% 100%,0 100%);background:linear-gradient(300deg,color-mix(in srgb,var(--sc) 55%,#000),#050408 70%);transform:translateX(100%)}
+.cine.right .cn-a{left:auto;right:0;clip-path:polygon(28% 0,100% 0,100% 100%,0 100%);transform:translateX(100%)}
+.cine.right .cn-b{right:auto;left:0;clip-path:polygon(0 0,100% 0,72% 100%,0 100%);transform:translateX(-100%)}
+.cine.cut .cn-panel{opacity:1;transform:none}
+.cn-portrait{transform:translateX(-12%) scale(1.15);filter:drop-shadow(0 0 30px var(--sc))}
+.cine.right .cn-portrait{transform:translateX(12%) scale(1.15)}
+.cn-b img{width:min(34vw,360px);height:auto;transform:translateX(14%) rotate(-12deg);filter:drop-shadow(0 0 40px var(--sc));animation:cnBlade 1s linear infinite}
+.cine.right .cn-b img{transform:translateX(-14%) rotate(12deg)}
+@keyframes cnBlade{to{rotate:30deg}}
+.cn-text{position:absolute;left:0;right:0;top:66%;transform:translateY(-50%);text-align:center;opacity:0}
+.cine.cut .cn-text{opacity:1}
+.cn-who{font-size:16px;letter-spacing:.4em;color:#fff;text-shadow:0 2px 8px #000}
+.cn-name{font-family:"Noto Serif TC","Noto Sans TC",serif;font-weight:900;font-size:clamp(56px,9vw,140px);line-height:1.05;color:#fff;letter-spacing:.02em;white-space:nowrap}
+.cn-name span{display:inline-block;opacity:0;color:#fff;background:linear-gradient(180deg,#fff 40%,color-mix(in srgb,var(--sc) 60%,#fff));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 14px var(--sc)) drop-shadow(5px 5px 0 rgba(0,0,0,.75))}
+.cine.cut .cn-name span{animation:cnDrop .38s cubic-bezier(.2,1.6,.4,1) var(--d) forwards}
+.cn-name .dot{display:inline-block;width:.18em;height:.18em;margin:0 .12em;background:var(--sc);transform:rotate(45deg) translateY(-.15em);box-shadow:0 0 14px var(--sc)}
+@keyframes cnDrop{0%{opacity:0;transform:translateY(-120%) scale(2.4) rotate(-8deg)}60%{opacity:1}100%{opacity:1;transform:none}}
+.cn-kind{display:inline-block;margin-top:8px;padding:4px 18px;font-family:var(--f-disp);font-weight:700;letter-spacing:.4em;color:#000;background:var(--sc);transform:skewX(-14deg)}
+.cn-ink i{position:absolute;width:calc(90px * var(--s));height:calc(60px * var(--s));border-radius:48% 52% 40% 60%;background:radial-gradient(circle at 40% 40%,color-mix(in srgb,var(--sc) 70%,transparent) 0 30%,transparent 70%);mix-blend-mode:screen;opacity:0;transform:scale(.2)}
+.cine.cut .cn-ink i{animation:cnInk .35s ease-out var(--d) forwards}
+@keyframes cnInk{to{opacity:.55;transform:scale(1) rotate(20deg)}}
+.cn-slash i{position:absolute;left:-30%;right:-30%;height:6px;background:linear-gradient(90deg,transparent,#fff 40%,var(--sc) 60%,transparent);box-shadow:0 0 24px var(--sc);opacity:0}
+.cn-slash i:nth-child(1){top:30%;transform:rotate(-18deg)}.cn-slash i:nth-child(2){top:52%;transform:rotate(12deg)}.cn-slash i:nth-child(3){top:70%;transform:rotate(-6deg)}
+.cine.burst .cn-slash i{animation:cnSlash .38s ease-out forwards}
+.cine.burst .cn-slash i:nth-child(2){animation-delay:.06s}.cine.burst .cn-slash i:nth-child(3){animation-delay:.12s}
+@keyframes cnSlash{0%{opacity:0;translate:-60% 0;scale:1 .4}30%{opacity:1;scale:1 1.4}100%{opacity:0;translate:60% 0;scale:1 .2}}
+.cn-flash{position:absolute;inset:0;background:#fff;opacity:0}
+.cine.burst .cn-flash{animation:cnFlash .5s ease-out forwards}
+@keyframes cnFlash{0%{opacity:.95}100%{opacity:0}}
+.cn-skip{position:absolute;right:22px;bottom:18px;font-size:12px;color:rgba(255,255,255,.6);opacity:0}
+.cine.charge .cn-skip,.cine.cut .cn-skip{opacity:1}
 .toast{position:absolute;left:50%;top:22%;transform:translateX(-50%);padding:10px 18px;font-weight:700;background:rgba(40,10,10,.9);border:1px solid var(--atk);color:#ffd0d0;pointer-events:none;opacity:0;transition:opacity .25s}
 .toast.show{opacity:1}
 .quit{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);padding:8px 16px;font-size:13px;opacity:.75}.quit:hover{opacity:1}
@@ -254,13 +315,21 @@ h1,h2,h3{margin:0;text-wrap:balance}
 
 <canvas id="gl"></canvas>
 <div id="loading">LOADING…</div>
+<div class="settings panel cut" id="settings" hidden>
+  <div style="display:flex;justify-content:space-between;align-items:center"><b>設定</b><button class="btn cut" id="setClose" style="padding:4px 10px">關閉</button></div>
+  <label for="vol-master">主音量</label><input type="range" id="vol-master" min="0" max="100" data-vol="master">
+  <label for="vol-sfx">音效</label><input type="range" id="vol-sfx" min="0" max="100" data-vol="sfx">
+  <label for="vol-voice">語音（倒數口號）</label><input type="range" id="vol-voice" min="0" max="100" data-vol="voice">
+  <button class="btn cut" id="voiceTest">試聽語音</button>
+  <div class="desc" style="font-size:12px">語音使用瀏覽器內建的語音合成，聲音會依你的電腦和瀏覽器而不同。</div>
+</div>
 <div id="ui">
   <!-- AUTH -->
   <section class="screen" id="s-auth" hidden>
     <form class="auth-card panel cut" id="authForm">
       <div>
-        <div class="eyebrow">Blader Registration · 刀鋒玩家登錄</div>
-        <div class="auth-logo">旋鋒對決 <b>X</b></div>
+        <div class="eyebrow">Player Registration · 旋鬥士登錄</div>
+        <div class="auth-logo">旋鋒對決<span class="auth-sub">SPIN DUEL</span></div>
       </div>
       <div class="acct" id="acctLine"><span class="dot"></span><span>正在連線帳號…</span></div>
       <div style="display:grid;gap:6px">
@@ -283,10 +352,8 @@ h1,h2,h3{margin:0;text-wrap:balance}
     <nav class="hub-menu">
       <div class="eyebrow" style="margin-bottom:4px" id="hubGreet">歡迎回來</div>
       <button class="menu-item cut" data-go="select"><span class="ic">VS</span><span><h3>對戰</h3><p>挑戰之路・8 位對手・3 對 3 牌組戰</p></span><span class="arrow">›</span></button>
-      <button class="menu-item cut" data-go="assembly"><span class="ic">⚙</span><span><h3>組裝工坊</h3><p>戰刃 × 固鎖輪 × 軸心，自由組裝與編輯牌組</p></span><span class="arrow">›</span></button>
+      <button class="menu-item cut" data-go="assembly"><span class="ic">⚙</span><span><h3>組裝工坊</h3><p>鋒輪 × 鎖芯 × 旋尖，自由組裝與編輯牌組</p></span><span class="arrow">›</span></button>
       <button class="menu-item cut" data-go="gacha"><span class="ic">◎</span><span><h3>扭蛋機</h3><p>用對戰贏來的金幣抽取新零件</p></span><span class="arrow">›</span></button>
-      <button class="menu-item cut" data-go="collection"><span class="ic">▤</span><span><h3>收藏圖鑑</h3><p id="hubColl">零件收集進度</p></span><span class="arrow">›</span></button>
-      <button class="menu-item cut" data-go="rules"><span class="ic">?</span><span><h3>比賽規則</h3><p>計分方式・終結種類・發射規範</p></span><span class="arrow">›</span></button>
     </nav>
     <div class="hub-bey panel cut pe-none">
       <div class="eyebrow">牌組 1 號機</div>
@@ -301,9 +368,9 @@ h1,h2,h3{margin:0;text-wrap:balance}
     <div class="asm">
       <div class="col">
         <div class="tabs" role="tablist">
-          <button class="tab" role="tab" data-ptab="blade" aria-selected="true">戰刃</button>
-          <button class="tab" role="tab" data-ptab="ratchet" aria-selected="false">固鎖輪</button>
-          <button class="tab" role="tab" data-ptab="bit" aria-selected="false">軸心</button>
+          <button class="tab" role="tab" data-ptab="blade" aria-selected="true">鋒輪</button>
+          <button class="tab" role="tab" data-ptab="ratchet" aria-selected="false">鎖芯</button>
+          <button class="tab" role="tab" data-ptab="bit" aria-selected="false">旋尖</button>
         </div>
         <div class="plist" id="plist"></div>
       </div>
@@ -333,7 +400,7 @@ h1,h2,h3{margin:0;text-wrap:balance}
         <div class="ladder" id="ladder"></div>
       </div>
       <div class="side panel cut">
-        <div><div class="eyebrow">對手</div><h2 id="oppName" style="font-size:24px;font-weight:900;margin-top:4px"></h2><div class="desc" id="oppInfo"></div></div>
+        <div style="display:flex;gap:14px;align-items:center"><span id="oppAv"></span><div><div class="eyebrow">對手</div><h2 id="oppName" style="font-size:24px;font-weight:900;margin-top:4px"></h2></div></div><div class="desc" id="oppInfo"></div><div><div class="eyebrow" style="margin-bottom:4px">戰鬥盤</div><div class="desc" id="oppStadium"></div></div>
         <div><div class="eyebrow" style="margin-bottom:6px">賽制</div>
           <div class="seg" id="modeSeg">
             <button data-mode="3v3" aria-pressed="true">3 對 3 牌組戰<small>依序使用 3 顆陀螺</small></button>
@@ -343,7 +410,7 @@ h1,h2,h3{margin:0;text-wrap:balance}
         <div><div class="eyebrow" style="margin-bottom:6px">你的牌組</div><div class="mini-deck" id="selDeck"></div></div>
         <div class="warn" id="selWarn"></div>
         <div class="spacer"></div>
-        <div class="desc">先取得 <b class="num" style="color:var(--hot)">4</b> 分者獲勝。旋轉終結 1 分・擊飛 2 分・爆裂 2 分・極限 3 分。</div>
+        <div class="desc">先取得 <b class="num" style="color:var(--hot)">4</b> 分者獲勝。旋轉終結 1 分・場外 2 分・解體 2 分・裂界 3 分。</div>
         <button class="btn primary cut" id="startBattle">進入對戰</button>
       </div>
     </div>
@@ -352,13 +419,24 @@ h1,h2,h3{margin:0;text-wrap:balance}
   <!-- BATTLE -->
   <section class="screen" id="s-battle" hidden>
     <div class="hud-top">
-      <div class="pl panel cut"><div class="who"><b id="p1n"></b><span id="p1b"></span></div><div class="pips" id="p1pips"></div></div>
+      <div class="pl panel cut"><span class="hav" id="p1av"></span><div class="who"><b id="p1n"></b><span id="p1b"></span></div><div class="pips" id="p1pips"></div></div>
       <div class="round panel cut"><div class="eyebrow">ROUND</div><div class="num" id="roundNo">1</div></div>
-      <div class="pl r panel cut"><div class="who"><b id="p2n"></b><span id="p2b"></span></div><div class="pips" id="p2pips"></div></div>
+      <div class="pl r panel cut"><span class="hav" id="p2av"></span><div class="who"><b id="p2n"></b><span id="p2b"></span></div><div class="pips" id="p2pips"></div></div>
     </div>
-    <div class="gauge l panel cut"><div class="eyebrow">你的轉速</div><div class="rpm num" id="g1rpm">0<small>RPM</small></div><div class="gbar"><i id="g1bar"></i></div><div class="ratchet" id="g1rat"></div><div class="spg"><span>必殺</span><div class="spbar"><i id="g1sp"></i></div></div></div>
-    <div class="gauge r panel cut"><div class="eyebrow">對手轉速</div><div class="rpm num" id="g2rpm">0<small>RPM</small></div><div class="gbar"><i id="g2bar"></i></div><div class="ratchet" id="g2rat"></div><div class="spg"><span>必殺</span><div class="spbar"><i id="g2sp"></i></div></div></div>
+    <div class="gauge l panel cut"><div class="deckrow" id="g1deck"></div><div class="eyebrow">你的轉速</div><div class="rpm num" id="g1rpm">0<small>RPM</small></div><div class="gbar"><i id="g1bar"></i></div><div class="ratchet" id="g1rat"></div><div class="spg"><span>必殺</span><div class="spbar"><i id="g1sp"></i></div></div></div>
+    <div class="gauge r panel cut"><div class="deckrow" id="g2deck"></div><div class="eyebrow">對手轉速</div><div class="rpm num" id="g2rpm">0<small>RPM</small></div><div class="gbar"><i id="g2bar"></i></div><div class="ratchet" id="g2rat"></div><div class="spg"><span>必殺</span><div class="spbar"><i id="g2sp"></i></div></div></div>
     <button class="spbtn cut" id="spBtn" disabled><span class="k">SPACE</span><span><b>必殺技</b><small id="spName"></small></span></button>
+    <div class="cine" id="cine">
+      <div class="cn-dark"></div>
+      <div class="cn-lines"></div>
+      <div class="cn-panel cn-a"><div class="cn-portrait" id="cnPortrait"></div></div>
+      <div class="cn-panel cn-b"><img id="cnBlade" alt=""></div>
+      <div class="cn-ink" id="cnInk"></div>
+      <div class="cn-text"><div class="cn-who" id="cnWho"></div><div class="cn-name" id="cnName"></div><div class="cn-kind" id="cnKind"></div></div>
+      <div class="cn-slash"><i></i><i></i><i></i></div>
+      <div class="cn-flash"></div>
+      <div class="cn-skip">按任意鍵跳過</div>
+    </div>
     <div class="cutin" id="cutin"><div class="ci-lines"></div><div class="ci-band"><img id="ciImg" alt=""><div class="ci-txt"><div class="ci-who" id="ciWho"></div><div class="ci-name" id="ciName"></div><div class="ci-kind" id="ciKind"></div></div></div></div>
     <div class="count pe-none" id="count"></div>
     <div class="banner" id="banner"><div class="sub" id="bnSub"></div><div class="big" id="bnBig"></div><div class="pts" id="bnPts"></div></div>
@@ -368,7 +446,7 @@ h1,h2,h3{margin:0;text-wrap:balance}
       <div class="aimrow"><span>中央</span><input type="range" id="aim" min="-100" max="100" value="20" aria-label="發射角度"><span>外圈軌道</span></div>
       <div class="track" id="track"><div class="fill" id="tfill"></div><div class="handle" id="handle">PULL</div></div>
       <div class="powread" id="powread"></div>
-      <div class="hint" id="lhint">按住拉柄，聽到「GO SHOOT」後<br>快速往下拉到底！越快轉速越高</div>
+      <div class="hint" id="lhint">按住拉柄，聽到「旋鋒出擊」後<br>快速往下拉到底！越快轉速越高</div>
     </div>
     <button class="btn quit cut" id="quitBattle">退出對戰</button>
   </section>
@@ -376,7 +454,7 @@ h1,h2,h3{margin:0;text-wrap:balance}
   <!-- RESULT -->
   <section class="screen" id="s-result" hidden>
     <div class="res-card panel cut">
-      <div class="eyebrow" id="resEye">MATCH RESULT</div>
+      <div class="res-av" id="resAv"></div><div class="eyebrow" id="resEye">MATCH RESULT</div>
       <div class="res-title" id="resTitle"></div>
       <div class="res-score num" id="resScore"></div>
       <div class="res-list" id="resList"></div>
@@ -411,9 +489,9 @@ h1,h2,h3{margin:0;text-wrap:balance}
     <div class="coll">
       <div class="coll-main">
         <div class="tabs" role="tablist">
-          <button class="tab" role="tab" data-ctab="blade" aria-selected="true">戰刃</button>
-          <button class="tab" role="tab" data-ctab="ratchet" aria-selected="false">固鎖輪</button>
-          <button class="tab" role="tab" data-ctab="bit" aria-selected="false">軸心</button>
+          <button class="tab" role="tab" data-ctab="blade" aria-selected="true">鋒輪</button>
+          <button class="tab" role="tab" data-ctab="ratchet" aria-selected="false">鎖芯</button>
+          <button class="tab" role="tab" data-ctab="bit" aria-selected="false">旋尖</button>
         </div>
         <div class="progress" id="collProg"></div>
         <div class="coll-grid" id="collGrid"></div>
@@ -426,41 +504,46 @@ h1,h2,h3{margin:0;text-wrap:balance}
   <section class="screen" id="s-rules" hidden>
     <div class="topbar" data-topbar></div>
     <article class="rules panel cut">
-      <div class="eyebrow">Official-style Battle Rules</div>
+      <div class="eyebrow">Battle Rules</div>
       <h2>比賽規則</h2>
-      <p>本遊戲採用 X 世代競技陀螺的標準賽制：兩名刀鋒玩家同時發射，陀螺在對戰盤內碰撞，依照終結方式取得分數，<b>先取得 4 分的一方獲勝</b>。</p>
+      <p>兩名旋鬥士同時發射陀螺，陀螺在戰鬥盤內碰撞，依照終結方式取得分數，<b>先取得 4 分的一方獲勝</b>。</p>
       <h3>四種終結方式</h3>
       <div class="ftable">
         <div class="fcell"><b>旋轉終結</b><span class="num">1</span><small>對手的陀螺先停止旋轉（倒下）。</small></div>
-        <div class="fcell"><b>擊飛終結</b><span class="num">2</span><small>把對手撞進兩側的「場外區」。</small></div>
-        <div class="fcell"><b>爆裂終結</b><span class="num">2</span><small>撞擊讓對手的固鎖輪鬆脫，陀螺解體成零件。</small></div>
-        <div class="fcell"><b>極限終結</b><span class="num">3</span><small>把對手撞進正對面的「極限區」。</small></div>
+        <div class="fcell"><b>場外終結</b><span class="num">2</span><small>把對手撞進「場外區」。</small></div>
+        <div class="fcell"><b>解體終結</b><span class="num">2</span><small>撞擊讓對手的鎖芯鬆脫，陀螺解體成零件。</small></div>
+        <div class="fcell"><b>裂界終結</b><span class="num">3</span><small>把對手撞進「裂界區」。</small></div>
       </div>
       <h3>陀螺構造</h3>
       <ul>
-        <li><b>戰刃</b>：最上層的金屬刃，決定攻擊、防禦、持久的基本性能與重量。</li>
-        <li><b>固鎖輪</b>：以「齒數-高度」標示，例如 3-60 代表 3 個卡榫、高度 6.0mm。齒數越多越不容易爆裂；高度越高，打擊點越高但重心不穩。</li>
-        <li><b>軸心</b>：與盤面接觸的底部零件，決定移動方式。軸心外圈的齒輪咬住對戰盤的「極限軌道」時，會觸發<b>極限衝刺</b>瞬間加速。</li>
+        <li><b>鋒輪</b>：最上層的金屬刃，決定攻擊、防禦、持久的基本性能與重量。</li>
+        <li><b>鎖芯</b>：編號 C＋爪數＋高度，例如 C4L 代表 4 爪、低位（L 低／M 中／H 高）。爪越多越不容易解體；位置越高，打擊點越高但重心不穩。</li>
+        <li><b>旋尖</b>：與盤面接觸的底部零件，決定移動方式。旋尖外圈的齒圈咬住戰鬥盤的「驅動軌道」時，會觸發<b>軌道驅衝</b>瞬間加速。</li>
       </ul>
-      <h3>對戰盤</h3>
+      <h3>戰鬥盤</h3>
       <ul>
-        <li>外圈是一整圈齒狀的<b>極限軌道</b>。抓地力高的軸心（平軸、突擊軸、橡膠平軸）衝上軌道後會高速衝刺，帶著動能撞向對手。</li>
-        <li>正對面的缺口是<b>極限區</b>（3 分），左右兩側靠近玩家的缺口是<b>場外區</b>（2 分）。</li>
+        <li>外圈是一整圈齒狀的<b>驅動軌道</b>。抓地力高的旋尖衝上軌道後會高速驅衝，帶著動能撞向對手。</li>
+        <li>每位對手都有自己的戰鬥盤，盤面深淺、軌道強弱、摩擦力，以及<b>裂界區</b>（3 分）和<b>場外區</b>（2 分）的位置都不一樣。選擇對手時可以看到戰鬥盤的特性。</li>
       </ul>
       <h3>發射規範</h3>
       <ul>
-        <li>倒數「3、2、1、GO SHOOT！」喊到 GO SHOOT 時才可以拉繩發射。</li>
+        <li>倒數「3、2、1、旋鋒出擊！」喊到「旋鋒出擊」時才可以拉繩發射。</li>
         <li>太早或太晚發射都算<b>發射失誤</b>。同一場比賽第一次失誤為警告，<b>第二次失誤對手得 1 分</b>，然後重新發射。</li>
         <li>拉繩的速度越快，陀螺的初始轉速越高。發射角度可以選擇往中央或往外圈軌道。</li>
+      </ul>
+      <h3>必殺技</h3>
+      <ul>
+        <li>每把鋒輪都有專屬必殺技。開戰後自動集氣，撞擊和軌道驅衝會集得更快。</li>
+        <li>集滿後按<b>空白鍵</b>或必殺技按鈕施放，每回合限用一次。</li>
       </ul>
       <h3>3 對 3 牌組戰</h3>
       <ul>
         <li>每位玩家登錄 3 顆陀螺，每一回合依照 1 → 2 → 3 號機的順序上場，用完後重新輪替。</li>
-        <li>同一個牌組內，<b>同名的零件只能使用一次</b>（不能有兩個相同的戰刃、固鎖輪或軸心）。</li>
+        <li>同一個牌組內，<b>同名的零件只能使用一次</b>（不能有兩個相同的鋒輪、鎖芯或旋尖）。</li>
         <li>雙方同時終結（例如同時停止）判定為平手，該回合不計分並重新發射。</li>
       </ul>
       <h3>類型相剋</h3>
-      <p><span class="t-atk">攻擊型</span> 擅長擊飛持久型・<span class="t-sta">持久型</span> 靠長時間旋轉贏過防禦型・<span class="t-def">防禦型</span> 能承受攻擊型的衝擊・<span class="t-bal">平衡型</span> 攻守兼備，視發射技巧而定。</p>
+      <p><span class="t-atk">攻擊型</span> 擅長擊出持久型・<span class="t-sta">持久型</span> 靠長時間旋轉贏過防禦型・<span class="t-def">防禦型</span> 能承受攻擊型的衝擊・<span class="t-bal">平衡型</span> 攻守兼備，視發射技巧而定。</p>
     </article>
   </section>
 </div>
@@ -507,16 +590,16 @@ const BLADES = [
     desc: '六道鋸齒狀的刃口連續打擊，衝刺時會擦出大量火花。' },
   { id: 'flame', name: '烈焰龍牙', glyph: '龍', type: 'atk', rarity: 'sr', atk: 86, def: 34, sta: 28, wt: 37.4, recoil: 1.3,
     shape: { kind: 'fang', n: 3, base: 0.3, amp: 0.16 }, metal: 0xf1d7c4, plastic: 0xe0221b, accent: 0xffb070,
-    desc: '巨大的三枚龍牙刃，撞擊面積大、角度銳利。頂級的擊飛專用戰刃。' },
+    desc: '巨大的三枚龍牙刃，撞擊面積大、角度銳利。頂級的擊出專用鋒輪。' },
   { id: 'silver', name: '白銀守衛', glyph: '衛', type: 'def', rarity: 'common', atk: 30, def: 60, sta: 40, wt: 34.0, recoil: 0.75,
     shape: { kind: 'round', n: 6, base: 0.4, amp: 0.035 }, metal: 0xdfe5ee, plastic: 0x6a7a99, accent: 0xe6edf8,
-    desc: '接近正圓的外緣能把衝擊分散掉，穩健的入門防禦戰刃。' },
+    desc: '接近正圓的外緣能把衝擊分散掉，穩健的入門防禦鋒輪。' },
   { id: 'turtle', name: '玄龜盾甲', glyph: '龜', type: 'def', rarity: 'rare', atk: 28, def: 72, sta: 44, wt: 37.0, recoil: 0.7,
     shape: { kind: 'hex', n: 6, base: 0.42, amp: 0 }, metal: 0xc4d7cf, plastic: 0x1f8a6a, accent: 0xa8f0d4,
     desc: '六角盾形外殼，重量集中在外圈，面對攻擊型也能紋風不動。' },
   { id: 'fortress', name: '鋼鐵堡壘', glyph: '堡', type: 'def', rarity: 'sr', atk: 36, def: 86, sta: 42, wt: 39.0, recoil: 0.65,
     shape: { kind: 'gear', n: 10, base: 0.39, amp: 0.05 }, metal: 0xbfc6d4, plastic: 0x23324f, accent: 0x8fb4ff,
-    desc: '十座城垛構成的厚重外圈，是目前最重的戰刃。反彈極小。' },
+    desc: '十座城垛構成的厚重外圈，是目前最重的鋒輪。反彈極小。' },
   { id: 'moon', name: '月影輪舞', glyph: '月', type: 'sta', rarity: 'common', atk: 22, def: 36, sta: 62, wt: 32.0, recoil: 0.85,
     shape: { kind: 'wing', n: 2, base: 0.36, amp: 0.09 }, metal: 0xe6e6f6, plastic: 0x6b4bd8, accent: 0xd8c8ff,
     desc: '兩片平滑的月牙翼減少碰撞時的轉速損失，轉得又穩又久。' },
@@ -529,37 +612,83 @@ const BLADES = [
   { id: 'darkstar', name: '暗星魔刃', glyph: '星', type: 'bal', rarity: 'sr', atk: 64, def: 58, sta: 56, wt: 36.4, recoil: 1.05,
     shape: { kind: 'hybrid', n: 4, base: 0.36, amp: 0.1 }, metal: 0xd0c4e6, plastic: 0x3a1a5e, accent: 0xff4fd8,
     desc: '一半利刃、一半圓弧的雙面設計，可以撞也可以守。高手愛用。' },
+  { id: 'shark', name: '怒鯊斬浪', glyph: '鯊', type: 'atk', rarity: 'rare', atk: 74, def: 30, sta: 24, wt: 35.6, recoil: 1.22,
+    shape: { kind: 'fang', n: 4, base: 0.32, amp: 0.12 }, metal: 0xc6d8e8, plastic: 0x1d4f8a, accent: 0x7fe0ff,
+    desc: '四枚背鰭狀的斬刃，像浪頭一樣連續撞擊。' },
+  { id: 'hawk', name: '鷹隼穿雲', glyph: '鷹', type: 'atk', rarity: 'common', atk: 62, def: 26, sta: 30, wt: 33.4, recoil: 1.12,
+    shape: { kind: 'saw', n: 3, base: 0.33, amp: 0.12 }, metal: 0xe6dccb, plastic: 0x8a5a2b, accent: 0xffd08a,
+    desc: '三片斜掠的翼刃，從斜上方切入對手。' },
+  { id: 'scorpion', name: '毒蠍尾鉤', glyph: '蠍', type: 'atk', rarity: 'sr', atk: 88, def: 30, sta: 26, wt: 37.0, recoil: 1.35,
+    shape: { kind: 'fang', n: 2, base: 0.31, amp: 0.17 }, metal: 0xd9e6c8, plastic: 0x3a5a12, accent: 0xb8ff4a,
+    desc: '兩枚巨大的鉤刃，命中時的反彈力是所有鋒輪中最大的。' },
+  { id: 'rhino', name: '犀甲衝角', glyph: '犀', type: 'def', rarity: 'common', atk: 34, def: 62, sta: 36, wt: 35.0, recoil: 0.78,
+    shape: { kind: 'round', n: 4, base: 0.39, amp: 0.05 }, metal: 0xcfc8bf, plastic: 0x5a4a3a, accent: 0xffc890,
+    desc: '四塊厚甲板組成的外圈，正面有微微隆起的衝角。' },
+  { id: 'crab', name: '巨蟹鉗盾', glyph: '蟹', type: 'def', rarity: 'rare', atk: 38, def: 74, sta: 38, wt: 37.4, recoil: 0.7,
+    shape: { kind: 'gear', n: 6, base: 0.39, amp: 0.06 }, metal: 0xe8cfc0, plastic: 0xb2361f, accent: 0xffa080,
+    desc: '六座鉗狀凸起，擋住衝擊之後還能反推回去。' },
+  { id: 'crane', name: '白鶴雲翼', glyph: '鶴', type: 'sta', rarity: 'common', atk: 20, def: 34, sta: 64, wt: 32.4, recoil: 0.82,
+    shape: { kind: 'wing', n: 4, base: 0.37, amp: 0.07 }, metal: 0xf2f2f6, plastic: 0xd0d6e4, accent: 0xff5a5a,
+    desc: '四片輕薄的雲翼，旋轉時幾乎沒有空氣阻力。' },
+  { id: 'owl', name: '夜梟靜羽', glyph: '梟', type: 'sta', rarity: 'rare', atk: 24, def: 40, sta: 72, wt: 34.8, recoil: 0.8,
+    shape: { kind: 'wing', n: 2, base: 0.38, amp: 0.1 }, metal: 0xc9c2d8, plastic: 0x2e2a4a, accent: 0xffd84a,
+    desc: '兩片寬大的羽翼把重量推到最外緣，轉得又穩又安靜。' },
+  { id: 'jelly', name: '星海水母', glyph: '海', type: 'sta', rarity: 'sr', atk: 22, def: 42, sta: 84, wt: 35.8, recoil: 0.75,
+    shape: { kind: 'round', n: 8, base: 0.41, amp: 0.025 }, metal: 0xd8f0f6, plastic: 0x2a7ab8, accent: 0xff8ad8,
+    desc: '八道柔和的波紋外緣，碰撞時幾乎不損失轉速。' },
+  { id: 'tiger', name: '猛虎雙牙', glyph: '虎', type: 'bal', rarity: 'rare', atk: 58, def: 52, sta: 50, wt: 35.4, recoil: 1.02,
+    shape: { kind: 'hybrid', n: 2, base: 0.36, amp: 0.11 }, metal: 0xf0dcb0, plastic: 0xd87a10, accent: 0x2a1a0a,
+    desc: '一枚利牙配一面厚盾，可以進攻也可以硬接。' },
+  { id: 'mantis', name: '螳螂雙鐮', glyph: '螳', type: 'bal', rarity: 'common', atk: 50, def: 44, sta: 50, wt: 33.8, recoil: 0.98,
+    shape: { kind: 'star', n: 4, base: 0.35, amp: 0.09 }, metal: 0xd8ecd0, plastic: 0x3a9a3a, accent: 0xe8ff7a,
+    desc: '四枚鐮刃均勻分布，動作靈活的入門平衡型。' },
 ];
 
-/* Ratchets: "prongs-height". burst = burst resistance multiplier. */
+/* 鎖芯 (lock core): code = C<claws><height L/M/H>. burst = burst resistance multiplier. Internal ids kept for saves. */
+const HCODE = { 60: 'L', 70: 'M', 80: 'H' };
 const RATCHETS = [
-  { id: '3-60', prongs: 3, h: 60, rarity: 'common', burst: 1.0, atk: 6, def: 0, sta: 0, stab: 0.05, wt: 6.2, color: 0x2b2f3a, desc: '最基本的低重心固鎖輪，卡榫少，打擊力好但容易爆裂。' },
-  { id: '4-60', prongs: 4, h: 60, rarity: 'common', burst: 1.15, atk: 2, def: 4, sta: 2, stab: 0.06, wt: 6.4, color: 0x30343f, desc: '四個卡榫，攻守平衡的標準選擇。' },
-  { id: '5-60', prongs: 5, h: 60, rarity: 'common', burst: 1.3, atk: 0, def: 4, sta: 4, stab: 0.07, wt: 6.6, color: 0x343944, desc: '五個卡榫，抗爆裂能力明顯提升。' },
-  { id: '3-80', prongs: 3, h: 80, rarity: 'rare', burst: 0.95, atk: 10, def: -2, sta: -2, stab: -0.05, wt: 6.6, color: 0x4a2b2b, desc: '高位固鎖輪，可以從上方打擊對手，但重心較高。' },
-  { id: '5-70', prongs: 5, h: 70, rarity: 'rare', burst: 1.28, atk: 4, def: 4, sta: 3, stab: 0.02, wt: 6.7, color: 0x2b3a4a, desc: '中高度的五卡榫，泛用性極高。' },
-  { id: '9-60', prongs: 9, h: 60, rarity: 'sr', burst: 1.75, atk: -2, def: 8, sta: 5, stab: 0.08, wt: 7.0, color: 0x3d3420, desc: '九個細密卡榫，幾乎不會爆裂。防禦與持久型的最佳搭檔。' },
+  { id: '3-60', prongs: 3, h: 60, rarity: 'common', burst: 1.0, atk: 6, def: 0, sta: 0, stab: 0.05, wt: 6.2, color: 0x2b2f3a, desc: '三爪低位鎖芯，打擊力好但容易被撞到解體。' },
+  { id: '4-60', prongs: 4, h: 60, rarity: 'common', burst: 1.15, atk: 2, def: 4, sta: 2, stab: 0.06, wt: 6.4, color: 0x30343f, desc: '四爪低位鎖芯，攻守平衡的標準選擇。' },
+  { id: '5-60', prongs: 5, h: 60, rarity: 'common', burst: 1.3, atk: 0, def: 4, sta: 4, stab: 0.07, wt: 6.6, color: 0x343944, desc: '五爪低位鎖芯，抗解體能力明顯提升。' },
+  { id: '3-80', prongs: 3, h: 80, rarity: 'rare', burst: 0.95, atk: 10, def: -2, sta: -2, stab: -0.05, wt: 6.6, color: 0x4a2b2b, desc: '三爪高位鎖芯，可以從上方打擊對手，但重心較高。' },
+  { id: '5-70', prongs: 5, h: 70, rarity: 'rare', burst: 1.28, atk: 4, def: 4, sta: 3, stab: 0.02, wt: 6.7, color: 0x2b3a4a, desc: '五爪中位鎖芯，泛用性極高。' },
+  { id: '9-60', prongs: 9, h: 60, rarity: 'sr', burst: 1.75, atk: -2, def: 8, sta: 5, stab: 0.08, wt: 7.0, color: 0x3d3420, desc: '九爪低位鎖芯，細密的爪幾乎不會鬆脫。' },
+  { id: '1-60', prongs: 1, h: 60, rarity: 'rare', burst: 0.85, atk: 12, def: -2, sta: -1, stab: 0.04, wt: 6.0, color: 0x5a1e1e, desc: '只有一爪的超輕量鎖芯，撞擊力最強，風險也最大。' },
+  { id: '4-70', prongs: 4, h: 70, rarity: 'common', burst: 1.12, atk: 4, def: 2, sta: 1, stab: 0.02, wt: 6.5, color: 0x2e3b2e, desc: '四爪中位鎖芯，打擊點稍高，適合和防禦型硬碰。' },
+  { id: '6-60', prongs: 6, h: 60, rarity: 'rare', burst: 1.45, atk: 0, def: 5, sta: 5, stab: 0.07, wt: 6.8, color: 0x3a2e4a, desc: '六爪低位鎖芯，持久型愛用的穩定款。' },
+  { id: '7-60', prongs: 7, h: 60, rarity: 'sr', burst: 1.58, atk: 2, def: 6, sta: 4, stab: 0.07, wt: 6.9, color: 0x1e3a4a, desc: '七爪低位鎖芯，在抗解體和攻擊力之間取得平衡。' },
+  { id: '4-80', prongs: 4, h: 80, rarity: 'rare', burst: 1.08, atk: 8, def: 0, sta: -2, stab: -0.04, wt: 6.8, color: 0x4a3a1e, desc: '四爪高位鎖芯，專門從上方壓制低矮的對手。' },
+  { id: '6-70', prongs: 6, h: 70, rarity: 'common', burst: 1.4, atk: 2, def: 4, sta: 3, stab: 0.03, wt: 6.9, color: 0x2e2e3a, desc: '六爪中位鎖芯，什麼組合都能搭的萬用款。' },
 ];
+RATCHETS.forEach((r) => (r.code = `C${r.prongs}${HCODE[r.h]}`));
 
-/* Bits: mob = how much it drives around, grip = rail gear grip for Xtreme dash, drain = stamina loss. */
+/* 旋尖 (tip): mob = how much it drives around, grip = rail gear grip for rail drive, drain = spin loss. */
 const BITS = [
-  { id: 'F', code: 'F', name: '平軸', rarity: 'common', type: 'atk', mob: 1.0, grip: 0.9, drain: 0.8, stab: 0.35, atk: 10, def: -4, sta: -8, dash: 78, wt: 2.0, tip: 'flat', color: 0xd9dde6, desc: '平面的大接觸面，移動劇烈，咬住軌道就能極限衝刺。' },
-  { id: 'R', code: 'R', name: '突擊軸', rarity: 'rare', type: 'atk', mob: 0.85, grip: 1.0, drain: 0.8, stab: 0.5, atk: 9, def: 0, sta: -4, dash: 84, wt: 2.1, tip: 'rush', color: 0xffa23a, desc: '星形平底兼顧抓地與控制，衝刺最穩定。' },
-  { id: 'RF', code: 'RF', name: '橡膠平軸', rarity: 'sr', type: 'atk', mob: 1.2, grip: 1.25, drain: 1.1, stab: 0.3, atk: 15, def: -6, sta: -12, dash: 96, wt: 2.2, tip: 'rubber', color: 0x2a2a2e, desc: '橡膠材質抓地力爆表，衝刺速度最快，但轉速掉得也快。' },
-  { id: 'T', code: 'T', name: '錐軸', rarity: 'common', type: 'bal', mob: 0.45, grip: 0.5, drain: 0.82, stab: 0.7, atk: 2, def: 3, sta: 3, dash: 46, wt: 2.0, tip: 'taper', color: 0x9fb7d9, desc: '前端收細的平頭，可攻可守的萬用軸心。' },
-  { id: 'P', code: 'P', name: '點軸', rarity: 'rare', type: 'bal', mob: 0.58, grip: 0.62, drain: 0.9, stab: 0.72, atk: 4, def: 3, sta: 2, dash: 56, wt: 2.0, tip: 'point', color: 0xf6c632, desc: '尖端帶有小平面，平時穩定，傾斜時才會加速移動。' },
-  { id: 'B', code: 'B', name: '球軸', rarity: 'common', type: 'sta', mob: 0.22, grip: 0.18, drain: 0.72, stab: 0.86, atk: -6, def: 2, sta: 12, dash: 14, wt: 2.1, tip: 'ball', color: 0x7cf0b0, desc: '圓球狀前端，摩擦小，能在中央長時間旋轉。' },
-  { id: 'N', code: 'N', name: '尖軸', rarity: 'common', type: 'def', mob: 0.1, grip: 0.05, drain: 0.66, stab: 0.9, atk: -8, def: 8, sta: 10, dash: 4, wt: 1.9, tip: 'needle', color: 0xbfc6d4, desc: '針狀前端幾乎不移動，牢牢守住中央。' },
-  { id: 'HN', code: 'HN', name: '高針軸', rarity: 'rare', type: 'def', mob: 0.15, grip: 0.08, drain: 0.74, stab: 0.84, atk: -4, def: 11, sta: 7, dash: 7, wt: 2.3, tip: 'hneedle', color: 0x8fb4ff, desc: '加高的針軸，讓戰刃的打擊點提高，專門對付低位攻擊。' },
+  { id: 'F', code: 'BW', name: '破風', rarity: 'common', type: 'atk', mob: 1.0, grip: 0.9, drain: 0.8, stab: 0.35, atk: 10, def: -4, sta: -8, dash: 78, wt: 2.0, tip: 'flat', color: 0xd9dde6, desc: '大面積的平底，移動劇烈，咬住軌道就能高速驅衝。' },
+  { id: 'R', code: 'SR', name: '星突', rarity: 'rare', type: 'atk', mob: 0.85, grip: 1.0, drain: 0.8, stab: 0.5, atk: 9, def: 0, sta: -4, dash: 84, wt: 2.1, tip: 'rush', color: 0xffa23a, desc: '星形平底兼顧抓地與控制，驅衝最穩定。' },
+  { id: 'RF', code: 'GC', name: '膠爪', rarity: 'sr', type: 'atk', mob: 1.2, grip: 1.25, drain: 1.1, stab: 0.3, atk: 15, def: -6, sta: -12, dash: 96, wt: 2.2, tip: 'rubber', color: 0x2a2a2e, desc: '橡膠底抓地力爆表，驅衝最快，但轉速掉得也快。' },
+  { id: 'T', code: 'CN', name: '錐鋒', rarity: 'common', type: 'bal', mob: 0.45, grip: 0.5, drain: 0.82, stab: 0.7, atk: 2, def: 3, sta: 3, dash: 46, wt: 2.0, tip: 'taper', color: 0x9fb7d9, desc: '前端收細的平頭，可攻可守的萬用旋尖。' },
+  { id: 'P', code: 'PB', name: '點衡', rarity: 'rare', type: 'bal', mob: 0.58, grip: 0.62, drain: 0.9, stab: 0.72, atk: 4, def: 3, sta: 2, dash: 56, wt: 2.0, tip: 'point', color: 0xf6c632, desc: '尖端帶有小平面，平時穩定，傾斜時才會加速。' },
+  { id: 'B', code: 'RD', name: '圓舞', rarity: 'common', type: 'sta', mob: 0.22, grip: 0.18, drain: 0.72, stab: 0.86, atk: -6, def: 2, sta: 12, dash: 14, wt: 2.1, tip: 'ball', color: 0x7cf0b0, desc: '圓球狀前端，摩擦小，能在中央長時間旋轉。' },
+  { id: 'N', code: 'PN', name: '定針', rarity: 'common', type: 'def', mob: 0.1, grip: 0.05, drain: 0.66, stab: 0.9, atk: -8, def: 8, sta: 10, dash: 4, wt: 1.9, tip: 'needle', color: 0xbfc6d4, desc: '針狀前端幾乎不移動，牢牢守住中央。' },
+  { id: 'HN', code: 'HP', name: '高針', rarity: 'rare', type: 'def', mob: 0.15, grip: 0.08, drain: 0.74, stab: 0.84, atk: -4, def: 11, sta: 7, dash: 7, wt: 2.3, tip: 'hneedle', color: 0x8fb4ff, desc: '加高的針尖，讓鋒輪的打擊點提高，專門對付低位攻擊。' },
+  { id: 'LF', code: 'LB', name: '低伏', rarity: 'rare', type: 'atk', mob: 1.08, grip: 1.05, drain: 0.9, stab: 0.38, atk: 12, def: -5, sta: -9, dash: 86, wt: 1.9, tip: 'lowflat', color: 0xff5a5a, desc: '壓低重心的平底，從下方鏟起對手。' },
+  { id: 'A', code: 'AC', name: '加速', rarity: 'sr', type: 'atk', mob: 0.95, grip: 1.15, drain: 0.86, stab: 0.48, atk: 12, def: -2, sta: -5, dash: 92, wt: 2.2, tip: 'accel', color: 0x36d3ff, desc: '雙層齒圈的平底，驅衝時加速最猛又不容易失控。' },
+  { id: 'GB', code: 'GR', name: '齒圓', rarity: 'rare', type: 'bal', mob: 0.38, grip: 0.58, drain: 0.78, stab: 0.78, atk: 0, def: 3, sta: 7, dash: 50, wt: 2.2, tip: 'ball', color: 0xc6a0ff, desc: '帶齒圈的球形旋尖，平時守中央，碰到軌道也能驅衝。' },
+  { id: 'O', code: 'DK', name: '盤旋', rarity: 'common', type: 'sta', mob: 0.3, grip: 0.14, drain: 0.64, stab: 0.82, atk: -5, def: 4, sta: 11, dash: 12, wt: 2.3, tip: 'orb', color: 0xe8e0c8, desc: '寬大的圓盤底，即使傾斜也能繼續轉。' },
+  { id: 'GN', code: 'GP', name: '齒針', rarity: 'rare', type: 'def', mob: 0.2, grip: 0.5, drain: 0.7, stab: 0.86, atk: -4, def: 9, sta: 7, dash: 40, wt: 2.1, tip: 'needle', color: 0x9adfc0, desc: '針尖加上齒圈，被撞到外圈時能靠驅衝回到中央。' },
+  { id: 'HT', code: 'HC', name: '高錐', rarity: 'common', type: 'bal', mob: 0.5, grip: 0.55, drain: 0.85, stab: 0.66, atk: 4, def: 4, sta: 1, dash: 50, wt: 2.2, tip: 'htaper', color: 0xb8c8e0, desc: '加高的錐鋒，打擊點高，適合對付高位的對手。' },
 ];
 const BLADE = Object.fromEntries(BLADES.map((b) => [b.id, b]));
 const RATCHET = Object.fromEntries(RATCHETS.map((b) => [b.id, b]));
 const BIT = Object.fromEntries(BITS.map((b) => [b.id, b]));
 const KINDS = {
-  blade: { name: '戰刃', list: BLADES, map: BLADE, key: 'b' },
-  ratchet: { name: '固鎖輪', list: RATCHETS, map: RATCHET, key: 'r' },
-  bit: { name: '軸心', list: BITS, map: BIT, key: 't' },
+  blade: { name: '鋒輪', list: BLADES, map: BLADE, key: 'b' },
+  ratchet: { name: '鎖芯', list: RATCHETS, map: RATCHET, key: 'r' },
+  bit: { name: '旋尖', list: BITS, map: BIT, key: 't' },
 };
+/* display name of a part */
+function partName(kind, p) { return kind === 'ratchet' ? p.code : kind === 'bit' ? `${p.name} ${p.code}` : p.name; }
 
 const STARTERS = {
   atk: { b: 'wolf', r: '3-60', t: 'F' },
@@ -568,22 +697,59 @@ const STARTERS = {
   bal: { b: 'phoenix', r: '4-60', t: 'T' },
 };
 
+/* Stadiums: physics + look. pockets: kind 'rift' (3 pts) / 'out' (2 pts). */
+const STADIUMS = {
+  training: { name: '訓練競技盤', desc: '標準規格，適合練習。', K: 0.06, grav: 1, rail: 1, drag: 1,
+    pockets: [{ kind: 'rift', phi: Math.PI, half: 0.42 }, { kind: 'out', phi: 0.38 * Math.PI, half: 0.3 }, { kind: 'out', phi: -0.38 * Math.PI, half: 0.3 }],
+    theme: { floor: ['#1b2740', '#101828', '#0b101c'], line: 'rgba(120,170,255,0.18)', rim: 0x36d3ff, accent: 0xff6a1a, bg: 0x05070c, wall: 0x8fb8ff, light: [0xff7a2a, 0x36d3ff], pattern: 'radial' } },
+  lake: { name: '月光湖盤', desc: '盤面較淺，持久型能轉得更久。', K: 0.045, grav: 0.9, rail: 0.9, drag: 0.85,
+    pockets: [{ kind: 'rift', phi: Math.PI, half: 0.38 }, { kind: 'out', phi: 0.4 * Math.PI, half: 0.28 }, { kind: 'out', phi: -0.4 * Math.PI, half: 0.28 }],
+    theme: { floor: ['#1d3550', '#122236', '#0a1424'], line: 'rgba(160,210,255,0.22)', rim: 0xa8d8ff, accent: 0xc0a0ff, bg: 0x060a14, wall: 0xb8d8ff, light: [0xc0a0ff, 0x7ad8ff], pattern: 'ripple' } },
+  fortress: { name: '鋼鐵要塞盤', desc: '盤面陡峭，陀螺會被拉回中央，很難擊出場外。', K: 0.075, grav: 1.1, rail: 0.95, drag: 1,
+    pockets: [{ kind: 'rift', phi: Math.PI, half: 0.32 }, { kind: 'out', phi: 0.38 * Math.PI, half: 0.24 }, { kind: 'out', phi: -0.38 * Math.PI, half: 0.24 }],
+    theme: { floor: ['#2a2e36', '#1a1d24', '#0e1014'], line: 'rgba(200,210,230,0.16)', rim: 0xc8d0dc, accent: 0xffb347, bg: 0x070809, wall: 0xa0a8b8, light: [0xffb347, 0xc8d0dc], pattern: 'plate' } },
+  gale: { name: '疾風環道盤', desc: '驅動軌道特別強，攻擊型的主場。', K: 0.055, grav: 1, rail: 1.3, drag: 1,
+    pockets: [{ kind: 'rift', phi: Math.PI, half: 0.4 }, { kind: 'out', phi: 0.36 * Math.PI, half: 0.3 }, { kind: 'out', phi: -0.36 * Math.PI, half: 0.3 }],
+    theme: { floor: ['#163a2e', '#0e261e', '#081610'], line: 'rgba(120,255,190,0.18)', rim: 0x4affb0, accent: 0x9aff4a, bg: 0x040a07, wall: 0x9affd0, light: [0x9aff4a, 0x4affd0], pattern: 'spiral' } },
+  twin: { name: '雙子星盤', desc: '前後各有一個裂界區，沒有場外區。', K: 0.06, grav: 1, rail: 1.05, drag: 1,
+    pockets: [{ kind: 'rift', phi: Math.PI, half: 0.36 }, { kind: 'rift', phi: 0, half: 0.32 }],
+    theme: { floor: ['#2e1b40', '#1e1030', '#120a1e'], line: 'rgba(210,150,255,0.2)', rim: 0xd08aff, accent: 0xff4fd8, bg: 0x08050c, wall: 0xd8b0ff, light: [0xff4fd8, 0x8a7aff], pattern: 'star' } },
+  ice: { name: '冰晶盤', desc: '盤面極滑，陀螺滑動距離變長。', K: 0.058, grav: 1, rail: 0.85, drag: 0.6,
+    pockets: [{ kind: 'rift', phi: Math.PI, half: 0.42 }, { kind: 'out', phi: 0.38 * Math.PI, half: 0.3 }, { kind: 'out', phi: -0.38 * Math.PI, half: 0.3 }],
+    theme: { floor: ['#cfe8f6', '#7fb0d0', '#3a6a8a'], line: 'rgba(255,255,255,0.35)', rim: 0xe0f6ff, accent: 0x7ad8ff, bg: 0x081420, wall: 0xe0f6ff, light: [0x9ae0ff, 0xffffff], pattern: 'crystal' } },
+  lava: { name: '熔岩裂谷盤', desc: '裂界區特別寬，軌道驅衝更猛烈。', K: 0.062, grav: 1, rail: 1.2, drag: 1,
+    pockets: [{ kind: 'rift', phi: Math.PI, half: 0.55 }, { kind: 'out', phi: 0.38 * Math.PI, half: 0.28 }, { kind: 'out', phi: -0.38 * Math.PI, half: 0.28 }],
+    theme: { floor: ['#3a1408', '#220a04', '#120402'], line: 'rgba(255,120,40,0.35)', rim: 0xff5a1a, accent: 0xffb020, bg: 0x0a0302, wall: 0xff9a6a, light: [0xff4a1a, 0xffb020], pattern: 'crack' } },
+  throne: { name: '黑曜王座盤', desc: '兩個裂界區加兩個場外區，任何失誤都會致命。', K: 0.06, grav: 1.05, rail: 1.15, drag: 1,
+    pockets: [{ kind: 'rift', phi: Math.PI, half: 0.34 }, { kind: 'rift', phi: 0, half: 0.28 }, { kind: 'out', phi: 0.5 * Math.PI, half: 0.26 }, { kind: 'out', phi: -0.5 * Math.PI, half: 0.26 }],
+    theme: { floor: ['#2a2210', '#16120a', '#0a0805'], line: 'rgba(255,210,120,0.22)', rim: 0xffd27a, accent: 0xc04cff, bg: 0x050403, wall: 0xffe0a0, light: [0xffd27a, 0xc04cff], pattern: 'throne' } },
+};
+
+/* Opponents: original characters. av = avatar recipe. */
 const OPPONENTS = [
-  { id: 'o1', name: '阿哲', title: '見習刀鋒', type: 'bal', deck: [['phoenix', '4-60', 'T'], ['moon', '5-60', 'B'], ['wolf', '3-60', 'F']], pow: [0.45, 0.7], smart: 0.25, reward: 120 },
-  { id: 'o2', name: '小晴', title: '月下舞者', type: 'sta', deck: [['moon', '5-60', 'B'], ['silver', '4-60', 'N'], ['phoenix', '3-60', 'T']], pow: [0.5, 0.75], smart: 0.4, reward: 150 },
-  { id: 'o3', name: '鐵拳・剛', title: '不動要塞', type: 'def', deck: [['turtle', '5-60', 'N'], ['silver', '4-60', 'P'], ['moon', '3-60', 'B']], pow: [0.55, 0.8], smart: 0.5, reward: 180 },
-  { id: 'o4', name: '疾風・凜', title: '疾風迅雷', type: 'atk', deck: [['thunder', '3-60', 'R'], ['wolf', '4-60', 'F'], ['phoenix', '5-60', 'T']], pow: [0.6, 0.86], smart: 0.6, reward: 220 },
-  { id: 'o5', name: '星羅', title: '雙子星', type: 'bal', deck: [['darkstar', '5-70', 'P'], ['phantom', '4-60', 'B'], ['thunder', '3-80', 'F']], pow: [0.66, 0.9], smart: 0.7, reward: 260 },
-  { id: 'o6', name: '雪乃', title: '冰之女王', type: 'sta', deck: [['phantom', '9-60', 'B'], ['turtle', '5-60', 'HN'], ['darkstar', '4-60', 'T']], pow: [0.72, 0.93], smart: 0.8, reward: 300 },
-  { id: 'o7', name: '獅堂', title: '狂嵐之王', type: 'atk', deck: [['flame', '3-60', 'RF'], ['thunder', '3-80', 'R'], ['fortress', '9-60', 'N']], pow: [0.78, 0.96], smart: 0.88, reward: 360 },
-  { id: 'o8', name: '黑曜', title: '極限王者', type: 'bal', deck: [['darkstar', '9-60', 'P'], ['flame', '3-60', 'RF'], ['fortress', '5-70', 'HN']], pow: [0.85, 1.0], smart: 0.95, reward: 500 },
+  { id: 'o1', name: '阿哲', title: '見習旋鬥士', type: 'bal', stadium: 'training', deck: [['phoenix', '4-60', 'T'], ['moon', '5-60', 'B'], ['wolf', '3-60', 'F']], pow: [0.45, 0.7], smart: 0.25, reward: 120,
+    av: { hair: 'spiky', hairC: '#3a2a1e', skin: '#f2c9a0', eye: '#3a6aff', acc: 'band', accC: '#ff6a1a', bg: '#f6c632' } },
+  { id: 'o2', name: '小晴', title: '月下舞者', type: 'sta', stadium: 'lake', deck: [['moon', '6-60', 'B'], ['crane', '4-60', 'O'], ['mantis', '3-60', 'T']], pow: [0.5, 0.75], smart: 0.4, reward: 150,
+    av: { hair: 'long', hairC: '#6a5acd', skin: '#f6d6bc', eye: '#8a6aff', acc: 'flower', accC: '#ffd84a', bg: '#2fd27a' } },
+  { id: 'o3', name: '鐵拳・剛', title: '不動要塞', type: 'def', stadium: 'fortress', deck: [['turtle', '5-60', 'N'], ['rhino', '4-70', 'P'], ['silver', '6-60', 'B']], pow: [0.55, 0.8], smart: 0.5, reward: 180,
+    av: { hair: 'buzz', hairC: '#1e1e22', skin: '#c88a5a', eye: '#3a2a1e', acc: 'scar', accC: '#a04a3a', bg: '#3d8bff' } },
+  { id: 'o4', name: '疾風・凜', title: '疾風迅雷', type: 'atk', stadium: 'gale', deck: [['thunder', '3-60', 'R'], ['hawk', '4-60', 'LF'], ['phoenix', '5-60', 'T']], pow: [0.6, 0.86], smart: 0.6, reward: 220,
+    av: { hair: 'pony', hairC: '#1a6a4a', skin: '#f2c9a0', eye: '#2affb0', acc: 'scarf', accC: '#e8ff7a', bg: '#ff4141' } },
+  { id: 'o5', name: '星羅', title: '雙子星', type: 'bal', stadium: 'twin', deck: [['darkstar', '5-70', 'P'], ['phantom', '4-60', 'GB'], ['tiger', '3-80', 'F']], pow: [0.66, 0.9], smart: 0.7, reward: 260,
+    av: { hair: 'twin', hairC: '#e8a0ff', skin: '#f8dcc8', eye: '#ff4fd8', acc: 'star', accC: '#ffd84a', bg: '#f6c632' } },
+  { id: 'o6', name: '雪乃', title: '冰之女王', type: 'sta', stadium: 'ice', deck: [['jelly', '9-60', 'B'], ['crab', '5-60', 'HN'], ['owl', '6-70', 'O']], pow: [0.72, 0.93], smart: 0.8, reward: 300,
+    av: { hair: 'bob', hairC: '#e8f4ff', skin: '#fbe6dc', eye: '#36d3ff', acc: 'crown', accC: '#9ae0ff', bg: '#2fd27a' } },
+  { id: 'o7', name: '獅堂', title: '狂嵐之王', type: 'atk', stadium: 'lava', deck: [['flame', '1-60', 'RF'], ['scorpion', '3-80', 'A'], ['fortress', '9-60', 'N']], pow: [0.78, 0.96], smart: 0.88, reward: 360,
+    av: { hair: 'mane', hairC: '#d8501a', skin: '#e0a878', eye: '#ffb020', acc: 'earring', accC: '#ffd27a', bg: '#ff4141' } },
+  { id: 'o8', name: '黑曜', title: '旋鋒王者', type: 'bal', stadium: 'throne', deck: [['darkstar', '7-60', 'P'], ['scorpion', '1-60', 'RF'], ['jelly', '5-70', 'GN']], pow: [0.85, 1.0], smart: 0.95, reward: 500,
+    av: { hair: 'slick', hairC: '#14101e', skin: '#e8c4a8', eye: '#c04cff', acc: 'mask', accC: '#ffd27a', bg: '#f6c632' } },
 ];
 
 const FINISH = {
   spin: { name: '旋轉終結', en: 'SPIN FINISH', pts: 1 },
-  over: { name: '擊飛終結', en: 'OVER FINISH', pts: 2 },
-  burst: { name: '爆裂終結', en: 'BURST FINISH', pts: 2 },
-  xtreme: { name: '極限終結', en: 'XTREME FINISH', pts: 3 },
+  out: { name: '場外終結', en: 'RING OUT', pts: 2 },
+  burst: { name: '解體終結', en: 'BREAK FINISH', pts: 2 },
+  rift: { name: '裂界終結', en: 'RIFT FINISH', pts: 3 },
 };
 const WIN_POINTS = 4;
 
@@ -600,19 +766,29 @@ function beyStats(cfg) {
   };
 }
 function beyName(cfg) { return BLADE[cfg.b].name; }
-function beyCode(cfg) { return `${cfg.r}${BIT[cfg.t].code}`; }
+function beyCode(cfg) { return `${RATCHET[cfg.r].code}·${BIT[cfg.t].code}`; }
 
 /* Signature moves (original). kind drives physics; fx drives visuals. */
 const SPECIALS = {
   wolf:     { name: '蒼狼・裂空連爪', kind: 'rush',    fx: 'wind',    color: 0x5fb4ff, dur: 4.5, desc: '化身疾風，連續衝刺撕裂對手。衝刺力與追擊能力大幅提升。' },
   thunder:  { name: '雷霆・萬雷轟擊', kind: 'rush',    fx: 'thunder', color: 0xfff06a, dur: 4.0, desc: '雷光纏身的高速突擊，撞擊時放出落雷，撞擊力提升。' },
-  flame:    { name: '烈焰・龍牙崩擊', kind: 'rush',    fx: 'fire',    color: 0xff4a1a, dur: 4.5, desc: '燃起龍炎，以最高速度衝撞。下一次撞擊威力倍增。' },
-  silver:   { name: '白銀・不落結界', kind: 'guard',   fx: 'steel',   color: 0xdfe8ff, dur: 6.0, desc: '展開銀色護盾，大幅減少被撞飛的距離並修復固鎖輪。' },
+  flame:    { name: '烈焰・龍牙崩擊', kind: 'rush',    fx: 'fire',    color: 0xff4a1a, dur: 4.5, desc: '燃起龍炎，以最高速度衝撞。撞擊威力大增。' },
+  shark:    { name: '怒鯊・狂濤噬咬', kind: 'rush',    fx: 'water',   color: 0x3ab0ff, dur: 4.3, desc: '掀起狂濤，一口氣撲向對手。' },
+  hawk:     { name: '鷹隼・貫雲急襲', kind: 'rush',    fx: 'wind',    color: 0xffd08a, dur: 4.2, desc: '從高空俯衝的急襲，追擊能力大幅提升。' },
+  scorpion: { name: '毒蠍・猛毒尾針', kind: 'rush',    fx: 'dark',    color: 0x9aff3a, dur: 4.0, desc: '尾針蓄滿劇毒，一擊就讓對手的鎖芯鬆動。' },
+  silver:   { name: '白銀・不落結界', kind: 'guard',   fx: 'steel',   color: 0xdfe8ff, dur: 6.0, desc: '展開銀色護盾，大幅減少被撞飛的距離並修復鎖芯。' },
   turtle:   { name: '玄龜・磐石甲陣', kind: 'guard',   fx: 'water',   color: 0x3fe0b0, dur: 6.5, desc: '六角水盾環繞，重量感倍增，幾乎不會被撞動。' },
-  fortress: { name: '鋼鐵・絕對城壁', kind: 'guard',   fx: 'steel',   color: 0x8fb4ff, dur: 7.0, desc: '升起鋼鐵城壁，承受一切衝擊，固鎖輪大幅修復。' },
-  moon:     { name: '月影・無盡輪舞', kind: 'regen',   fx: 'moon',    color: 0xc0a0ff, dur: 6.0, desc: '吸收月光回復轉速，之後一段時間轉速幾乎不會下降。' },
-  phantom:  { name: '幻影・旋風迴天', kind: 'regen',   fx: 'wind',    color: 0x7af6ff, dur: 6.0, desc: '捲起旋風重新加速，並大幅減少摩擦損耗。' },
+  fortress: { name: '鋼鐵・絕對城壁', kind: 'guard',   fx: 'steel',   color: 0x8fb4ff, dur: 7.0, desc: '升起鋼鐵城壁，承受一切衝擊，鎖芯大幅修復。' },
+  rhino:    { name: '犀甲・鐵角衝陣', kind: 'guard',   fx: 'steel',   color: 0xffc890, dur: 6.0, desc: '低頭架起鐵角，正面衝擊全部擋下。' },
+  crab:     { name: '巨蟹・雙鉗鐵壁', kind: 'guard',   fx: 'water',   color: 0xff8060, dur: 6.5, desc: '雙鉗交疊成盾，把衝擊推回去。' },
+  moon:     { name: '月影・無盡輪舞', kind: 'regen',   fx: 'moon',    color: 0xc0a0ff, dur: 6.0, desc: '吸收月光回復轉速，之後一段時間轉速掉得更慢。' },
+  phantom:  { name: '幻影・旋風迴天', kind: 'regen',   fx: 'wind',    color: 0x7af6ff, dur: 6.0, desc: '捲起旋風重新加速，並減少摩擦損耗。' },
+  crane:    { name: '白鶴・雲上長鳴', kind: 'regen',   fx: 'wind',    color: 0xff7a7a, dur: 6.0, desc: '乘雲而起，轉速緩緩回升。' },
+  owl:      { name: '夜梟・靜夜無聲', kind: 'regen',   fx: 'moon',    color: 0xffd84a, dur: 6.5, desc: '收起羽翼靜靜旋轉，幾乎感覺不到轉速下降。' },
+  jelly:    { name: '水母・深海潮汐', kind: 'regen',   fx: 'water',   color: 0xff8ad8, dur: 6.5, desc: '隨潮汐擺動，把撞擊的力道化為轉速。' },
   phoenix:  { name: '赤鳳・浴火重生', kind: 'counter', fx: 'phoenix', color: 0xffa030, dur: 5.5, desc: '鳳凰之火回復少量轉速，並把受到的撞擊反彈給對手。' },
+  tiger:    { name: '猛虎・雙牙反噬', kind: 'counter', fx: 'fire',    color: 0xffa020, dur: 5.5, desc: '咬住撲來的對手，把衝擊原封不動還回去。' },
+  mantis:   { name: '螳螂・鐮刃迴旋', kind: 'counter', fx: 'wind',    color: 0xb8ff6a, dur: 5.0, desc: '雙鐮迴旋，在對手撞上來的瞬間反斬。' },
   darkstar: { name: '暗星・黑洞引力', kind: 'gravity', fx: 'dark',    color: 0xc04cff, dur: 4.5, desc: '製造引力場把對手拉近，並以反擊姿態迎擊。' },
 };
 const SPECIAL_KIND = { rush: '突擊強化', guard: '防禦強化', regen: '轉速回復', counter: '反擊', gravity: '引力反擊' };
@@ -692,11 +868,11 @@ function newProfile(name, starter) {
     { b: otherBlades[0], r: rs[0], t: ts[0] },
     { b: otherBlades[1], r: rs[1], t: ts[1] },
   ];
-  return { v: 1, name, starter, coins: 300, inv, decks, ladder: 0, stats: { w: 0, l: 0, spin: 0, over: 0, burst: 0, xtreme: 0, pulls: 0 }, createdAt: Date.now(), updatedAt: Date.now() };
+  return { v: 1, name, starter, coins: 300, inv, decks, ladder: 0, stats: { w: 0, l: 0, spin: 0, out: 0, burst: 0, rift: 0, pulls: 0 }, createdAt: Date.now(), updatedAt: Date.now() };
 }
 function migrate(p) {
   if (!p || typeof p !== 'object' || !p.inv || !Array.isArray(p.decks)) return null;
-  p.stats = Object.assign({ w: 0, l: 0, spin: 0, over: 0, burst: 0, xtreme: 0, pulls: 0 }, p.stats || {});
+  p.stats = Object.assign({ w: 0, l: 0, spin: 0, out: 0, burst: 0, rift: 0, pulls: 0 }, p.stats || {});
   p.coins = Math.max(0, p.coins | 0);
   p.ladder = p.ladder | 0;
   for (const k of ['blade', 'ratchet', 'bit']) p.inv[k] = p.inv[k] || {};
@@ -707,13 +883,33 @@ const owns = (kind, id) => ((Store.profile.inv[kind] || {})[id] | 0) > 0;
 /* ============================== AUDIO (synthesized) ============================== */
 const SFX = {
   ctx: null, master: null, noiseBuf: null, grind: null, hums: [],
+  vol: (() => { try { return Object.assign({ master: 0.8, sfx: 0.8, voice: 0.9 }, JSON.parse(localStorage.getItem('spinx-vol') || '{}')); } catch (e) { return { master: 0.8, sfx: 0.8, voice: 0.9 }; } })(),
+  setVol(k, v) { this.vol[k] = v; try { localStorage.setItem('spinx-vol', JSON.stringify(this.vol)); } catch (e) {} if (this.master) this.master.gain.value = 0.7 * this.vol.master * this.vol.sfx; },
+  /* spoken call-outs via the browser's speech engine (Traditional Chinese voice when available) */
+  voiceObj: null,
+  say(text, opts = {}) {
+    const vv = this.vol.master * this.vol.voice;
+    if (!('speechSynthesis' in window) || vv <= 0.01) return;
+    try {
+      const synth = window.speechSynthesis;
+      if (!this.voiceObj) {
+        const vs = synth.getVoices();
+        this.voiceObj = vs.find((v) => /zh[-_]TW/i.test(v.lang)) || vs.find((v) => /zh[-_]HK/i.test(v.lang)) || vs.find((v) => /^zh/i.test(v.lang)) || null;
+      }
+      if (opts.cancel !== false) synth.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = this.voiceObj ? this.voiceObj.lang : 'zh-TW'; if (this.voiceObj) u.voice = this.voiceObj;
+      u.rate = opts.rate || 1.15; u.pitch = opts.pitch || 1.05; u.volume = vv;
+      synth.speak(u);
+    } catch (e) {}
+  },
   ensure() {
     if (this.ctx) { if (this.ctx.state === 'suspended') this.ctx.resume(); return true; }
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return false;
     try {
       this.ctx = new AC();
-      this.master = this.ctx.createGain(); this.master.gain.value = 0.55;
+      this.master = this.ctx.createGain(); this.master.gain.value = 0.7 * this.vol.master * this.vol.sfx;
       const comp = this.ctx.createDynamicsCompressor();
       this.master.connect(comp); comp.connect(this.ctx.destination);
       const len = this.ctx.sampleRate * 1.5;
@@ -769,6 +965,20 @@ const SFX = {
     const seq = r === 'sr' ? [784, 988, 1175, 1568, 1976] : r === 'rare' ? [659, 880, 1175] : [880];
     seq.forEach((f, i) => this.tone(f, 0.3, 0.1, 'triangle', i * 0.08));
   },
+  specialCharge() {
+    const n = this.noise(0.6, 200, 0.8, 0.35, 'bandpass'); if (n) n.f.frequency.exponentialRampToValueAtTime(3000, this.ctx.currentTime + 0.5);
+    this.tone(70, 0.6, 0.3, 'sawtooth', 0, 220);
+  },
+  specialCut() {
+    this.noise(0.25, 2500, 0.6, 0.35, 'highpass');
+    [392, 523, 659].forEach((f, i) => this.tone(f, 0.5, 0.08, 'square', i * 0.04));
+    this.tone(55, 0.9, 0.3, 'sine', 0, 40);
+  },
+  specialBurst() {
+    this.noise(1.2, 90, 0.6, 0.8, 'lowpass'); this.noise(0.6, 3000, 0.7, 0.45);
+    this.tone(60, 1.0, 0.4, 'sawtooth', 0, 30);
+    [523, 784, 1046, 1568, 2093].forEach((f, i) => this.tone(f, 0.7, 0.07, 'square', 0.05 + i * 0.04));
+  },
   special() {
     const n = this.noise(1.0, 300, 0.7, 0.4, 'bandpass'); if (n) n.f.frequency.exponentialRampToValueAtTime(6000, this.ctx.currentTime + 0.8);
     this.tone(110, 1.0, 0.25, 'sawtooth', 0, 440);
@@ -779,28 +989,36 @@ const SFX = {
   startGrind() {
     if (!this.ctx || this.grind) return;
     const src = this.ctx.createBufferSource(); src.buffer = this.noiseBuf; src.loop = true;
-    const f = this.ctx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 2400; f.Q.value = 2;
+    const f = this.ctx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 1300; f.Q.value = 0.8;
     const g = this.ctx.createGain(); g.gain.value = 0;
     src.connect(f); f.connect(g); g.connect(this.master); src.start();
     this.grind = { src, f, g };
     // spin hums for two beys
-    this.hums = [0, 1].map(() => {
-      const o = this.ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = 120;
-      const lp = this.ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 900;
+    // soft low whir per bey: triangle + sine an octave up, heavily low-passed, slow wobble
+    this.hums = [0, 1].map((i) => {
+      const o = this.ctx.createOscillator(); o.type = 'triangle'; o.frequency.value = 70;
+      const o2 = this.ctx.createOscillator(); o2.type = 'sine'; o2.frequency.value = 140;
+      const lfo = this.ctx.createOscillator(); lfo.frequency.value = 5 + i; const lg = this.ctx.createGain(); lg.gain.value = 0.25;
+      const lp = this.ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 320; lp.Q.value = 0.5;
       const hg = this.ctx.createGain(); hg.gain.value = 0;
-      o.connect(lp); lp.connect(hg); hg.connect(this.master); o.start();
-      return { o, hg };
+      const g2 = this.ctx.createGain(); g2.gain.value = 0.35;
+      o.connect(lp); o2.connect(g2); g2.connect(lp); lp.connect(hg); hg.connect(this.master);
+      lfo.connect(lg); lg.connect(hg.gain);
+      o.start(); o2.start(); lfo.start();
+      return { o, o2, lfo, hg, lg };
     });
   },
-  setGrind(level) { if (this.grind) this.grind.g.gain.setTargetAtTime(clamp(level, 0, 1) * 0.22, this.ctx.currentTime, 0.05); },
+  setGrind(level) { if (this.grind) this.grind.g.gain.setTargetAtTime(clamp(level - 0.15, 0, 1) * 0.07, this.ctx.currentTime, 0.08); },
   setHum(i, spin, alive) {
     const h = this.hums[i]; if (!h) return;
-    h.o.frequency.setTargetAtTime(60 + spin * 160, this.ctx.currentTime, 0.1);
-    h.hg.gain.setTargetAtTime(alive ? 0.018 + spin * 0.02 : 0, this.ctx.currentTime, 0.15);
+    const f = 48 + spin * 70;
+    h.o.frequency.setTargetAtTime(f, this.ctx.currentTime, 0.2); h.o2.frequency.setTargetAtTime(f * 2, this.ctx.currentTime, 0.2);
+    const g = alive ? 0.012 + spin * 0.014 : 0;
+    h.hg.gain.setTargetAtTime(g, this.ctx.currentTime, 0.25); h.lg.gain.setTargetAtTime(g * 0.3, this.ctx.currentTime, 0.25);
   },
   stopGrind() {
     if (!this.grind) return;
-    try { this.grind.src.stop(); this.hums.forEach((h) => h.o.stop()); } catch (e) {}
+    try { this.grind.src.stop(); this.hums.forEach((h) => { h.o.stop(); h.o2.stop(); h.lfo.stop(); }); } catch (e) {}
     this.grind = null; this.hums = [];
   },
 };
@@ -938,23 +1156,32 @@ function emblemTexture(bl) {
 }
 /* ---------- Blender-built meshes (assets/parts.bin), with procedural fallback ---------- */
 const Assets = {
-  ok: false, idx: null, buf: null, cache: {},
+  ok: false, idx: null, cache: {},
+  bufs: {},
   async load(onProgress) {
     try {
       const j = await (await fetch('assets/parts.json')).json();
-      const res = await fetch('assets/parts.txt');
-      const total = +res.headers.get('content-length') || 0;
-      let bytes;
-      if (res.body && total && onProgress) {
-        const reader = res.body.getReader(); const parts = []; let got = 0;
-        for (;;) { const { done, value } = await reader.read(); if (done) break; parts.push(value); got += value.length; onProgress(got / total); }
-        bytes = new Uint8Array(got); let o = 0; for (const p of parts) { bytes.set(p, o); o += p.length; }
-      } else bytes = new Uint8Array(await res.arrayBuffer());
-      // base64 -> binary (chunked to keep memory flat)
-      const txt = new TextDecoder().decode(bytes).trim();
-      const bin = atob(txt), buf = new ArrayBuffer(bin.length), u8 = new Uint8Array(buf);
-      for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
-      this.idx = j; this.buf = buf; this.ok = true;
+      const groups = ['blade', 'ratchet', 'bit'];
+      const prog = {};
+      const one = async (g) => {
+        const res = await fetch(`assets/parts_${g}.txt`);
+        const total = +res.headers.get('content-length') || 0;
+        let bytes;
+        if (res.body && total) {
+          const reader = res.body.getReader(); const parts = []; let got = 0;
+          for (;;) {
+            const { done, value } = await reader.read(); if (done) break; parts.push(value); got += value.length;
+            prog[g] = [got, total];
+            if (onProgress) { let a = 0, b = 0; for (const k in prog) { a += prog[k][0]; b += prog[k][1]; } onProgress(a / Math.max(b, 1)); }
+          }
+          bytes = new Uint8Array(got); let o = 0; for (const p of parts) { bytes.set(p, o); o += p.length; }
+        } else bytes = new Uint8Array(await res.arrayBuffer());
+        const bin = atob(new TextDecoder().decode(bytes).trim()), buf = new ArrayBuffer(bin.length), u8 = new Uint8Array(buf);
+        for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+        this.bufs[g] = buf;
+      };
+      await Promise.all(groups.map(one));
+      this.idx = j; this.ok = true;
     } catch (e) { this.ok = false; }
     return this.ok;
   },
@@ -963,13 +1190,14 @@ const Assets = {
     const ck = key + '/' + name; if (this.cache[ck]) return this.cache[ck];
     const m = this.idx.parts[key].find((x) => x.name === name); if (!m) return null;
     const S = this.idx.scale / 32767;
-    const p16 = new Int16Array(this.buf, m.p, m.n * 3), n8 = new Int8Array(this.buf, m.q, m.n * 3);
+    const B = this.bufs[key.split('_')[0]];
+    const p16 = new Int16Array(B, m.p, m.n * 3), n8 = new Int8Array(B, m.q, m.n * 3);
     const pos = new Float32Array(m.n * 3), nrm = new Float32Array(m.n * 3);
     for (let i = 0; i < m.n * 3; i++) { pos[i] = p16[i] * S; nrm[i] = n8[i] / 127; }
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     g.setAttribute('normal', new THREE.BufferAttribute(nrm, 3));
-    g.setIndex(new THREE.BufferAttribute(m.big ? new Uint32Array(this.buf, m.i, m.ic) : new Uint16Array(this.buf, m.i, m.ic), 1));
+    g.setIndex(new THREE.BufferAttribute(m.big ? new Uint32Array(B, m.i, m.ic) : new Uint16Array(B, m.i, m.ic), 1));
     // planar UVs (top view) for brushed/engraved maps
     const uv = new Float32Array(m.n * 2);
     for (let i = 0; i < m.n; i++) { uv[i * 2] = pos[i * 3] / 0.96 + 0.5; uv[i * 2 + 1] = -pos[i * 3 + 2] / 0.96 + 0.5; }
@@ -1071,7 +1299,7 @@ function ratchetLabel(rt) {
   return canvasTex('rl-' + rt.id, 512, 64, (g, W, H) => {
     g.fillStyle = '#' + rt.color.toString(16).padStart(6, '0'); g.fillRect(0, 0, W, H);
     g.fillStyle = 'rgba(255,255,255,0.85)'; g.font = '700 38px "Chakra Petch",sans-serif'; g.textBaseline = 'middle';
-    for (let i = 0; i < 4; i++) { g.fillText(rt.id, i * 128 + 14, H / 2 + 2); g.fillRect(i * 128 + 118, 18, 3, 28); }
+    for (let i = 0; i < 4; i++) { g.fillText(rt.code, i * 128 + 14, H / 2 + 2); g.fillRect(i * 128 + 118, 18, 3, 28); }
   });
 }
 function buildRatchet(rt) {
@@ -1128,7 +1356,7 @@ function buildRatchet(rt) {
   g.userData.h = h;
   return g;
 }
-const BIT_LEN = { flat: 0.25, rush: 0.25, rubber: 0.25, taper: 0.26, point: 0.26, ball: 0.26, needle: 0.28, hneedle: 0.34 };
+const BIT_LEN = { flat: 0.25, rush: 0.25, rubber: 0.25, taper: 0.26, point: 0.26, ball: 0.26, needle: 0.28, hneedle: 0.34, lowflat: 0.22, accel: 0.25, orb: 0.25, htaper: 0.32 };
 function bitProfile(tip, L) {
   const V = (x, y) => new THREE.Vector2(x, y);
   const p = [V(0.001, 0), V(0.19, 0), V(0.2, -0.01), V(0.2, -0.045), V(0.16, -0.06), V(0.145, -0.075), V(0.145, -0.13), V(0.135, -0.14)];
@@ -1141,6 +1369,10 @@ function bitProfile(tip, L) {
     case 'ball': p.push(V(0.1, -0.16)); for (let i = 0; i <= 10; i++) { const a = (i / 10) * Math.PI / 2; p.push(V(Math.cos(a) * 0.075 + 0.001, -L + 0.075 - Math.sin(a) * 0.075)); } break;
     case 'needle': p.push(V(0.095, -0.15), V(0.03, -L + 0.03), V(0.004, -L)); break;
     case 'hneedle': p.push(V(0.11, -0.16), V(0.085, -0.25), V(0.03, -L + 0.03), V(0.004, -L)); break;
+    case 'lowflat': p.push(V(0.13, -0.15), V(0.13, -L + 0.012), V(0.12, -L), V(0.001, -L)); break;
+    case 'accel': p.push(V(0.125, -0.16), V(0.118, -0.19), V(0.128, -0.2), V(0.11, -L + 0.012), V(0.095, -L), V(0.001, -L)); break;
+    case 'orb': p.push(V(0.12, -0.15)); for (let i = 0; i <= 10; i++) { const a = (i / 10) * Math.PI / 2; p.push(V(Math.cos(a) * 0.115 + 0.001, -L + 0.06 - Math.sin(a) * 0.06)); } break;
+    case 'htaper': p.push(V(0.11, -0.16), V(0.08, -0.24), V(0.045, -L + 0.012), V(0.035, -L), V(0.001, -L)); break;
   }
   return p;
 }
@@ -1292,16 +1524,23 @@ const AR = {
   G: 4.0,
   RAD: 0.46,        // bey contact radius
   DRAIN: 0.03,
+  rail: 1, drag: 1, stadium: 'training',
   pockets: [
-    { kind: 'xtreme', phi: Math.PI, half: 0.42, vmin: 1.7 },
-    { kind: 'over', phi: 0.38 * Math.PI, half: 0.3, vmin: 2.1 },
-    { kind: 'over', phi: -0.38 * Math.PI, half: 0.3, vmin: 2.1 },
+    { kind: 'rift', phi: Math.PI, half: 0.42, vmin: 1.7 },
+    { kind: 'out', phi: 0.38 * Math.PI, half: 0.3, vmin: 2.1 },
+    { kind: 'out', phi: -0.38 * Math.PI, half: 0.3, vmin: 2.1 },
   ],
   launchPos: [{ x: 1.0, z: 2.3 }, { x: -1.0, z: -2.3 }],
 };
 function surfH(r) { return r < AR.RB ? AR.K * r * r : AR.K * AR.RB * AR.RB + (r - AR.RB) * 0.12; }
 function surfSlope(r) { return r < AR.RB ? 2 * AR.K * r : 0.12; }
 function angDiff(a, b) { let d = (a - b) % TAU; if (d > Math.PI) d -= TAU; if (d < -Math.PI) d += TAU; return d; }
+/* load a stadium's physics into AR */
+function applyStadium(id) {
+  const S = STADIUMS[id] || STADIUMS.training;
+  AR.stadium = id; AR.K = S.K; AR.G = 4.0 * S.grav; AR.rail = S.rail; AR.drag = S.drag;
+  AR.pockets = S.pockets.map((p) => ({ ...p, vmin: p.kind === 'rift' ? 1.7 : 2.1 }));
+}
 function pocketAt(phi) { for (const p of AR.pockets) if (Math.abs(angDiff(phi, p.phi)) < p.half) return p; return null; }
 
 function physCfg(cfg) {
@@ -1398,7 +1637,7 @@ class Arena {
       b.prec += dt * (6 + (0.25 - s) * 20);
       ax += Math.cos(b.prec) * w; az += Math.sin(b.prec) * w;
     }
-    const drag = 0.18 + (1 - c.mob) * 0.5;
+    const drag = (0.18 + (1 - c.mob) * 0.5) * AR.drag;
     ax -= vx * drag; az -= vz * drag;
     // Xtreme rail
     b.dash = 0;
@@ -1406,7 +1645,7 @@ class Arena {
     if (r >= AR.RB - 0.05 && !(b.kick > 0)) {
       const tx = -rz, tz = rx;
       if (c.grip > 0.1 && s > 0.1) {
-        const acc = 7.5 * c.grip * (0.35 + 0.65 * s) * (1 + rush * 0.7);
+        const acc = 7.5 * c.grip * (0.35 + 0.65 * s) * (1 + rush * 0.7) * AR.rail;
         ax += tx * acc; az += tz * acc;
         const vt = vx * tx + vz * tz;
         b.railT = (b.railT || 0) + dt;
@@ -1547,6 +1786,71 @@ function aiLaunch(opp, cfg, playerCfg) {
   aim = clamp(aim + rand(-1, 1) * (1 - smart) * 0.9, -1, 1);
   const [lo, hi] = opp ? opp.pow : [0.6, 0.9];
   return { power: rand(lo, hi), aim, delay: rand(0.05, 0.35) };
+}
+/* ============================== AVATARS (original characters, procedural SVG) ============================== */
+function avatarSVG(av, typeCss = '#888', size = 64) {
+  const { hair = 'short', hairC = '#222', skin = '#f2c9a0', eye = '#36d3ff', acc = 'none', accC = '#fff', bg = '#334' } = av || {};
+  const shade = (hex, k) => { const c = new THREE.Color(hex); c.multiplyScalar(k); return '#' + c.getHexString(); };
+  const hairD = shade(hairC, 0.7), skinD = shade(skin, 0.86);
+  const id = 'a' + Math.random().toString(36).slice(2, 8);
+  // hair pieces: back layer (behind face) and front layer (fringe)
+  const back = {
+    long: `<path d="M18 40 Q14 76 22 96 L78 96 Q86 76 82 40 Q78 14 50 12 Q22 14 18 40Z" fill="${hairD}"/>`,
+    twin: `<path d="M16 38 Q4 60 10 90 Q18 84 22 60Z M84 38 Q96 60 90 90 Q82 84 78 60Z" fill="${hairD}"/>`,
+    pony: `<path d="M74 30 Q98 40 92 78 Q84 70 80 52Z" fill="${hairD}"/>`,
+    mane: `<path d="M12 50 Q6 22 30 12 Q50 2 70 12 Q94 22 88 50 Q96 70 84 84 L16 84 Q4 70 12 50Z" fill="${hairD}"/>`,
+    bob: `<path d="M20 36 Q16 66 26 74 L74 74 Q84 66 80 36 Q76 14 50 13 Q24 14 20 36Z" fill="${hairD}"/>`,
+  }[hair] || '';
+  const front = {
+    spiky: `<path d="M24 40 L20 22 L32 28 L34 12 L44 24 L50 8 L56 24 L66 12 L68 28 L80 22 L76 40 Q64 30 50 32 Q36 30 24 40Z" fill="${hairC}"/>`,
+    long: `<path d="M24 42 Q26 18 50 16 Q74 18 76 42 Q66 30 56 34 L50 26 L44 34 Q34 30 24 42Z" fill="${hairC}"/>`,
+    buzz: `<path d="M26 38 Q28 18 50 17 Q72 18 74 38 Q62 28 50 28 Q38 28 26 38Z" fill="${hairC}"/>`,
+    pony: `<path d="M24 42 Q24 16 52 15 Q76 17 76 40 Q70 30 60 28 L54 36 L46 28 Q34 30 24 42Z" fill="${hairC}"/>`,
+    twin: `<path d="M24 42 Q24 16 50 15 Q76 16 76 42 L68 32 L62 38 L56 30 L50 38 L44 30 L38 38 L32 32Z" fill="${hairC}"/>`,
+    bob: `<path d="M23 44 Q22 16 50 15 Q78 16 77 44 Q72 34 50 32 Q28 34 23 44Z" fill="${hairC}"/>`,
+    mane: `<path d="M22 42 L16 26 L30 30 L30 14 L42 24 L50 10 L58 24 L70 14 L70 30 L84 26 L78 42 Q66 30 50 31 Q34 30 22 42Z" fill="${hairC}"/>`,
+    slick: `<path d="M24 40 Q24 16 50 15 Q78 16 76 36 Q64 22 40 28 Q30 30 24 40Z" fill="${hairC}"/><path d="M40 28 Q56 22 74 32" stroke="${hairD}" stroke-width="2" fill="none"/>`,
+    short: `<path d="M24 40 Q24 17 50 16 Q76 17 76 40 Q68 30 58 31 L52 26 L46 32 Q32 30 24 40Z" fill="${hairC}"/>`,
+  }[hair] || '';
+  const accs = {
+    band: `<path d="M24 34 Q50 26 76 34 L76 40 Q50 32 24 40Z" fill="${accC}"/><path d="M76 36 L90 30 L86 40Z" fill="${accC}"/>`,
+    flower: `<g transform="translate(72 26)"><circle r="6" fill="${accC}"/><circle r="2.5" fill="#fff"/></g>`,
+    scar: `<path d="M60 44 L68 54 M62 50 L66 46" stroke="${accC}" stroke-width="2"/>`,
+    scarf: `<path d="M28 78 Q50 86 72 78 L76 90 Q50 98 24 90Z" fill="${accC}"/><path d="M66 86 L80 100 L70 100Z" fill="${accC}"/>`,
+    star: `<path d="M74 22 l2.4 5 5.4.6 -4 3.7 1.1 5.3 -4.9-2.7 -4.9 2.7 1.1-5.3 -4-3.7 5.4-.6z" fill="${accC}"/>`,
+    crown: `<path d="M34 20 L38 8 L44 16 L50 4 L56 16 L62 8 L66 20Z" fill="${accC}" stroke="#fff" stroke-width="1"/>`,
+    earring: `<circle cx="24" cy="58" r="3" fill="${accC}"/><circle cx="76" cy="58" r="3" fill="${accC}"/>`,
+    mask: `<path d="M26 44 Q50 38 74 44 L72 54 Q62 50 50 52 Q38 50 28 54Z" fill="${accC}" opacity="0.92"/>`,
+  }[acc] || '';
+  const eyes = acc === 'mask'
+    ? `<ellipse cx="39" cy="48" rx="4" ry="2.4" fill="${eye}"/><ellipse cx="61" cy="48" rx="4" ry="2.4" fill="${eye}"/>`
+    : `<g><ellipse cx="39" cy="50" rx="4.6" ry="5.6" fill="#141018"/><ellipse cx="39" cy="51" rx="3.4" ry="4.2" fill="${eye}"/><circle cx="37.6" cy="48.4" r="1.4" fill="#fff"/>
+       <ellipse cx="61" cy="50" rx="4.6" ry="5.6" fill="#141018"/><ellipse cx="61" cy="51" rx="3.4" ry="4.2" fill="${eye}"/><circle cx="59.6" cy="48.4" r="1.4" fill="#fff"/>
+       <path d="M33 42 L45 43 M55 43 L67 42" stroke="${hairD}" stroke-width="2.2" stroke-linecap="round"/></g>`;
+  return `<svg viewBox="0 0 100 100" width="${size}" height="${size}" aria-hidden="true">
+    <defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${bg}"/><stop offset="1" stop-color="${shade(bg, 0.45)}"/></linearGradient>
+    <clipPath id="${id}c"><polygon points="50,2 96,26 96,74 50,98 4,74 4,26"/></clipPath></defs>
+    <g clip-path="url(#${id}c)">
+      <rect width="100" height="100" fill="url(#${id})"/>
+      <path d="M0 100 L0 80 L100 40 L100 100Z" fill="rgba(255,255,255,0.08)"/>
+      ${back}
+      <path d="M18 100 Q20 80 38 76 L62 76 Q80 80 82 100Z" fill="${typeCss}"/>
+      <path d="M40 76 L50 88 L60 76" fill="${shade(typeCss.startsWith('#') ? typeCss : '#666', 0.6)}"/>
+      <rect x="43" y="64" width="14" height="14" rx="3" fill="${skinD}"/>
+      <ellipse cx="50" cy="48" rx="24" ry="26" fill="${skin}"/>
+      <ellipse cx="27" cy="52" rx="3.5" ry="5" fill="${skinD}"/><ellipse cx="73" cy="52" rx="3.5" ry="5" fill="${skinD}"/>
+      ${eyes}
+      <path d="M45 63 Q50 66 55 63" stroke="#7a3a2a" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+      ${front}${accs}
+    </g>
+    <polygon points="50,2 96,26 96,74 50,98 4,74 4,26" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="2"/>
+  </svg>`;
+}
+const TYPE_HEX = { atk: '#ff4141', def: '#3d8bff', sta: '#2fd27a', bal: '#f6c632' };
+function oppAvatar(o, size) { return avatarSVG(o.av, TYPE_HEX[o.type], size); }
+function playerAvatar(size) {
+  const P = Store.profile, t = (P && P.starter) || 'atk';
+  return avatarSVG({ hair: 'short', hairC: '#2a1e14', skin: '#f2c9a0', eye: TYPE_HEX[t], acc: 'band', accC: '#ff6a1a', bg: '#1e2840' }, TYPE_HEX[t], size);
 }
 /* ============================== EFFECTS ==============================
    Layered impact language: hit-stop -> white core flash + star burst -> streak sparks -> shock ring -> screen
@@ -1809,10 +2113,13 @@ class FX {
     this.flashes = this.flashes.filter((f) => { if (f.t > 0.7) { this.scene.remove(f.l); return false; } return true; });
     for (const r of this.rays) {
       r.t += dt;
+      if (r.sigil) { r.g.material.opacity = Math.min(0.9, r.t * 3) * Math.max(0, 1 - Math.max(0, r.t - 1.6) * 2); r.g.rotation.z += dt * 1.4; r.g.scale.setScalar(0.6 + Math.min(r.t, 0.5) * 0.8); continue; }
+      if (r.dome) { const k = r.t / 0.8; r.g.scale.setScalar(0.3 + (1 - Math.pow(1 - Math.min(k, 1), 3)) * 4.5); r.g.material.uniforms.uA.value = Math.max(0, 1 - k); continue; }
+      if (r.crack) { r.g.material.opacity = r.t < 0.15 ? 1.4 : Math.max(0, 1 - (r.t - 0.15) / 2.4); continue; }
       if (r.pillar) { const k = r.t / 0.9; r.g.scale.set(1 + k * 0.6, Math.min(1, k * 6), 1 + k * 0.6); r.g.material.opacity = Math.max(0, 1 - k); r.g.rotation.y += dt * 2; continue; }
       r.g.scale.setScalar(0.5 + r.t * 2.5); r.g.rotation.y += dt * 0.6; r.g.traverse((m) => { if (m.material) m.material.opacity = Math.max(0, 1 - r.t / 0.9); });
     }
-    this.rays = this.rays.filter((r) => { if (r.t > 0.9) { this.scene.remove(r.g); return false; } return true; });
+    this.rays = this.rays.filter((r) => { const life = r.sigil ? 2.2 : r.crack ? 2.6 : 0.9; if (r.t > life) { this.scene.remove(r.g); return false; } return true; });
     for (const d of this.debris) {
       d.t += dt; d.v.y -= 12 * dt;
       d.obj.position.addScaledVector(d.v, dt);
@@ -1897,6 +2204,48 @@ class Shield {
     this.mesh.position.set(x, y, z); this.wire.rotation.y = t * 0.8; this.mesh.scale.setScalar(1 + hitPulse * 0.15);
   }
 }
+
+/* ---------- cinematic special: ground sigil, shock dome, glowing cracks ---------- */
+Object.assign(FX.prototype, {
+  sigil(x, y, z, color) {
+    const tex = canvasTex('sigil', 512, 512, (g) => {
+      g.translate(256, 256); g.strokeStyle = '#fff'; g.fillStyle = '#fff';
+      const ring = (r, w) => { g.lineWidth = w; g.beginPath(); g.arc(0, 0, r, 0, TAU); g.stroke(); };
+      ring(246, 6); ring(226, 2); ring(150, 4); ring(70, 3);
+      for (let i = 0; i < 48; i++) { g.save(); g.rotate((i / 48) * TAU); g.fillRect(-2, -240, 4, i % 4 ? 10 : 22); g.restore(); }
+      g.lineWidth = 3;
+      for (let k = 0; k < 2; k++) { g.beginPath(); for (let i = 0; i <= 3; i++) { const a = (i / 3) * TAU + k * Math.PI / 3 - Math.PI / 2; const px = Math.cos(a) * 220, py = Math.sin(a) * 220; i ? g.lineTo(px, py) : g.moveTo(px, py); } g.stroke(); }
+      for (let i = 0; i < 8; i++) { g.save(); g.rotate((i / 8) * TAU); g.beginPath(); g.moveTo(0, -150); g.lineTo(10, -185); g.lineTo(0, -205); g.lineTo(-10, -185); g.closePath(); g.fill(); g.restore(); }
+    }, false);
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(3.4, 3.4), new THREE.MeshBasicMaterial({ map: tex, color, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
+    m.rotation.x = -Math.PI / 2; m.position.set(x, y, z); this.scene.add(m);
+    this.rays.push({ g: m, t: 0, sigil: true });
+  },
+  dome(x, y, z, color) {
+    const m = new THREE.Mesh(new THREE.SphereGeometry(1, 40, 20, 0, TAU, 0, Math.PI / 2), new THREE.ShaderMaterial({
+      uniforms: { uColor: { value: new THREE.Color(color) }, uA: { value: 1 } },
+      vertexShader: 'varying vec3 vN; varying vec3 vV; void main(){ vec4 wp=modelMatrix*vec4(position,1.0); vN=normalize(mat3(modelMatrix)*normal); vV=normalize(cameraPosition-wp.xyz); gl_Position=projectionMatrix*viewMatrix*wp; }',
+      fragmentShader: 'uniform vec3 uColor; uniform float uA; varying vec3 vN; varying vec3 vV; void main(){ float f=pow(1.0-abs(dot(vN,vV)),2.5); gl_FragColor=vec4(mix(uColor,vec3(1.0),f*0.6)*2.0,(f*0.9+0.08)*uA); }',
+      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+    }));
+    m.position.set(x, y, z); this.scene.add(m);
+    this.rays.push({ g: m, t: 0, dome: true });
+  },
+  cracks(x, y, z, color) {
+    const c = document.createElement('canvas'); c.width = c.height = 512; const g = c.getContext('2d');
+    g.translate(256, 256); g.strokeStyle = '#fff'; g.lineCap = 'round'; g.shadowColor = '#fff'; g.shadowBlur = 10;
+    for (let k = 0; k < 11; k++) {
+      let a = (k / 11) * TAU + rand(-0.2, 0.2), r = 20; g.lineWidth = rand(3, 6);
+      g.beginPath(); g.moveTo(Math.cos(a) * r, Math.sin(a) * r);
+      while (r < 240) { r += rand(14, 30); a += rand(-0.25, 0.25); g.lineTo(Math.cos(a) * r, Math.sin(a) * r); if (Math.random() < 0.2) { const b = a + rand(-0.6, 0.6); g.moveTo(Math.cos(a) * r, Math.sin(a) * r); g.lineTo(Math.cos(b) * (r + 30), Math.sin(b) * (r + 30)); g.moveTo(Math.cos(a) * r, Math.sin(a) * r); } g.lineWidth *= 0.92; }
+      g.stroke();
+    }
+    const tex = new THREE.CanvasTexture(c);
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 4.2), new THREE.MeshBasicMaterial({ map: tex, color, transparent: true, opacity: 1, blending: THREE.AdditiveBlending, depthWrite: false }));
+    m.rotation.x = -Math.PI / 2; m.rotation.z = Math.random() * TAU; m.position.set(x, y, z); this.scene.add(m);
+    this.rays.push({ g: m, t: 0, crack: true });
+  },
+});
 /* ============================== RENDERER / SCENES ============================== */
 const GL = {
   renderer: null, composer: null, bloom: null, env: null, mode: 'show',
@@ -2065,7 +2414,8 @@ class BattleScene {
     key.shadow.bias = -0.0005; sc.add(key);
     const s1 = new THREE.SpotLight(0xff7a2a, 1.4, 30, 0.5, 0.6); s1.position.set(-9, 7, -4); sc.add(s1);
     const s2 = new THREE.SpotLight(0x36d3ff, 1.2, 30, 0.5, 0.6); s2.position.set(9, 7, -4); sc.add(s2);
-    this.buildStadium();
+    this.spots = [s1, s2];
+    this.setStadium('training');
     this.fx = new FX(sc);
     this.beyObjs = [null, null];
     this.auras = [0, 1].map((i) => new FlameAura(sc, i ? 0x36d3ff : 0xff6a1a));
@@ -2075,18 +2425,47 @@ class BattleScene {
     this.arrow = this.makeArrow(); sc.add(this.arrow);
     this.ghost = null;
   }
-  buildStadium() {
-    const sc = this.scene, g = new THREE.Group(); this.stadium = g; sc.add(g);
-    // floor texture (radial pattern, original design)
-    const c = document.createElement('canvas'); c.width = c.height = 1024; const x = c.getContext('2d');
+  setStadium(id) {
+    applyStadium(id);
+    if (this.stadium) { this.scene.remove(this.stadium); disposeTree(this.stadium); this.stadium.traverse((n) => n.geometry && n.geometry.dispose()); }
+    const T = STADIUMS[AR.stadium].theme;
+    this.scene.background = new THREE.Color(T.bg);
+    this.scene.fog = new THREE.Fog(T.bg, 14, 30);
+    this.spots[0].color.set(T.light[0]); this.spots[1].color.set(T.light[1]);
+    this.buildStadium(T);
+  }
+  drawFloor(x, T) {
     const grd = x.createRadialGradient(512, 512, 40, 512, 512, 512);
-    grd.addColorStop(0, '#1b2740'); grd.addColorStop(0.6, '#101828'); grd.addColorStop(1, '#0b101c');
+    grd.addColorStop(0, T.floor[0]); grd.addColorStop(0.6, T.floor[1]); grd.addColorStop(1, T.floor[2]);
     x.fillStyle = grd; x.fillRect(0, 0, 1024, 1024);
-    x.strokeStyle = 'rgba(120,170,255,0.18)'; x.lineWidth = 2;
-    for (let i = 1; i <= 7; i++) { x.beginPath(); x.arc(512, 512, i * 66, 0, TAU); x.stroke(); }
-    for (let i = 0; i < 36; i++) { const a = (i / 36) * TAU; x.beginPath(); x.moveTo(512 + Math.cos(a) * 70, 512 + Math.sin(a) * 70); x.lineTo(512 + Math.cos(a) * 500, 512 + Math.sin(a) * 500); x.stroke(); }
-    x.strokeStyle = 'rgba(255,120,40,0.55)'; x.lineWidth = 6; x.beginPath(); x.arc(512, 512, 60, 0, TAU); x.stroke();
-    x.fillStyle = 'rgba(255,140,60,0.22)'; x.font = '900 70px "Noto Sans TC",sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('旋', 512, 516);
+    x.strokeStyle = T.line; x.lineWidth = 2;
+    const C = 512, R = 500;
+    const ring = (r, w = 2) => { x.lineWidth = w; x.beginPath(); x.arc(C, C, r, 0, TAU); x.stroke(); };
+    const spoke = (a, r0, r1) => { x.beginPath(); x.moveTo(C + Math.cos(a) * r0, C + Math.sin(a) * r0); x.lineTo(C + Math.cos(a) * r1, C + Math.sin(a) * r1); x.stroke(); };
+    let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    switch (T.pattern) {
+      case 'radial': for (let i = 1; i <= 7; i++) ring(i * 66); for (let i = 0; i < 36; i++) spoke((i / 36) * TAU, 70, R); break;
+      case 'ripple': for (let i = 1; i <= 14; i++) ring(i * 34 + Math.sin(i) * 6, 1 + (i % 3)); for (let i = 0; i < 12; i++) { x.beginPath(); x.arc(C + Math.cos(i) * 260, C + Math.sin(i * 1.7) * 260, 30 + i * 4, 0, TAU); x.stroke(); } break;
+      case 'plate': for (let i = 1; i <= 5; i++) ring(i * 95, 4); for (let i = 0; i < 16; i++) spoke((i / 16) * TAU, 95, R);
+        x.fillStyle = T.line; for (let i = 0; i < 48; i++) { const a = (i / 48) * TAU, r = 95 * (2 + (i % 4)); x.beginPath(); x.arc(C + Math.cos(a) * r, C + Math.sin(a) * r, 5, 0, TAU); x.fill(); } break;
+      case 'spiral': for (let k = 0; k < 6; k++) { x.lineWidth = 3; x.beginPath(); for (let t = 0; t < 1; t += 0.01) { const a = k / 6 * TAU + t * 5, r = 60 + t * 440; t ? x.lineTo(C + Math.cos(a) * r, C + Math.sin(a) * r) : x.moveTo(C + Math.cos(a) * r, C + Math.sin(a) * r); } x.stroke(); } ring(480, 3); break;
+      case 'star': for (let i = 1; i <= 6; i++) ring(i * 80); for (let k = 0; k < 2; k++) { x.lineWidth = 3; x.beginPath(); for (let i = 0; i <= 5; i++) { const a = (i * 2 / 5) * TAU + k * Math.PI / 5 - Math.PI / 2, r = 300; i ? x.lineTo(C + Math.cos(a) * r, C + Math.sin(a) * r) : x.moveTo(C + Math.cos(a) * r, C + Math.sin(a) * r); } x.stroke(); }
+        x.fillStyle = 'rgba(255,255,255,0.5)'; for (let i = 0; i < 120; i++) { x.beginPath(); x.arc(rnd() * 1024, rnd() * 1024, rnd() * 2, 0, TAU); x.fill(); } break;
+      case 'crystal': for (let i = 0; i < 26; i++) { const a = rnd() * TAU, r0 = rnd() * 200, r1 = r0 + 120 + rnd() * 260; x.lineWidth = 1 + rnd() * 2; spoke(a, r0, r1); spoke(a + 0.08, r1 - 60, r1); spoke(a - 0.08, r1 - 60, r1); } ring(470, 3); break;
+      case 'crack': { x.lineWidth = 3; x.shadowColor = 'rgba(255,90,20,0.9)'; x.shadowBlur = 18;
+        for (let k = 0; k < 14; k++) { let a = rnd() * TAU, r = 40; x.beginPath(); x.moveTo(C + Math.cos(a) * r, C + Math.sin(a) * r); while (r < R) { r += 30 + rnd() * 40; a += (rnd() - 0.5) * 0.35; x.lineTo(C + Math.cos(a) * r, C + Math.sin(a) * r); } x.stroke(); }
+        x.shadowBlur = 0; break; }
+      case 'throne': for (let i = 1; i <= 6; i++) ring(i * 78, i % 2 ? 2 : 4); for (let i = 0; i < 24; i++) spoke((i / 24) * TAU, 78, R);
+        x.lineWidth = 3; for (let i = 0; i < 8; i++) { const a = (i / 8) * TAU; x.beginPath(); x.moveTo(C + Math.cos(a - 0.12) * 380, C + Math.sin(a - 0.12) * 380); x.lineTo(C + Math.cos(a) * 440, C + Math.sin(a) * 440); x.lineTo(C + Math.cos(a + 0.12) * 380, C + Math.sin(a + 0.12) * 380); x.stroke(); } break;
+    }
+    const acc = '#' + new THREE.Color(T.accent).getHexString();
+    x.strokeStyle = acc; x.globalAlpha = 0.6; ring(60, 6); x.globalAlpha = 0.25;
+    x.fillStyle = acc; x.font = '900 70px "Noto Sans TC",sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('旋', C, C + 4); x.globalAlpha = 1;
+  }
+  buildStadium(T) {
+    const sc = this.scene, g = new THREE.Group(); this.stadium = g; sc.add(g);
+    const c = document.createElement('canvas'); c.width = c.height = 1024; const x = c.getContext('2d');
+    this.drawFloor(x, T);
     const tex = new THREE.CanvasTexture(c); tex.encoding = THREE.sRGBEncoding; tex.anisotropy = 8;
     // bowl surface as a polar-mapped disc with displaced height
     const seg = 96, rings = 40, Rf = AR.WALL;
@@ -2108,7 +2487,7 @@ class BattleScene {
     bg.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
     bg.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
     bg.setIndex(idx); bg.computeVertexNormals();
-    const bowl = new THREE.Mesh(bg, new THREE.MeshStandardMaterial({ map: tex, metalness: 0.2, roughness: 0.55 }));
+    const bowl = new THREE.Mesh(bg, new THREE.MeshStandardMaterial({ map: tex, metalness: 0.2, roughness: T.pattern === 'crystal' ? 0.15 : T.pattern === 'ripple' ? 0.25 : 0.55, emissive: T.pattern === 'crack' ? 0xffffff : 0x000000, emissiveMap: T.pattern === 'crack' ? tex : null, emissiveIntensity: T.pattern === 'crack' ? 0.35 : 0 }));
     bowl.receiveShadow = true; g.add(bowl);
     // Xtreme rail: toothed ring
     const teeth = 160, tg = new THREE.BoxGeometry(0.07, 0.07, 0.12);
@@ -2124,10 +2503,10 @@ class BattleScene {
     rail.receiveShadow = true; g.add(rail); this.railMat = railMat; this.rail = rail; this.railTeeth = teeth;
     this.railHeat = new Float32Array(teeth);
     for (let i = 0; i < teeth; i++) rail.setColorAt(i, new THREE.Color(0x9aa4b8));
-    const glow = new THREE.Mesh(new THREE.RingGeometry(AR.RB, AR.WALL, 128, 1), new THREE.MeshBasicMaterial({ color: 0xff6a1a, transparent: true, opacity: 0.06, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+    const glow = new THREE.Mesh(new THREE.RingGeometry(AR.RB, AR.WALL, 128, 1), new THREE.MeshBasicMaterial({ color: T.accent, transparent: true, opacity: 0.06, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
     glow.rotation.x = -Math.PI / 2; glow.position.y = surfH(AR.RB) + 0.02; g.add(glow); this.railGlow = glow;
     // walls with pocket gaps
-    const wallMat = new THREE.MeshPhysicalMaterial({ color: 0x8fb8ff, metalness: 0, roughness: 0.08, transmission: 0.0, transparent: true, opacity: 0.28, side: THREE.DoubleSide });
+    const wallMat = new THREE.MeshPhysicalMaterial({ color: T.wall, metalness: 0, roughness: 0.08, transmission: 0.0, transparent: true, opacity: 0.28, side: THREE.DoubleSide });
     const wallEdge = new THREE.MeshStandardMaterial({ color: 0x1b2438, metalness: 0.6, roughness: 0.4 });
     const gaps = AR.pockets.map((p) => [p.phi - p.half, p.phi + p.half]);
     const segs = []; // free arcs between gaps
@@ -2145,7 +2524,7 @@ class BattleScene {
     // pocket trays
     this.pocketMeshes = [];
     for (const p of AR.pockets) {
-      const isX = p.kind === 'xtreme';
+      const isX = p.kind === 'rift';
       const col = isX ? 0xff3b1a : 0xffb347;
       const trayProf = [new THREE.Vector2(AR.WALL, surfH(AR.WALL)), new THREE.Vector2(AR.WALL + 0.5, 0.35), new THREE.Vector2(5.75, 0.3), new THREE.Vector2(5.75, 1.15), new THREE.Vector2(5.95, 1.15), new THREE.Vector2(5.95, -0.3)];
       const tray = new THREE.Mesh(new THREE.LatheGeometry(trayProf, 24, p.phi - p.half - 0.06, p.half * 2 + 0.12), new THREE.MeshStandardMaterial({ color: isX ? 0x2a0e0a : 0x2a1d0a, metalness: 0.3, roughness: 0.6, side: THREE.DoubleSide, emissive: col, emissiveIntensity: 0.08 }));
@@ -2159,7 +2538,7 @@ class BattleScene {
       // label
       const lc = document.createElement('canvas'); lc.width = 512; lc.height = 128; const lx = lc.getContext('2d');
       lx.fillStyle = isX ? '#ff4a1a' : '#ffb347'; lx.font = '900 64px "Noto Sans TC",sans-serif'; lx.textAlign = 'center'; lx.textBaseline = 'middle';
-      lx.fillText(isX ? '極限區 ×3' : '場外區 ×2', 256, 64);
+      lx.fillText(isX ? '裂界區 ×3' : '場外區 ×2', 256, 64);
       const lt = new THREE.CanvasTexture(lc); lt.encoding = THREE.sRGBEncoding;
       const lbl = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 0.4), new THREE.MeshBasicMaterial({ map: lt, transparent: true, depthWrite: false }));
       const lr = 5.3; lbl.position.set(Math.sin(p.phi) * lr, 0.36, Math.cos(p.phi) * lr);
@@ -2174,7 +2553,7 @@ class BattleScene {
     base.position.y = -0.32; base.receiveShadow = true; g.add(base);
     const table = new THREE.Mesh(new THREE.CircleGeometry(30, 64), new THREE.MeshStandardMaterial({ color: 0x080a10, roughness: 0.9 }));
     table.rotation.x = -Math.PI / 2; table.position.y = -0.62; table.receiveShadow = true; g.add(table);
-    const edge = new THREE.Mesh(new THREE.TorusGeometry(6.32, 0.03, 8, 128), new THREE.MeshBasicMaterial({ color: 0x36d3ff }));
+    const edge = new THREE.Mesh(new THREE.TorusGeometry(6.32, 0.03, 8, 128), new THREE.MeshBasicMaterial({ color: T.rim }));
     edge.rotation.x = Math.PI / 2; edge.position.y = -0.02; g.add(edge);
   }
   makeArrow() {
@@ -2284,7 +2663,13 @@ class BattleScene {
     // camera
     const base = this.camBase.clone();
     let lookT = new THREE.Vector3(0, 0, 0.4);
-    if (this.zoomTo) {
+    if (this.cine) {
+      const c = this.cine; c.t += dt; c.a += dt * 1.6;
+      const r = 2.6 - Math.min(c.t, 1) * 0.6;
+      base.set(c.x + Math.sin(c.a) * r, 1.1 + Math.min(c.t, 1) * 0.3, c.z + Math.cos(c.a) * r);
+      lookT.set(c.x, 0.45, c.z);
+      this.cam.position.lerp(base, 1 - Math.exp(-dt * 10));
+    } else if (this.zoomTo) {
       const z = this.zoomTo;
       base.set(z.x * 0.55, 4.2, z.z * 0.55 + 4.6);
       lookT.set(z.x, 0.4, z.z);
@@ -2301,7 +2686,8 @@ class BattleScene {
       this.shake = Math.max(0, this.shake - dt * 2.5);
     }
     this.cam.lookAt(this.look);
-    const fov = 42 - (this.dashFx || 0) * 4 - (this.zoomTo ? 6 : 0);
+    this.fovKick = Math.max(0, (this.fovKick || 0) - dt * 30);
+    const fov = 42 - (this.dashFx || 0) * 4 - (this.zoomTo ? 6 : 0) - (this.cine ? 8 : 0) + this.fovKick;
     if (Math.abs(this.cam.fov - fov) > 0.01) { this.cam.fov = lerp(this.cam.fov, fov, 1 - Math.exp(-dt * 5)); this.cam.updateProjectionMatrix(); }
     const post = this.fx.post;
     if (post) {
@@ -2328,9 +2714,12 @@ const Battle = {
     this.oDeck = opp.deck.map(([b, r, t]) => ({ b, r, t }));
     if (mode === '1v1') this.oDeck = [this.oDeck[Math.min(OPPONENTS.indexOf(opp) % 3, 2)]];
     this.score = [0, 0]; this.round = 0; this.errors = [0, 0]; this.finishes = []; this.active = true;
+    GL.battle.setStadium(opp.stadium || 'training');
     GL.setMode('battle');
     UI.show('battle');
     $('#p1n').textContent = P.name; $('#p2n').textContent = opp.name;
+    $('#p1av').innerHTML = playerAvatar(40); $('#p2av').innerHTML = oppAvatar(opp, 40);
+    this.slotRes = [[], []];
     SFX.ensure(); SFX.startGrind();
     this.renderPips();
     this.nextRound();
@@ -2348,7 +2737,7 @@ const Battle = {
     scene.setBeys(a, b);
     scene.zoomTo = null; scene.follow = null;
     this.arena = new Arena(a, b, this.hooks());
-    this.renderRatchet();
+    this.renderRatchet(); this.renderDecks();
     scene.placeForLaunch(0); scene.placeForLaunch(1);
     this.playerLaunched = false; this.aiLaunched = false; this.ripStarted = false; this.aiSpecialAt = rand(0.5, 3);
     this.renderSpecial();
@@ -2386,7 +2775,7 @@ const Battle = {
           sc.fx.spark(b.x + rx * 0.42, surfH(r) + 0.08, b.z + rz * 0.42, 3, 2.5 + b.dash * 3, b.side ? 0x8fe6ff : 0xffa040, 0.35, 0.6, back, 1.4);
         }
       },
-      onOut: (b, pk) => { SFX.fall(); const sc = scene(); sc.fx.spark(b.x, surfH(AR.WALL) + 0.2, b.z, 40, 4, pk.kind === 'xtreme' ? 0xff4a1a : 0xffb347, 0.6, 1.2); },
+      onOut: (b, pk) => { SFX.fall(); const sc = scene(); sc.fx.spark(b.x, surfH(AR.WALL) + 0.2, b.z, 40, 4, pk.kind === 'rift' ? 0xff4a1a : 0xffb347, 0.6, 1.2); },
       onBurst: (b, nx, nz) => { scene().burstBey(b.side, b, nx, nz); scene().shake = 1.4; SFX.burst(); this.timeScale = 0.2; this.slowT = 1.0; },
       onStop: () => {},
       onSpecialHit: (a, b, ka, kb) => {
@@ -2405,13 +2794,14 @@ const Battle = {
   setPhase(p) { this.phase = p; this.phaseT = 0; },
   async countdown() {
     const el = $('#count');
-    const seq = ['3', '2', '1', 'GO SHOOT!'];
+    const seq = ['3', '2', '1', '旋鋒出擊！'];
+    const voice = ['三', '二', '一', '旋鋒出擊！'];
     this.goAt = 0;
     const token = (this._cd = Symbol());
     for (let i = 0; i < seq.length; i++) {
       if (this._cd !== token || !this.active) return;
-      el.textContent = seq[i]; el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
-      SFX.beep(i === 3);
+      el.textContent = seq[i]; el.classList.toggle('long', i === 3); el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
+      SFX.beep(i === 3); SFX.say(voice[i], { rate: i === 3 ? 1.25 : 1.3, pitch: i === 3 ? 1.15 : 1 });
       if (i === 3) { this.goAt = performance.now(); this.setPhase('go'); }
       await wait(i === 3 ? 650 : 700);
     }
@@ -2518,27 +2908,63 @@ const Battle = {
       this.renderSpecial();
     }
   },
+  /* Cinematic signature move: charge -> cut-in -> burst -> resume (~2.4s, skippable) */
   useSpecial(side) {
-    if (!this.active || this.phase !== 'fight' || this.cutin) return;
+    if (!this.active || this.phase !== 'fight' || this.cine) return;
     const sp = this.arena.special(side); if (!sp) return;
-    const b = this.arena.beys[side], sc = GL.battle;
-    const y = surfH(Math.hypot(b.x, b.z));
-    sc.fx.specialBurst(b.x, y, b.z, sp.color);
-    sc.shake = 0.8; sc.blurAt = new THREE.Vector3(b.x, y, b.z); sc.blurKick = 1.2;
-    this.timeScale = 0.06; this.slowT = 1.15; this.cutin = true;
-    SFX.special();
+    const b = this.arena.beys[side], sc = GL.battle, y = surfH(Math.hypot(b.x, b.z));
+    const col = '#' + sp.color.toString(16).padStart(6, '0');
     const cfg = side ? this.cur[1] : this.cur[0];
-    const el = $('#cutin');
-    el.className = 'cutin ' + (side ? 'right' : 'left');
-    el.style.setProperty('--sc', '#' + sp.color.toString(16).padStart(6, '0'));
-    $('#ciImg').src = Thumbs.get('blade', cfg.b);
-    $('#ciWho').textContent = `${side ? this.opp.name : Store.profile.name}・${BLADE[cfg.b].name}`;
-    $('#ciName').textContent = sp.name;
-    $('#ciKind').textContent = SPECIAL_KIND[sp.kind];
-    void el.offsetWidth; el.classList.add('show');
-    setTimeout(() => { el.classList.remove('show'); this.cutin = false; }, 1150);
+    this.cine = { side, sp, t0: performance.now(), stage: 'charge', timers: [] };
+    this.timeScale = 0.02; this.slowT = 99;
+    SFX.specialCharge();
+    // 3D: close orbit camera + ground sigil
+    sc.cine = { x: b.x, z: b.z, a: side ? Math.PI * 0.8 : -Math.PI * 0.2, t: 0 };
+    sc.fx.sigil(b.x, y + 0.03, b.z, sp.color);
+    sc.fx.spark(b.x, y + 0.2, b.z, 60, 2, sp.color, 1.2, 2);
+    if (sc.fx.post) { sc.fx.post.uVig.value = 0.9; }
+    // DOM overlay
+    const el = $('#cine');
+    el.className = 'cine ' + (side ? 'right' : 'left');
+    el.style.setProperty('--sc', col);
+    $('#cnPortrait').innerHTML = side ? oppAvatar(this.opp, 300) : playerAvatar(300);
+    $('#cnBlade').src = Thumbs.get('blade', cfg.b);
+    $('#cnWho').textContent = `${side ? this.opp.name : Store.profile.name}・${BLADE[cfg.b].name}`;
+    $('#cnKind').textContent = SPECIAL_KIND[sp.kind];
+    $('#cnName').innerHTML = [...sp.name].map((ch, k) => `<span style="--d:${(k * 0.07).toFixed(2)}s">${ch === '・' ? '<i class="dot"></i>' : esc(ch)}</span>`).join('');
+    $('#cnInk').innerHTML = Array.from({ length: 14 }, () => `<i style="left:${rand(5, 95).toFixed(1)}%;top:${rand(15, 85).toFixed(1)}%;--s:${rand(0.4, 1.6).toFixed(2)};--d:${rand(0, 0.25).toFixed(2)}s"></i>`).join('');
+    void el.offsetWidth; el.classList.add('on', 'charge');
+    const T = (ms, fn) => this.cine.timers.push(setTimeout(fn, ms));
+    T(480, () => this.cineCut());
+    T(1450, () => this.cineBurst());
     this.renderSpecial();
   },
+  cineCut() {
+    const c = this.cine; if (!c || c.stage !== 'charge') return;
+    c.stage = 'cut';
+    const el = $('#cine'); el.classList.remove('charge'); el.classList.add('cut');
+    SFX.specialCut();
+    SFX.say(c.sp.name.replace('・', '，'), { rate: 1.2, pitch: c.side ? 0.9 : 1.1 });
+    GL.battle.shake = 0.5;
+  },
+  cineBurst() {
+    const c = this.cine; if (!c || c.stage === 'burst') return;
+    c.stage = 'burst';
+    c.timers.forEach(clearTimeout); c.timers = [];
+    const sc = GL.battle, b = this.arena.beys[c.side], y = surfH(Math.hypot(b.x, b.z));
+    const el = $('#cine'); el.classList.remove('charge', 'cut'); el.classList.add('burst');
+    sc.cine = null;
+    sc.fx.specialBurst(b.x, y, b.z, c.sp.color);
+    sc.fx.dome(b.x, y, b.z, c.sp.color);
+    sc.fx.cracks(b.x, y + 0.02, b.z, c.sp.color);
+    sc.shake = 1.6; sc.blurAt = new THREE.Vector3(b.x, y, b.z); sc.blurKick = 2.2; sc.fovKick = 14;
+    if (sc.fx.post) { sc.fx.post.uVig.value = 0.35; sc.fx.post.uFlash.value = 0.9; sc.fx.post.uFlashCol.value.set(0xffffff); sc.fx.post.uAb.value = 2.4; }
+    SFX.specialBurst();
+    this.timeScale = 0.3; this.slowT = 0.55;
+    setTimeout(() => { el.classList.remove('on', 'burst'); }, 650);
+    this.cine = null;
+  },
+  skipCine() { if (this.cine) this.cineBurst(); },
   renderSpecial() {
     if (!this.arena) return;
     this.arena.beys.forEach((b, i) => {
@@ -2558,7 +2984,7 @@ const Battle = {
     let ev;
     if (evs.length > 1 && evs[0].side !== evs[1].side) {
       // simultaneous finish: draw (official), unless one is a burst/out and other a spin stop
-      const ranks = { xtreme: 3, over: 2, burst: 2, spin: 1 };
+      const ranks = { rift: 3, out: 2, burst: 2, spin: 1 };
       if (ranks[evs[0].type] === ranks[evs[1].type]) return this.roundDraw();
       ev = ranks[evs[0].type] > ranks[evs[1].type] ? evs[0] : evs[1];
     } else ev = evs[0];
@@ -2566,6 +2992,9 @@ const Battle = {
     const F = FINISH[ev.type];
     this.score[winner] += F.pts;
     this.finishes.push({ round: this.round, winner, type: ev.type });
+    const ri = this.round - 1;
+    for (const sd of [0, 1]) { const d = sd ? this.oDeck : this.pDeck; const k = ri % d.length; (this.slotRes[sd][k] = this.slotRes[sd][k] || []).push(sd === winner ? `+${F.pts}` : '—'); }
+    setTimeout(() => this.renderDecks(), 300);
     this.setPhase('finish');
     const sc = GL.battle, lb = this.arena.beys[loser];
     sc.zoomTo = { x: clamp(lb.x, -4, 4), z: clamp(lb.z, -4, 4) };
@@ -2573,7 +3002,7 @@ const Battle = {
     const fy = surfH(Math.min(Math.hypot(lb.x, lb.z), AR.WALL)) + 0.1;
     sc.fx.ring(lb.x, fy, lb.z, winner ? 0x36d3ff : 0xff6a1a, 3, 0.7);
     sc.blurAt = new THREE.Vector3(lb.x, fy, lb.z); sc.blurKick = 1.1;
-    if (ev.type === 'xtreme' || ev.type === 'over') { sc.fx.star(lb.x, fy + 0.3, lb.z, 4, ev.type === 'xtreme' ? 0xff3b1a : 0xffb347, 0.4); sc.fx.spark(lb.x, fy, lb.z, 80, 5, ev.type === 'xtreme' ? 0xff5a2a : 0xffc060, 0.8, 1.3); if (sc.fx.post) { sc.fx.post.uFlash.value = 0.35; sc.fx.post.uFlashCol.value.set(ev.type === 'xtreme' ? 0xff6a3a : 0xffd090); } }
+    if (ev.type === 'rift' || ev.type === 'out') { sc.fx.star(lb.x, fy + 0.3, lb.z, 4, ev.type === 'rift' ? 0xff3b1a : 0xffb347, 0.4); sc.fx.spark(lb.x, fy, lb.z, 80, 5, ev.type === 'rift' ? 0xff5a2a : 0xffc060, 0.8, 1.3); if (sc.fx.post) { sc.fx.post.uFlash.value = 0.35; sc.fx.post.uFlashCol.value.set(ev.type === 'rift' ? 0xff6a3a : 0xffd090); } }
     setTimeout(() => {
       SFX.finish();
       UI.banner(F.en, F.name, `${winner === 0 ? Store.profile.name : this.opp.name} +${F.pts}`, winner === 1);
@@ -2590,6 +3019,13 @@ const Battle = {
     UI.banner('DRAW', '同時終結', '平手・本回合不計分', false);
     setTimeout(() => { if (this.active) this.nextRound(true); }, 2800);
   },
+  renderDecks() {
+    const ri = this.round - 1;
+    for (const sd of [0, 1]) {
+      const d = sd ? this.oDeck : this.pDeck, cur = ri % d.length;
+      $(sd ? '#g2deck' : '#g1deck').innerHTML = d.map((cfg, k) => `<span class="dk ${k === cur ? 'cur' : ''}" title="${esc(beyName(cfg))}"><img src="${Thumbs.get('blade', cfg.b)}" alt=""><i>${k + 1}</i><em>${(this.slotRes[sd][k] || []).join(' ')}</em></span>`).join('');
+    }
+  },
   renderPips() {
     for (const [i, id] of [[0, '#p1pips'], [1, '#p2pips']]) {
       $(id).innerHTML = Array.from({ length: WIN_POINTS }, (_, k) => `<span class="pip ${k < this.score[i] ? 'on' : ''}"></span>`).join('');
@@ -2605,11 +3041,11 @@ const Battle = {
     if (!this.arena) return;
     this.arena.beys.forEach((b, i) => {
       const n = RATCHET[b.cfg.r].prongs, filled = Math.min(n, Math.floor(clamp(b.meter, 0, 1) * n + 0.0001));
-      $(i ? '#g2rat' : '#g1rat').innerHTML = `<span>固鎖輪</span>` + Array.from({ length: n }, (_, k) => `<i class="${k < filled ? 'on' : ''}"></i>`).join('');
+      $(i ? '#g2rat' : '#g1rat').innerHTML = `<span>鎖芯</span>` + Array.from({ length: n }, (_, k) => `<i class="${k < filled ? 'on' : ''}"></i>`).join('');
     });
   },
   endMatch() {
-    this.active = false; this._cd = null;
+    this.active = false; this._cd = null; this.cine = null; GL.battle.cine = null;
     SFX.stopGrind();
     const won = this.score[0] > this.score[1];
     const P = Store.profile, opp = this.opp, idx = OPPONENTS.indexOf(opp);
@@ -2628,6 +3064,7 @@ const Battle = {
     $('#resTitle').textContent = won ? 'VICTORY' : 'DEFEAT';
     $('#resTitle').style.color = won ? 'var(--hot2)' : 'var(--dim)';
     $('#resEye').textContent = `${opp.title}・${opp.name}`;
+    $('#resAv').innerHTML = `${playerAvatar(64)}<span class="vs">VS</span>${oppAvatar(opp, 64)}`;
     $('#resScore').innerHTML = `<span style="color:var(--hot)">${this.score[0]}</span> : <span style="color:var(--ice)">${this.score[1]}</span>`;
     const fin = this.finishes.map((f) => `<span>第 ${f.round} 回合・${f.winner === 0 ? '你' : opp.name}</span><span>${f.type === 'error' ? '發射失誤 +1' : FINISH[f.type].name + ' +' + FINISH[f.type].pts}</span>`).join('');
     $('#resList').innerHTML = fin + rows.map(([k, v]) => `<span style="color:var(--hot2)">${k}</span><span style="color:var(--hot2)">+${v} 金幣</span>`).join('') + (firstClear && idx + 1 < OPPONENTS.length ? `<span style="color:var(--sta)">解鎖新對手</span><span style="color:var(--sta)">${OPPONENTS[idx + 1].name}</span>` : '');
@@ -2726,7 +3163,6 @@ const UI = {
       $('#hubGreet').textContent = `歡迎回來，${P.name}`;
       $('#hubBeyName').textContent = `${beyName(d)} ${beyCode(d)}`;
       $('#hubBeyTags').innerHTML = `<span class="tag t-${st.type}">${TYPES[st.type].name}</span><span class="tag" style="color:var(--dim)">${st.weight} g</span><span class="tag" style="color:var(--dim)">${P.stats.w} 勝 ${P.stats.l} 敗</span>`;
-      $('#hubColl').textContent = `已收集 ${this.ownedCount()} / ${BLADES.length + RATCHETS.length + BITS.length} 種零件`;
     }
     if (name === 'assembly') { sh.setOffset(0); this.renderAssembly(true); }
     if (name === 'select') { sh.setOffset(-0.22); this.renderSelect(); }
@@ -2738,12 +3174,22 @@ const UI = {
     const P = Store.profile; if (!P) return '';
     const titles = { assembly: '組裝工坊', select: '對戰', gacha: '扭蛋機', collection: '收藏圖鑑', rules: '比賽規則' };
     const back = name !== 'hub' ? `<button class="btn cut" data-go="hub" style="padding:8px 14px">‹ 大廳</button>` : '';
-    return `${back}<div class="brand">旋鋒對決 <b>X</b>${titles[name] ? `<small>／ ${titles[name]}</small>` : ''}</div><div class="spacer"></div>
+    return `${back}<div class="brand">旋鋒對決<small style="font-family:var(--f-disp);color:var(--hot);margin-left:6px;letter-spacing:.2em">SPIN DUEL</small>${titles[name] ? `<small>／ ${titles[name]}</small>` : ''}</div><div class="spacer"></div>
       <div class="chip"><span class="dot ${Store.mode === 'cloud' ? '' : 'off'}"></span><span>${esc(P.name)}</span><span style="color:var(--mute);font-size:12px">${Store.mode === 'cloud' ? '雲端存檔' : '本機存檔'}</span></div>
-      <div class="chip"><span class="coin"></span><b class="num" id="coinNum">${P.coins.toLocaleString('en-US')}</b></div>`;
+      <div class="chip"><span class="coin"></span><b class="num" id="coinNum">${P.coins.toLocaleString('en-US')}</b></div>
+      <div class="corner">
+        <button class="ibtn" data-go="collection" title="收藏圖鑑" aria-label="收藏圖鑑"><svg viewBox="0 0 24 24"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg><span>圖鑑 ${this.ownedCount()}/${BLADES.length + RATCHETS.length + BITS.length}</span></button>
+        <button class="ibtn" data-go="rules" title="比賽規則" aria-label="比賽規則"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6zM9 10h7M9 14h7M9 18h5"/></svg><span>規則</span></button>
+        <button class="ibtn" data-settings title="設定" aria-label="設定"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg><span>設定</span></button>
+      </div>`;
   },
   refreshCoins() { const el = $('#coinNum'); if (el) el.textContent = Store.profile.coins.toLocaleString('en-US'); },
   ownedCount() { const inv = Store.profile.inv; return ['blade', 'ratchet', 'bit'].reduce((n, k) => n + Object.values(inv[k]).filter((c) => c > 0).length, 0); },
+  toggleSettings(force) {
+    const el = $('#settings'); const on = force ?? el.hidden;
+    el.hidden = !on;
+    if (on) for (const k of ['master', 'sfx', 'voice']) $('#vol-' + k).value = Math.round(SFX.vol[k] * 100);
+  },
   toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(this._tt); this._tt = setTimeout(() => t.classList.remove('show'), 2200); },
   toastTop(msg) { this.toast(msg); },
   banner(en, zh, pts, blue) {
@@ -2774,11 +3220,11 @@ const UI = {
     const items = K.list.filter((p) => owns(this.asmTab, p.id));
     $('#plist').innerHTML = items.map((p) => {
       const sel = d[K.key] === p.id;
-      const meta = this.asmTab === 'blade' ? `<span class="t-${p.type}">${TYPES[p.type].name}</span><span>${p.wt}g</span>` : this.asmTab === 'ratchet' ? `<span>抗爆 ${Math.round(p.burst * 52)}</span><span>${p.wt}g</span>` : `<span class="t-${p.type}">${TYPES[p.type].name}</span><span>衝刺 ${p.dash}</span>`;
+      const meta = this.asmTab === 'blade' ? `<span class="t-${p.type}">${TYPES[p.type].name}</span><span>${p.wt}g</span>` : this.asmTab === 'ratchet' ? `<span>抗解體 ${Math.round(p.burst * 52)}</span><span>${p.wt}g</span>` : `<span class="t-${p.type}">${TYPES[p.type].name}</span><span>衝刺 ${p.dash}</span>`;
       return `<button class="pcard cut ${usedBy[p.id] ? 'used' : ''}" data-part="${p.id}" aria-pressed="${sel}">
         ${usedBy[p.id] ? `<span class="usedby">${usedBy[p.id]} 號機使用中</span>` : ''}<span class="cnt">×${P.inv[this.asmTab][p.id]}</span>
         <img src="${Thumbs.get(this.asmTab, p.id)}" alt="">
-        <span class="pn">${esc(this.asmTab === 'bit' ? `${p.name} ${p.code}` : this.asmTab === 'ratchet' ? p.id : p.name)}</span>
+        <span class="pn">${esc(partName(this.asmTab, p))}</span>
         <span class="pm"><span class="r-${p.rarity}">${RARITY[p.rarity].name}</span>${meta}</span></button>`;
     }).join('') || '<div class="desc">還沒有這類零件，去扭蛋機抽抽看吧。</div>';
     this.renderAsmInfo();
@@ -2793,16 +3239,16 @@ const UI = {
     $('#asmName').textContent = beyName(d);
     $('#asmCode').textContent = beyCode(d);
     $('#asmType').innerHTML = `<span class="tag t-${st.type}">${TYPES[st.type].name}</span>`;
-    const rows = [['攻擊', st.atk], ['防禦', st.def], ['持久', st.sta], ['衝刺', st.dash], ['抗爆裂', st.burst]];
+    const rows = [['攻擊', st.atk], ['防禦', st.def], ['持久', st.sta], ['衝刺', st.dash], ['抗解體', st.burst]];
     $('#asmStats').innerHTML = rows.map(([k, v]) => `<div class="stat"><span>${k}</span><div class="bar"><i style="width:${v}%"></i></div><span class="num">${v}</span></div>`).join('') + `<div class="stat"><span>總重量</span><span class="num" style="color:var(--fg)">${st.weight} g</span><span></span></div>`;
     const K = KINDS[this.asmTab], part = K.map[d[K.key]];
-    $('#asmDesc').innerHTML = `<b style="color:var(--fg)">${esc(K.name)}・${esc(this.asmTab === 'ratchet' ? part.id : part.name)}</b><br>${esc(part.desc)}`;
+    $('#asmDesc').innerHTML = `<b style="color:var(--fg)">${esc(K.name)}・${esc(partName(this.asmTab, part))}</b><br>${esc(part.desc)}`;
   },
   deckDupes() {
     const P = Store.profile, out = [];
     for (const [k, K] of Object.entries(KINDS)) {
       const ids = P.decks.map((d) => d[K.key]);
-      ids.forEach((id, i) => { if (ids.indexOf(id) !== i) out.push(k === 'ratchet' ? id : K.map[id].name); });
+      ids.forEach((id, i) => { if (ids.indexOf(id) !== i) out.push(partName(k, K.map[id])); });
     }
     return [...new Set(out)].join('、');
   },
@@ -2826,14 +3272,17 @@ const UI = {
       const locked = i > P.ladder, cleared = i < P.ladder;
       return `<button class="opp cut ${locked ? 'locked' : ''}" data-opp="${i}" aria-pressed="${i === this.oppSel}">
         <span class="lv num">${String(i + 1).padStart(2, '0')}</span>
-        <span class="av" style="background:${TYPES[o.type].css}">${esc(o.name[o.name.length - 1])}</span>
+        <span class="av">${locked ? '<span class="avq">?</span>' : oppAvatar(o, 56)}</span>
         <span class="on">${locked ? '？？？' : esc(o.name)}</span><span class="ot">${esc(o.title)}・${TYPES[o.type].name}</span>
         <span class="ot"><span class="coin" style="display:inline-block;width:11px;height:11px;vertical-align:-1px"></span> ${o.reward}</span>
         ${cleared ? '<span class="clr">已擊敗</span>' : ''}</button>`;
     }).join('');
     const o = OPPONENTS[this.oppSel];
     $('#oppName').textContent = `${o.name}・${o.title}`;
-    const od = o.deck.map(([b, r, t]) => `${BLADE[b].name} ${r}${BIT[t].code}`);
+    $('#oppAv').innerHTML = oppAvatar(o, 84);
+    const S = STADIUMS[o.stadium];
+    $('#oppStadium').innerHTML = `<b>${esc(S.name)}</b>・${esc(S.desc)}<br><span style="color:var(--mute)">裂界區 ${S.pockets.filter((p) => p.kind === 'rift').length} 個・場外區 ${S.pockets.filter((p) => p.kind === 'out').length} 個</span>`;
+    const od = o.deck.map(([b, r, t]) => `${BLADE[b].name} ${beyCode({ b, r, t })}`);
     $('#oppInfo').innerHTML = `擅長：${TYPES[o.type].name}<br>牌組：${od.map(esc).join('／')}<br>勝利獎金 ${o.reward} 金幣${this.oppSel >= P.ladder ? '，首次擊敗再加 200' : ''}`;
     $$('#modeSeg button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.mode === this.mode));
     const decks = this.mode === '3v3' ? P.decks : [P.decks[0]];
@@ -2890,7 +3339,7 @@ const UI = {
     const best = res.slice().sort((a, b) => ['common', 'rare', 'sr'].indexOf(b.rarity) - ['common', 'rare', 'sr'].indexOf(a.rarity))[0];
     for (let i = 0; i < res.length; i++) {
       const r = res[i];
-      const nm = r.kind === 'bit' ? `${r.part.name} ${r.part.code}` : r.kind === 'ratchet' ? r.part.id : r.part.name;
+      const nm = partName(r.kind, r.part);
       const el = document.createElement('div'); el.className = 'pull-item'; el.style.animationDelay = `${i * 0.06}s`;
       el.innerHTML = `<img src="${Thumbs.get(r.kind, r.part.id)}" alt=""><div><div style="font-weight:700">${esc(nm)} ${r.isNew ? '<span class="new">NEW</span>' : ''}</div><div style="font-size:12px;color:var(--dim)">${KINDS[r.kind].name}${r.dup ? '・重複 → +30 金幣' : ''}</div></div><span class="r-${r.rarity}" style="font-weight:700;font-size:12px">${RARITY[r.rarity].name}</span>`;
       list.appendChild(el);
@@ -2899,7 +3348,7 @@ const UI = {
     GL.show.showPart(show.kind, show.part.id);
     GL.show.spinSpeed = 1.2;
     $('#revEye').innerHTML = `<span class="r-${show.rarity}">${RARITY[show.rarity].name}</span>・${KINDS[show.kind].name}`;
-    $('#revName').textContent = show.kind === 'bit' ? `${show.part.name} ${show.part.code}` : show.kind === 'ratchet' ? show.part.id : show.part.name;
+    $('#revName').textContent = partName(show.kind, show.part);
     SFX.rareJingle(show.rarity);
     const sc = GL.show; sc.flash = show.rarity === 'sr' ? 2 : 1;
     this.refreshCoins();
@@ -2916,17 +3365,17 @@ const UI = {
     if (!this.collSel || this.collSel.kind !== this.collTab) this.collSel = { kind: this.collTab, id: K.list[0].id };
     $('#collGrid').innerHTML = K.list.map((p) => {
       const has = inv[p.id] > 0;
-      const nm = this.collTab === 'bit' ? `${p.name} ${p.code}` : this.collTab === 'ratchet' ? p.id : p.name;
+      const nm = partName(this.collTab, p);
       return `<button class="pcard cut ${has ? '' : 'locked'}" data-cpart="${p.id}" aria-pressed="${this.collSel.id === p.id}"><span class="cnt">${has ? '×' + inv[p.id] : ''}</span><img src="${Thumbs.get(this.collTab, p.id)}" alt=""><span class="pn">${has ? esc(nm) : '？？？'}</span><span class="pm"><span class="r-${p.rarity}">${RARITY[p.rarity].name}</span></span></button>`;
     }).join('');
     this.renderCollInfo();
   },
   renderCollInfo() {
     const { kind, id } = this.collSel, K = KINDS[kind], p = K.map[id], has = (Store.profile.inv[kind][id] | 0) > 0;
-    const nm = kind === 'bit' ? `${p.name} ${p.code}` : kind === 'ratchet' ? p.id : p.name;
+    const nm = partName(kind, p);
     let stats = '';
     if (kind === 'blade') stats = [['攻擊', p.atk], ['防禦', p.def], ['持久', p.sta]].map(([k, v]) => `<div class="stat"><span>${k}</span><div class="bar"><i style="width:${v}%"></i></div><span class="num">${v}</span></div>`).join('') + `<div class="stat"><span>重量</span><span class="num">${p.wt} g</span><span></span></div>`;
-    if (kind === 'ratchet') stats = `<div class="stat"><span>卡榫數</span><span class="num">${p.prongs}</span><span></span></div><div class="stat"><span>高度</span><span class="num">${(p.h / 10).toFixed(1)} mm</span><span></span></div><div class="stat"><span>抗爆裂</span><div class="bar"><i style="width:${Math.round(p.burst * 52)}%"></i></div><span class="num">${Math.round(p.burst * 52)}</span></div>`;
+    if (kind === 'ratchet') stats = `<div class="stat"><span>卡榫數</span><span class="num">${p.prongs}</span><span></span></div><div class="stat"><span>高度</span><span class="num">${(p.h / 10).toFixed(1)} mm</span><span></span></div><div class="stat"><span>抗解體</span><div class="bar"><i style="width:${Math.round(p.burst * 52)}%"></i></div><span class="num">${Math.round(p.burst * 52)}</span></div>`;
     if (kind === 'bit') stats = [['衝刺', p.dash], ['移動性', Math.round(p.mob * 80)], ['穩定性', Math.round(p.stab * 100)]].map(([k, v]) => `<div class="stat"><span>${k}</span><div class="bar"><i style="width:${v}%"></i></div><span class="num">${v}</span></div>`).join('');
     $('#collInfo').innerHTML = `<div class="eyebrow">${K.name}・<span class="r-${p.rarity}">${RARITY[p.rarity].name}</span></div><h2 style="font-size:24px;font-weight:900">${has ? esc(nm) : '尚未取得'}</h2>${p.type ? `<div><span class="tag t-${p.type}">${TYPES[p.type].name}</span></div>` : ''}${has ? stats : ''}<div class="desc">${has ? esc(p.desc) : '在扭蛋機抽到這個零件後就能看到完整資料。'}</div>`;
     GL.show.showPart(kind, id);
@@ -2940,6 +3389,9 @@ function bindEvents() {
     const t = e.target.closest('button'); if (!t) return;
     SFX.ensure();
     if (t.dataset.go) return UI.go(t.dataset.go);
+    if (t.hasAttribute('data-settings')) return UI.toggleSettings();
+    if (t.id === 'setClose') return UI.toggleSettings(false);
+    if (t.id === 'voiceTest') { SFX.ensure(); return SFX.say('三、二、一，旋鋒出擊！'); }
     if (t.dataset.starter) { UI.starter = t.dataset.starter; SFX.click(); return UI.renderAuth(); }
     if (t.dataset.ptab) { UI.asmTab = t.dataset.ptab; SFX.click(); return UI.renderAssembly(false); }
     if (t.dataset.part) { SFX.click(); return UI.pickPart(t.dataset.part); }
@@ -2961,10 +3413,12 @@ function bindEvents() {
   $('#startBattle').addEventListener('click', () => Battle.start(OPPONENTS[UI.oppSel], UI.mode));
   $('#quitBattle').addEventListener('click', () => Battle.quit());
   $('#spBtn').addEventListener('click', () => Battle.useSpecial(0));
-  window.addEventListener('keydown', (e) => { if (e.code === 'Space' && Battle.active) { e.preventDefault(); Battle.useSpecial(0); } });
+  window.addEventListener('keydown', (e) => { if (!Battle.active) return; if (Battle.cine) { e.preventDefault(); return Battle.skipCine(); } if (e.code === 'Space') { e.preventDefault(); Battle.useSpecial(0); } });
+  $('#cine').addEventListener('pointerdown', () => Battle.skipCine());
   $('#resAgain').addEventListener('click', () => Battle.start(Battle.opp, Battle.mode));
   $('#resHome').addEventListener('click', () => UI.go('hub'));
   $('#pull1').addEventListener('click', () => UI.pull(1));
+  $$('[data-vol]').forEach((el) => el.addEventListener('input', () => SFX.setVol(el.dataset.vol, el.value / 100)));
   $('#pull10').addEventListener('click', () => UI.pull(10));
   Launcher.init();
 }

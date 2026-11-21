@@ -166,7 +166,8 @@ class BattleScene {
     key.shadow.bias = -0.0005; sc.add(key);
     const s1 = new THREE.SpotLight(0xff7a2a, 1.4, 30, 0.5, 0.6); s1.position.set(-9, 7, -4); sc.add(s1);
     const s2 = new THREE.SpotLight(0x36d3ff, 1.2, 30, 0.5, 0.6); s2.position.set(9, 7, -4); sc.add(s2);
-    this.buildStadium();
+    this.spots = [s1, s2];
+    this.setStadium('training');
     this.fx = new FX(sc);
     this.beyObjs = [null, null];
     this.auras = [0, 1].map((i) => new FlameAura(sc, i ? 0x36d3ff : 0xff6a1a));
@@ -176,18 +177,47 @@ class BattleScene {
     this.arrow = this.makeArrow(); sc.add(this.arrow);
     this.ghost = null;
   }
-  buildStadium() {
-    const sc = this.scene, g = new THREE.Group(); this.stadium = g; sc.add(g);
-    // floor texture (radial pattern, original design)
-    const c = document.createElement('canvas'); c.width = c.height = 1024; const x = c.getContext('2d');
+  setStadium(id) {
+    applyStadium(id);
+    if (this.stadium) { this.scene.remove(this.stadium); disposeTree(this.stadium); this.stadium.traverse((n) => n.geometry && n.geometry.dispose()); }
+    const T = STADIUMS[AR.stadium].theme;
+    this.scene.background = new THREE.Color(T.bg);
+    this.scene.fog = new THREE.Fog(T.bg, 14, 30);
+    this.spots[0].color.set(T.light[0]); this.spots[1].color.set(T.light[1]);
+    this.buildStadium(T);
+  }
+  drawFloor(x, T) {
     const grd = x.createRadialGradient(512, 512, 40, 512, 512, 512);
-    grd.addColorStop(0, '#1b2740'); grd.addColorStop(0.6, '#101828'); grd.addColorStop(1, '#0b101c');
+    grd.addColorStop(0, T.floor[0]); grd.addColorStop(0.6, T.floor[1]); grd.addColorStop(1, T.floor[2]);
     x.fillStyle = grd; x.fillRect(0, 0, 1024, 1024);
-    x.strokeStyle = 'rgba(120,170,255,0.18)'; x.lineWidth = 2;
-    for (let i = 1; i <= 7; i++) { x.beginPath(); x.arc(512, 512, i * 66, 0, TAU); x.stroke(); }
-    for (let i = 0; i < 36; i++) { const a = (i / 36) * TAU; x.beginPath(); x.moveTo(512 + Math.cos(a) * 70, 512 + Math.sin(a) * 70); x.lineTo(512 + Math.cos(a) * 500, 512 + Math.sin(a) * 500); x.stroke(); }
-    x.strokeStyle = 'rgba(255,120,40,0.55)'; x.lineWidth = 6; x.beginPath(); x.arc(512, 512, 60, 0, TAU); x.stroke();
-    x.fillStyle = 'rgba(255,140,60,0.22)'; x.font = '900 70px "Noto Sans TC",sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('旋', 512, 516);
+    x.strokeStyle = T.line; x.lineWidth = 2;
+    const C = 512, R = 500;
+    const ring = (r, w = 2) => { x.lineWidth = w; x.beginPath(); x.arc(C, C, r, 0, TAU); x.stroke(); };
+    const spoke = (a, r0, r1) => { x.beginPath(); x.moveTo(C + Math.cos(a) * r0, C + Math.sin(a) * r0); x.lineTo(C + Math.cos(a) * r1, C + Math.sin(a) * r1); x.stroke(); };
+    let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    switch (T.pattern) {
+      case 'radial': for (let i = 1; i <= 7; i++) ring(i * 66); for (let i = 0; i < 36; i++) spoke((i / 36) * TAU, 70, R); break;
+      case 'ripple': for (let i = 1; i <= 14; i++) ring(i * 34 + Math.sin(i) * 6, 1 + (i % 3)); for (let i = 0; i < 12; i++) { x.beginPath(); x.arc(C + Math.cos(i) * 260, C + Math.sin(i * 1.7) * 260, 30 + i * 4, 0, TAU); x.stroke(); } break;
+      case 'plate': for (let i = 1; i <= 5; i++) ring(i * 95, 4); for (let i = 0; i < 16; i++) spoke((i / 16) * TAU, 95, R);
+        x.fillStyle = T.line; for (let i = 0; i < 48; i++) { const a = (i / 48) * TAU, r = 95 * (2 + (i % 4)); x.beginPath(); x.arc(C + Math.cos(a) * r, C + Math.sin(a) * r, 5, 0, TAU); x.fill(); } break;
+      case 'spiral': for (let k = 0; k < 6; k++) { x.lineWidth = 3; x.beginPath(); for (let t = 0; t < 1; t += 0.01) { const a = k / 6 * TAU + t * 5, r = 60 + t * 440; t ? x.lineTo(C + Math.cos(a) * r, C + Math.sin(a) * r) : x.moveTo(C + Math.cos(a) * r, C + Math.sin(a) * r); } x.stroke(); } ring(480, 3); break;
+      case 'star': for (let i = 1; i <= 6; i++) ring(i * 80); for (let k = 0; k < 2; k++) { x.lineWidth = 3; x.beginPath(); for (let i = 0; i <= 5; i++) { const a = (i * 2 / 5) * TAU + k * Math.PI / 5 - Math.PI / 2, r = 300; i ? x.lineTo(C + Math.cos(a) * r, C + Math.sin(a) * r) : x.moveTo(C + Math.cos(a) * r, C + Math.sin(a) * r); } x.stroke(); }
+        x.fillStyle = 'rgba(255,255,255,0.5)'; for (let i = 0; i < 120; i++) { x.beginPath(); x.arc(rnd() * 1024, rnd() * 1024, rnd() * 2, 0, TAU); x.fill(); } break;
+      case 'crystal': for (let i = 0; i < 26; i++) { const a = rnd() * TAU, r0 = rnd() * 200, r1 = r0 + 120 + rnd() * 260; x.lineWidth = 1 + rnd() * 2; spoke(a, r0, r1); spoke(a + 0.08, r1 - 60, r1); spoke(a - 0.08, r1 - 60, r1); } ring(470, 3); break;
+      case 'crack': { x.lineWidth = 3; x.shadowColor = 'rgba(255,90,20,0.9)'; x.shadowBlur = 18;
+        for (let k = 0; k < 14; k++) { let a = rnd() * TAU, r = 40; x.beginPath(); x.moveTo(C + Math.cos(a) * r, C + Math.sin(a) * r); while (r < R) { r += 30 + rnd() * 40; a += (rnd() - 0.5) * 0.35; x.lineTo(C + Math.cos(a) * r, C + Math.sin(a) * r); } x.stroke(); }
+        x.shadowBlur = 0; break; }
+      case 'throne': for (let i = 1; i <= 6; i++) ring(i * 78, i % 2 ? 2 : 4); for (let i = 0; i < 24; i++) spoke((i / 24) * TAU, 78, R);
+        x.lineWidth = 3; for (let i = 0; i < 8; i++) { const a = (i / 8) * TAU; x.beginPath(); x.moveTo(C + Math.cos(a - 0.12) * 380, C + Math.sin(a - 0.12) * 380); x.lineTo(C + Math.cos(a) * 440, C + Math.sin(a) * 440); x.lineTo(C + Math.cos(a + 0.12) * 380, C + Math.sin(a + 0.12) * 380); x.stroke(); } break;
+    }
+    const acc = '#' + new THREE.Color(T.accent).getHexString();
+    x.strokeStyle = acc; x.globalAlpha = 0.6; ring(60, 6); x.globalAlpha = 0.25;
+    x.fillStyle = acc; x.font = '900 70px "Noto Sans TC",sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('旋', C, C + 4); x.globalAlpha = 1;
+  }
+  buildStadium(T) {
+    const sc = this.scene, g = new THREE.Group(); this.stadium = g; sc.add(g);
+    const c = document.createElement('canvas'); c.width = c.height = 1024; const x = c.getContext('2d');
+    this.drawFloor(x, T);
     const tex = new THREE.CanvasTexture(c); tex.encoding = THREE.sRGBEncoding; tex.anisotropy = 8;
     // bowl surface as a polar-mapped disc with displaced height
     const seg = 96, rings = 40, Rf = AR.WALL;
@@ -209,7 +239,7 @@ class BattleScene {
     bg.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
     bg.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
     bg.setIndex(idx); bg.computeVertexNormals();
-    const bowl = new THREE.Mesh(bg, new THREE.MeshStandardMaterial({ map: tex, metalness: 0.2, roughness: 0.55 }));
+    const bowl = new THREE.Mesh(bg, new THREE.MeshStandardMaterial({ map: tex, metalness: 0.2, roughness: T.pattern === 'crystal' ? 0.15 : T.pattern === 'ripple' ? 0.25 : 0.55, emissive: T.pattern === 'crack' ? 0xffffff : 0x000000, emissiveMap: T.pattern === 'crack' ? tex : null, emissiveIntensity: T.pattern === 'crack' ? 0.35 : 0 }));
     bowl.receiveShadow = true; g.add(bowl);
     // Xtreme rail: toothed ring
     const teeth = 160, tg = new THREE.BoxGeometry(0.07, 0.07, 0.12);
@@ -225,10 +255,10 @@ class BattleScene {
     rail.receiveShadow = true; g.add(rail); this.railMat = railMat; this.rail = rail; this.railTeeth = teeth;
     this.railHeat = new Float32Array(teeth);
     for (let i = 0; i < teeth; i++) rail.setColorAt(i, new THREE.Color(0x9aa4b8));
-    const glow = new THREE.Mesh(new THREE.RingGeometry(AR.RB, AR.WALL, 128, 1), new THREE.MeshBasicMaterial({ color: 0xff6a1a, transparent: true, opacity: 0.06, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+    const glow = new THREE.Mesh(new THREE.RingGeometry(AR.RB, AR.WALL, 128, 1), new THREE.MeshBasicMaterial({ color: T.accent, transparent: true, opacity: 0.06, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
     glow.rotation.x = -Math.PI / 2; glow.position.y = surfH(AR.RB) + 0.02; g.add(glow); this.railGlow = glow;
     // walls with pocket gaps
-    const wallMat = new THREE.MeshPhysicalMaterial({ color: 0x8fb8ff, metalness: 0, roughness: 0.08, transmission: 0.0, transparent: true, opacity: 0.28, side: THREE.DoubleSide });
+    const wallMat = new THREE.MeshPhysicalMaterial({ color: T.wall, metalness: 0, roughness: 0.08, transmission: 0.0, transparent: true, opacity: 0.28, side: THREE.DoubleSide });
     const wallEdge = new THREE.MeshStandardMaterial({ color: 0x1b2438, metalness: 0.6, roughness: 0.4 });
     const gaps = AR.pockets.map((p) => [p.phi - p.half, p.phi + p.half]);
     const segs = []; // free arcs between gaps
@@ -246,7 +276,7 @@ class BattleScene {
     // pocket trays
     this.pocketMeshes = [];
     for (const p of AR.pockets) {
-      const isX = p.kind === 'xtreme';
+      const isX = p.kind === 'rift';
       const col = isX ? 0xff3b1a : 0xffb347;
       const trayProf = [new THREE.Vector2(AR.WALL, surfH(AR.WALL)), new THREE.Vector2(AR.WALL + 0.5, 0.35), new THREE.Vector2(5.75, 0.3), new THREE.Vector2(5.75, 1.15), new THREE.Vector2(5.95, 1.15), new THREE.Vector2(5.95, -0.3)];
       const tray = new THREE.Mesh(new THREE.LatheGeometry(trayProf, 24, p.phi - p.half - 0.06, p.half * 2 + 0.12), new THREE.MeshStandardMaterial({ color: isX ? 0x2a0e0a : 0x2a1d0a, metalness: 0.3, roughness: 0.6, side: THREE.DoubleSide, emissive: col, emissiveIntensity: 0.08 }));
@@ -260,7 +290,7 @@ class BattleScene {
       // label
       const lc = document.createElement('canvas'); lc.width = 512; lc.height = 128; const lx = lc.getContext('2d');
       lx.fillStyle = isX ? '#ff4a1a' : '#ffb347'; lx.font = '900 64px "Noto Sans TC",sans-serif'; lx.textAlign = 'center'; lx.textBaseline = 'middle';
-      lx.fillText(isX ? '極限區 ×3' : '場外區 ×2', 256, 64);
+      lx.fillText(isX ? '裂界區 ×3' : '場外區 ×2', 256, 64);
       const lt = new THREE.CanvasTexture(lc); lt.encoding = THREE.sRGBEncoding;
       const lbl = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 0.4), new THREE.MeshBasicMaterial({ map: lt, transparent: true, depthWrite: false }));
       const lr = 5.3; lbl.position.set(Math.sin(p.phi) * lr, 0.36, Math.cos(p.phi) * lr);
@@ -275,7 +305,7 @@ class BattleScene {
     base.position.y = -0.32; base.receiveShadow = true; g.add(base);
     const table = new THREE.Mesh(new THREE.CircleGeometry(30, 64), new THREE.MeshStandardMaterial({ color: 0x080a10, roughness: 0.9 }));
     table.rotation.x = -Math.PI / 2; table.position.y = -0.62; table.receiveShadow = true; g.add(table);
-    const edge = new THREE.Mesh(new THREE.TorusGeometry(6.32, 0.03, 8, 128), new THREE.MeshBasicMaterial({ color: 0x36d3ff }));
+    const edge = new THREE.Mesh(new THREE.TorusGeometry(6.32, 0.03, 8, 128), new THREE.MeshBasicMaterial({ color: T.rim }));
     edge.rotation.x = Math.PI / 2; edge.position.y = -0.02; g.add(edge);
   }
   makeArrow() {
@@ -385,7 +415,13 @@ class BattleScene {
     // camera
     const base = this.camBase.clone();
     let lookT = new THREE.Vector3(0, 0, 0.4);
-    if (this.zoomTo) {
+    if (this.cine) {
+      const c = this.cine; c.t += dt; c.a += dt * 1.6;
+      const r = 2.6 - Math.min(c.t, 1) * 0.6;
+      base.set(c.x + Math.sin(c.a) * r, 1.1 + Math.min(c.t, 1) * 0.3, c.z + Math.cos(c.a) * r);
+      lookT.set(c.x, 0.45, c.z);
+      this.cam.position.lerp(base, 1 - Math.exp(-dt * 10));
+    } else if (this.zoomTo) {
       const z = this.zoomTo;
       base.set(z.x * 0.55, 4.2, z.z * 0.55 + 4.6);
       lookT.set(z.x, 0.4, z.z);
@@ -402,7 +438,8 @@ class BattleScene {
       this.shake = Math.max(0, this.shake - dt * 2.5);
     }
     this.cam.lookAt(this.look);
-    const fov = 42 - (this.dashFx || 0) * 4 - (this.zoomTo ? 6 : 0);
+    this.fovKick = Math.max(0, (this.fovKick || 0) - dt * 30);
+    const fov = 42 - (this.dashFx || 0) * 4 - (this.zoomTo ? 6 : 0) - (this.cine ? 8 : 0) + this.fovKick;
     if (Math.abs(this.cam.fov - fov) > 0.01) { this.cam.fov = lerp(this.cam.fov, fov, 1 - Math.exp(-dt * 5)); this.cam.updateProjectionMatrix(); }
     const post = this.fx.post;
     if (post) {

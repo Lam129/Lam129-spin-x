@@ -132,23 +132,32 @@ function emblemTexture(bl) {
 }
 /* ---------- Blender-built meshes (assets/parts.bin), with procedural fallback ---------- */
 const Assets = {
-  ok: false, idx: null, buf: null, cache: {},
+  ok: false, idx: null, cache: {},
+  bufs: {},
   async load(onProgress) {
     try {
       const j = await (await fetch('assets/parts.json')).json();
-      const res = await fetch('assets/parts.txt');
-      const total = +res.headers.get('content-length') || 0;
-      let bytes;
-      if (res.body && total && onProgress) {
-        const reader = res.body.getReader(); const parts = []; let got = 0;
-        for (;;) { const { done, value } = await reader.read(); if (done) break; parts.push(value); got += value.length; onProgress(got / total); }
-        bytes = new Uint8Array(got); let o = 0; for (const p of parts) { bytes.set(p, o); o += p.length; }
-      } else bytes = new Uint8Array(await res.arrayBuffer());
-      // base64 -> binary (chunked to keep memory flat)
-      const txt = new TextDecoder().decode(bytes).trim();
-      const bin = atob(txt), buf = new ArrayBuffer(bin.length), u8 = new Uint8Array(buf);
-      for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
-      this.idx = j; this.buf = buf; this.ok = true;
+      const groups = ['blade', 'ratchet', 'bit'];
+      const prog = {};
+      const one = async (g) => {
+        const res = await fetch(`assets/parts_${g}.txt`);
+        const total = +res.headers.get('content-length') || 0;
+        let bytes;
+        if (res.body && total) {
+          const reader = res.body.getReader(); const parts = []; let got = 0;
+          for (;;) {
+            const { done, value } = await reader.read(); if (done) break; parts.push(value); got += value.length;
+            prog[g] = [got, total];
+            if (onProgress) { let a = 0, b = 0; for (const k in prog) { a += prog[k][0]; b += prog[k][1]; } onProgress(a / Math.max(b, 1)); }
+          }
+          bytes = new Uint8Array(got); let o = 0; for (const p of parts) { bytes.set(p, o); o += p.length; }
+        } else bytes = new Uint8Array(await res.arrayBuffer());
+        const bin = atob(new TextDecoder().decode(bytes).trim()), buf = new ArrayBuffer(bin.length), u8 = new Uint8Array(buf);
+        for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+        this.bufs[g] = buf;
+      };
+      await Promise.all(groups.map(one));
+      this.idx = j; this.ok = true;
     } catch (e) { this.ok = false; }
     return this.ok;
   },
@@ -157,13 +166,14 @@ const Assets = {
     const ck = key + '/' + name; if (this.cache[ck]) return this.cache[ck];
     const m = this.idx.parts[key].find((x) => x.name === name); if (!m) return null;
     const S = this.idx.scale / 32767;
-    const p16 = new Int16Array(this.buf, m.p, m.n * 3), n8 = new Int8Array(this.buf, m.q, m.n * 3);
+    const B = this.bufs[key.split('_')[0]];
+    const p16 = new Int16Array(B, m.p, m.n * 3), n8 = new Int8Array(B, m.q, m.n * 3);
     const pos = new Float32Array(m.n * 3), nrm = new Float32Array(m.n * 3);
     for (let i = 0; i < m.n * 3; i++) { pos[i] = p16[i] * S; nrm[i] = n8[i] / 127; }
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     g.setAttribute('normal', new THREE.BufferAttribute(nrm, 3));
-    g.setIndex(new THREE.BufferAttribute(m.big ? new Uint32Array(this.buf, m.i, m.ic) : new Uint16Array(this.buf, m.i, m.ic), 1));
+    g.setIndex(new THREE.BufferAttribute(m.big ? new Uint32Array(B, m.i, m.ic) : new Uint16Array(B, m.i, m.ic), 1));
     // planar UVs (top view) for brushed/engraved maps
     const uv = new Float32Array(m.n * 2);
     for (let i = 0; i < m.n; i++) { uv[i * 2] = pos[i * 3] / 0.96 + 0.5; uv[i * 2 + 1] = -pos[i * 3 + 2] / 0.96 + 0.5; }
@@ -265,7 +275,7 @@ function ratchetLabel(rt) {
   return canvasTex('rl-' + rt.id, 512, 64, (g, W, H) => {
     g.fillStyle = '#' + rt.color.toString(16).padStart(6, '0'); g.fillRect(0, 0, W, H);
     g.fillStyle = 'rgba(255,255,255,0.85)'; g.font = '700 38px "Chakra Petch",sans-serif'; g.textBaseline = 'middle';
-    for (let i = 0; i < 4; i++) { g.fillText(rt.id, i * 128 + 14, H / 2 + 2); g.fillRect(i * 128 + 118, 18, 3, 28); }
+    for (let i = 0; i < 4; i++) { g.fillText(rt.code, i * 128 + 14, H / 2 + 2); g.fillRect(i * 128 + 118, 18, 3, 28); }
   });
 }
 function buildRatchet(rt) {
@@ -322,7 +332,7 @@ function buildRatchet(rt) {
   g.userData.h = h;
   return g;
 }
-const BIT_LEN = { flat: 0.25, rush: 0.25, rubber: 0.25, taper: 0.26, point: 0.26, ball: 0.26, needle: 0.28, hneedle: 0.34 };
+const BIT_LEN = { flat: 0.25, rush: 0.25, rubber: 0.25, taper: 0.26, point: 0.26, ball: 0.26, needle: 0.28, hneedle: 0.34, lowflat: 0.22, accel: 0.25, orb: 0.25, htaper: 0.32 };
 function bitProfile(tip, L) {
   const V = (x, y) => new THREE.Vector2(x, y);
   const p = [V(0.001, 0), V(0.19, 0), V(0.2, -0.01), V(0.2, -0.045), V(0.16, -0.06), V(0.145, -0.075), V(0.145, -0.13), V(0.135, -0.14)];
@@ -335,6 +345,10 @@ function bitProfile(tip, L) {
     case 'ball': p.push(V(0.1, -0.16)); for (let i = 0; i <= 10; i++) { const a = (i / 10) * Math.PI / 2; p.push(V(Math.cos(a) * 0.075 + 0.001, -L + 0.075 - Math.sin(a) * 0.075)); } break;
     case 'needle': p.push(V(0.095, -0.15), V(0.03, -L + 0.03), V(0.004, -L)); break;
     case 'hneedle': p.push(V(0.11, -0.16), V(0.085, -0.25), V(0.03, -L + 0.03), V(0.004, -L)); break;
+    case 'lowflat': p.push(V(0.13, -0.15), V(0.13, -L + 0.012), V(0.12, -L), V(0.001, -L)); break;
+    case 'accel': p.push(V(0.125, -0.16), V(0.118, -0.19), V(0.128, -0.2), V(0.11, -L + 0.012), V(0.095, -L), V(0.001, -L)); break;
+    case 'orb': p.push(V(0.12, -0.15)); for (let i = 0; i <= 10; i++) { const a = (i / 10) * Math.PI / 2; p.push(V(Math.cos(a) * 0.115 + 0.001, -L + 0.06 - Math.sin(a) * 0.06)); } break;
+    case 'htaper': p.push(V(0.11, -0.16), V(0.08, -0.24), V(0.045, -L + 0.012), V(0.035, -L), V(0.001, -L)); break;
   }
   return p;
 }

@@ -1,6 +1,6 @@
-<title>旋鋒對決 X-DRIVE</title>
+<title>旋鋒對決</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@900&display=swap">
 <style>
 /* Layout: one full-screen WebGL stage behind angular esports HUD panels. Deliberately single dark theme (arena at night). */
 :root{
@@ -45,11 +45,31 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .chip{display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--panel);border:1px solid var(--line);font-size:14px}
 .coin{width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3b0,#ffc531 45%,#b77800);box-shadow:0 0 6px rgba(255,190,40,.6);flex:none}
 .back{position:absolute;top:70px;left:22px}
+.corner{display:flex;gap:6px}
+.ibtn{display:flex;align-items:center;gap:6px;padding:6px 10px;background:var(--panel);border:1px solid var(--line);font-size:13px;color:var(--dim);transition:border-color .15s,color .15s}
+.ibtn:hover{border-color:var(--hot);color:var(--fg)}
+.ibtn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linejoin:round;stroke-linecap:round}
+.settings{position:fixed;top:64px;right:22px;z-index:5;width:280px;padding:16px;display:grid;gap:8px;font-size:13px}
+.settings input{accent-color:var(--hot)}
+.opp .av{width:56px;height:56px;display:block}
+.opp .av .avq{display:grid;place-items:center;width:56px;height:56px;font-size:24px;font-weight:900;color:var(--mute);background:#0b0f1a;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.hav{display:block;width:40px;height:40px;flex:none}
+.deckrow{display:flex;gap:6px;margin-bottom:4px}
+.gauge.r .deckrow{justify-content:flex-end}
+.dk{position:relative;display:grid;justify-items:center;width:46px;opacity:.55;transition:opacity .2s,transform .2s}
+.dk img{width:42px;height:42px;border:1px solid var(--line2);background:#0b0f1a}
+.dk i{position:absolute;top:-4px;left:-4px;font-style:normal;font-family:var(--f-disp);font-size:11px;font-weight:700;background:var(--line2);padding:0 4px}
+.dk em{font-style:normal;font-family:var(--f-disp);font-size:11px;color:var(--hot2);min-height:14px}
+.dk.cur{opacity:1;transform:scale(1.12)}
+.dk.cur img{border-color:var(--hot);box-shadow:0 0 12px rgba(255,106,26,.6)}
+.gauge.r .dk.cur img{border-color:var(--ice);box-shadow:0 0 12px rgba(54,211,255,.6)}
+.res-av{display:flex;align-items:center;justify-content:center;gap:18px}
+.res-av .vs{font-family:var(--f-disp);font-weight:700;font-size:22px;color:var(--mute)}
 /* ===== Auth ===== */
 #s-auth{display:grid;place-items:center}
 .auth-card{width:min(520px,calc(100% - 32px));padding:34px 34px 30px;display:grid;gap:18px}
 .auth-logo{font-family:var(--f-disp);font-size:44px;font-weight:700;line-height:1;letter-spacing:.04em}
-.auth-logo b{color:var(--hot)}
+.auth-logo .auth-sub{display:block;font-size:15px;letter-spacing:.5em;color:var(--hot);margin-top:8px}
 .auth-card label{font-size:13px;color:var(--dim)}
 .inp{width:100%;padding:12px 14px;background:#0a0e18;border:1px solid var(--line2);color:var(--fg);font-size:16px;font-family:var(--f-body)}
 .starter-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
@@ -157,6 +177,7 @@ h1,h2,h3{margin:0;text-wrap:balance}
 @keyframes bannerIn{0%{opacity:0;transform:scale(1.6) skewX(-8deg)}12%{opacity:1;transform:scale(1) skewX(-8deg)}80%{opacity:1;transform:scale(1.02) skewX(-8deg)}100%{opacity:0;transform:scale(1.08) skewX(-8deg)}}
 .count{position:absolute;left:0;right:0;top:30%;text-align:center;font-family:var(--f-disp);font-weight:700;font-size:clamp(60px,11vw,150px);line-height:1;pointer-events:none;color:#fff;text-shadow:0 0 30px rgba(255,140,40,.8)}
 .count.pop{animation:pop .6s ease-out}
+.count.long{font-family:var(--f-body);font-weight:900;font-size:clamp(48px,7.5vw,104px);letter-spacing:.06em}
 @keyframes pop{0%{transform:scale(1.8);opacity:0}30%{transform:scale(1);opacity:1}100%{transform:scale(.92);opacity:.9}}
 .launcher{position:absolute;right:22px;top:50%;transform:translateY(-46%);width:260px;padding:14px 16px 16px;display:grid;gap:10px;justify-items:center}
 .launcher .hint{font-size:12px;color:var(--dim);text-align:center;line-height:1.5}
@@ -177,7 +198,7 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .spg.ready .spbar i{animation:spglow .5s ease-in-out infinite alternate}
 .spg.used .spbar{opacity:.4}
 @keyframes spglow{to{filter:brightness(1.6)}}
-.spbtn{position:absolute;left:22px;bottom:168px;display:flex;gap:10px;align-items:center;padding:10px 16px;background:var(--panel);border:1px solid var(--line2);text-align:left;pointer-events:auto;transition:transform .15s}
+.spbtn{position:absolute;left:22px;bottom:252px;display:flex;gap:10px;align-items:center;padding:10px 16px;background:var(--panel);border:1px solid var(--line2);text-align:left;pointer-events:auto;transition:transform .15s}
 .spbtn .k{font-family:var(--f-disp);font-size:11px;padding:3px 6px;border:1px solid var(--line2);color:var(--dim)}
 .spbtn b{display:block;font-size:16px}.spbtn small{display:block;font-size:11px;color:var(--dim)}
 .spbtn[disabled]{opacity:.45;cursor:default}
@@ -199,6 +220,46 @@ h1,h2,h3{margin:0;text-wrap:balance}
 @keyframes ciFade{0%{opacity:0}8%{opacity:1}80%{opacity:1}100%{opacity:0}}
 @keyframes ciIn{0%{translate:-60% 0}14%{translate:0 0}80%{translate:3% 0}100%{translate:60% 0}}
 @keyframes ciInR{0%{translate:60% 0}14%{translate:0 0}80%{translate:-3% 0}100%{translate:-60% 0}}
+.cine{position:absolute;inset:0;pointer-events:none;opacity:0;--sc:#ff6a1a;overflow:hidden;z-index:4}
+.cine.on{opacity:1;pointer-events:auto;cursor:pointer}
+.cn-dark{position:absolute;inset:0;background:radial-gradient(circle at 50% 55%,transparent 0 18%,color-mix(in srgb,var(--sc) 25%,#000) 55%,#000 100%);opacity:0;transition:opacity .25s}
+.cine.charge .cn-dark,.cine.cut .cn-dark{opacity:.85}
+.cn-lines{position:absolute;inset:-20%;background:repeating-conic-gradient(from 0deg at 50% 50%,transparent 0 2.2deg,color-mix(in srgb,var(--sc) 40%,#fff) 2.2deg 2.6deg);opacity:0;mask:radial-gradient(circle at 50% 50%,transparent 0 22%,#000 60%);-webkit-mask:radial-gradient(circle at 50% 50%,transparent 0 22%,#000 60%)}
+.cine.cut .cn-lines{opacity:.5;animation:cnSpin 1s linear infinite}
+@keyframes cnSpin{to{transform:rotate(8deg)}}
+.cn-panel{position:absolute;top:0;bottom:0;width:58%;display:grid;place-items:center;opacity:0;transition:transform .32s cubic-bezier(.2,.9,.2,1),opacity .2s}
+.cn-a{left:0;clip-path:polygon(0 0,100% 0,72% 100%,0 100%);background:linear-gradient(120deg,color-mix(in srgb,var(--sc) 70%,#000),#08060a 70%);transform:translateX(-100%)}
+.cn-b{right:0;clip-path:polygon(28% 0,100% 0,100% 100%,0 100%);background:linear-gradient(300deg,color-mix(in srgb,var(--sc) 55%,#000),#050408 70%);transform:translateX(100%)}
+.cine.right .cn-a{left:auto;right:0;clip-path:polygon(28% 0,100% 0,100% 100%,0 100%);transform:translateX(100%)}
+.cine.right .cn-b{right:auto;left:0;clip-path:polygon(0 0,100% 0,72% 100%,0 100%);transform:translateX(-100%)}
+.cine.cut .cn-panel{opacity:1;transform:none}
+.cn-portrait{transform:translateX(-12%) scale(1.15);filter:drop-shadow(0 0 30px var(--sc))}
+.cine.right .cn-portrait{transform:translateX(12%) scale(1.15)}
+.cn-b img{width:min(34vw,360px);height:auto;transform:translateX(14%) rotate(-12deg);filter:drop-shadow(0 0 40px var(--sc));animation:cnBlade 1s linear infinite}
+.cine.right .cn-b img{transform:translateX(-14%) rotate(12deg)}
+@keyframes cnBlade{to{rotate:30deg}}
+.cn-text{position:absolute;left:0;right:0;top:66%;transform:translateY(-50%);text-align:center;opacity:0}
+.cine.cut .cn-text{opacity:1}
+.cn-who{font-size:16px;letter-spacing:.4em;color:#fff;text-shadow:0 2px 8px #000}
+.cn-name{font-family:"Noto Serif TC","Noto Sans TC",serif;font-weight:900;font-size:clamp(56px,9vw,140px);line-height:1.05;color:#fff;letter-spacing:.02em;white-space:nowrap}
+.cn-name span{display:inline-block;opacity:0;color:#fff;background:linear-gradient(180deg,#fff 40%,color-mix(in srgb,var(--sc) 60%,#fff));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 14px var(--sc)) drop-shadow(5px 5px 0 rgba(0,0,0,.75))}
+.cine.cut .cn-name span{animation:cnDrop .38s cubic-bezier(.2,1.6,.4,1) var(--d) forwards}
+.cn-name .dot{display:inline-block;width:.18em;height:.18em;margin:0 .12em;background:var(--sc);transform:rotate(45deg) translateY(-.15em);box-shadow:0 0 14px var(--sc)}
+@keyframes cnDrop{0%{opacity:0;transform:translateY(-120%) scale(2.4) rotate(-8deg)}60%{opacity:1}100%{opacity:1;transform:none}}
+.cn-kind{display:inline-block;margin-top:8px;padding:4px 18px;font-family:var(--f-disp);font-weight:700;letter-spacing:.4em;color:#000;background:var(--sc);transform:skewX(-14deg)}
+.cn-ink i{position:absolute;width:calc(90px * var(--s));height:calc(60px * var(--s));border-radius:48% 52% 40% 60%;background:radial-gradient(circle at 40% 40%,color-mix(in srgb,var(--sc) 70%,transparent) 0 30%,transparent 70%);mix-blend-mode:screen;opacity:0;transform:scale(.2)}
+.cine.cut .cn-ink i{animation:cnInk .35s ease-out var(--d) forwards}
+@keyframes cnInk{to{opacity:.55;transform:scale(1) rotate(20deg)}}
+.cn-slash i{position:absolute;left:-30%;right:-30%;height:6px;background:linear-gradient(90deg,transparent,#fff 40%,var(--sc) 60%,transparent);box-shadow:0 0 24px var(--sc);opacity:0}
+.cn-slash i:nth-child(1){top:30%;transform:rotate(-18deg)}.cn-slash i:nth-child(2){top:52%;transform:rotate(12deg)}.cn-slash i:nth-child(3){top:70%;transform:rotate(-6deg)}
+.cine.burst .cn-slash i{animation:cnSlash .38s ease-out forwards}
+.cine.burst .cn-slash i:nth-child(2){animation-delay:.06s}.cine.burst .cn-slash i:nth-child(3){animation-delay:.12s}
+@keyframes cnSlash{0%{opacity:0;translate:-60% 0;scale:1 .4}30%{opacity:1;scale:1 1.4}100%{opacity:0;translate:60% 0;scale:1 .2}}
+.cn-flash{position:absolute;inset:0;background:#fff;opacity:0}
+.cine.burst .cn-flash{animation:cnFlash .5s ease-out forwards}
+@keyframes cnFlash{0%{opacity:.95}100%{opacity:0}}
+.cn-skip{position:absolute;right:22px;bottom:18px;font-size:12px;color:rgba(255,255,255,.6);opacity:0}
+.cine.charge .cn-skip,.cine.cut .cn-skip{opacity:1}
 .toast{position:absolute;left:50%;top:22%;transform:translateX(-50%);padding:10px 18px;font-weight:700;background:rgba(40,10,10,.9);border:1px solid var(--atk);color:#ffd0d0;pointer-events:none;opacity:0;transition:opacity .25s}
 .toast.show{opacity:1}
 .quit{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);padding:8px 16px;font-size:13px;opacity:.75}.quit:hover{opacity:1}
@@ -254,13 +315,21 @@ h1,h2,h3{margin:0;text-wrap:balance}
 
 <canvas id="gl"></canvas>
 <div id="loading">LOADING…</div>
+<div class="settings panel cut" id="settings" hidden>
+  <div style="display:flex;justify-content:space-between;align-items:center"><b>設定</b><button class="btn cut" id="setClose" style="padding:4px 10px">關閉</button></div>
+  <label for="vol-master">主音量</label><input type="range" id="vol-master" min="0" max="100" data-vol="master">
+  <label for="vol-sfx">音效</label><input type="range" id="vol-sfx" min="0" max="100" data-vol="sfx">
+  <label for="vol-voice">語音（倒數口號）</label><input type="range" id="vol-voice" min="0" max="100" data-vol="voice">
+  <button class="btn cut" id="voiceTest">試聽語音</button>
+  <div class="desc" style="font-size:12px">語音使用瀏覽器內建的語音合成，聲音會依你的電腦和瀏覽器而不同。</div>
+</div>
 <div id="ui">
   <!-- AUTH -->
   <section class="screen" id="s-auth" hidden>
     <form class="auth-card panel cut" id="authForm">
       <div>
-        <div class="eyebrow">Blader Registration · 刀鋒玩家登錄</div>
-        <div class="auth-logo">旋鋒對決 <b>X</b></div>
+        <div class="eyebrow">Player Registration · 旋鬥士登錄</div>
+        <div class="auth-logo">旋鋒對決<span class="auth-sub">SPIN DUEL</span></div>
       </div>
       <div class="acct" id="acctLine"><span class="dot"></span><span>正在連線帳號…</span></div>
       <div style="display:grid;gap:6px">
@@ -283,10 +352,8 @@ h1,h2,h3{margin:0;text-wrap:balance}
     <nav class="hub-menu">
       <div class="eyebrow" style="margin-bottom:4px" id="hubGreet">歡迎回來</div>
       <button class="menu-item cut" data-go="select"><span class="ic">VS</span><span><h3>對戰</h3><p>挑戰之路・8 位對手・3 對 3 牌組戰</p></span><span class="arrow">›</span></button>
-      <button class="menu-item cut" data-go="assembly"><span class="ic">⚙</span><span><h3>組裝工坊</h3><p>戰刃 × 固鎖輪 × 軸心，自由組裝與編輯牌組</p></span><span class="arrow">›</span></button>
+      <button class="menu-item cut" data-go="assembly"><span class="ic">⚙</span><span><h3>組裝工坊</h3><p>鋒輪 × 鎖芯 × 旋尖，自由組裝與編輯牌組</p></span><span class="arrow">›</span></button>
       <button class="menu-item cut" data-go="gacha"><span class="ic">◎</span><span><h3>扭蛋機</h3><p>用對戰贏來的金幣抽取新零件</p></span><span class="arrow">›</span></button>
-      <button class="menu-item cut" data-go="collection"><span class="ic">▤</span><span><h3>收藏圖鑑</h3><p id="hubColl">零件收集進度</p></span><span class="arrow">›</span></button>
-      <button class="menu-item cut" data-go="rules"><span class="ic">?</span><span><h3>比賽規則</h3><p>計分方式・終結種類・發射規範</p></span><span class="arrow">›</span></button>
     </nav>
     <div class="hub-bey panel cut pe-none">
       <div class="eyebrow">牌組 1 號機</div>
@@ -301,9 +368,9 @@ h1,h2,h3{margin:0;text-wrap:balance}
     <div class="asm">
       <div class="col">
         <div class="tabs" role="tablist">
-          <button class="tab" role="tab" data-ptab="blade" aria-selected="true">戰刃</button>
-          <button class="tab" role="tab" data-ptab="ratchet" aria-selected="false">固鎖輪</button>
-          <button class="tab" role="tab" data-ptab="bit" aria-selected="false">軸心</button>
+          <button class="tab" role="tab" data-ptab="blade" aria-selected="true">鋒輪</button>
+          <button class="tab" role="tab" data-ptab="ratchet" aria-selected="false">鎖芯</button>
+          <button class="tab" role="tab" data-ptab="bit" aria-selected="false">旋尖</button>
         </div>
         <div class="plist" id="plist"></div>
       </div>
@@ -333,7 +400,7 @@ h1,h2,h3{margin:0;text-wrap:balance}
         <div class="ladder" id="ladder"></div>
       </div>
       <div class="side panel cut">
-        <div><div class="eyebrow">對手</div><h2 id="oppName" style="font-size:24px;font-weight:900;margin-top:4px"></h2><div class="desc" id="oppInfo"></div></div>
+        <div style="display:flex;gap:14px;align-items:center"><span id="oppAv"></span><div><div class="eyebrow">對手</div><h2 id="oppName" style="font-size:24px;font-weight:900;margin-top:4px"></h2></div></div><div class="desc" id="oppInfo"></div><div><div class="eyebrow" style="margin-bottom:4px">戰鬥盤</div><div class="desc" id="oppStadium"></div></div>
         <div><div class="eyebrow" style="margin-bottom:6px">賽制</div>
           <div class="seg" id="modeSeg">
             <button data-mode="3v3" aria-pressed="true">3 對 3 牌組戰<small>依序使用 3 顆陀螺</small></button>
@@ -343,7 +410,7 @@ h1,h2,h3{margin:0;text-wrap:balance}
         <div><div class="eyebrow" style="margin-bottom:6px">你的牌組</div><div class="mini-deck" id="selDeck"></div></div>
         <div class="warn" id="selWarn"></div>
         <div class="spacer"></div>
-        <div class="desc">先取得 <b class="num" style="color:var(--hot)">4</b> 分者獲勝。旋轉終結 1 分・擊飛 2 分・爆裂 2 分・極限 3 分。</div>
+        <div class="desc">先取得 <b class="num" style="color:var(--hot)">4</b> 分者獲勝。旋轉終結 1 分・場外 2 分・解體 2 分・裂界 3 分。</div>
         <button class="btn primary cut" id="startBattle">進入對戰</button>
       </div>
     </div>
@@ -352,13 +419,24 @@ h1,h2,h3{margin:0;text-wrap:balance}
   <!-- BATTLE -->
   <section class="screen" id="s-battle" hidden>
     <div class="hud-top">
-      <div class="pl panel cut"><div class="who"><b id="p1n"></b><span id="p1b"></span></div><div class="pips" id="p1pips"></div></div>
+      <div class="pl panel cut"><span class="hav" id="p1av"></span><div class="who"><b id="p1n"></b><span id="p1b"></span></div><div class="pips" id="p1pips"></div></div>
       <div class="round panel cut"><div class="eyebrow">ROUND</div><div class="num" id="roundNo">1</div></div>
-      <div class="pl r panel cut"><div class="who"><b id="p2n"></b><span id="p2b"></span></div><div class="pips" id="p2pips"></div></div>
+      <div class="pl r panel cut"><span class="hav" id="p2av"></span><div class="who"><b id="p2n"></b><span id="p2b"></span></div><div class="pips" id="p2pips"></div></div>
     </div>
-    <div class="gauge l panel cut"><div class="eyebrow">你的轉速</div><div class="rpm num" id="g1rpm">0<small>RPM</small></div><div class="gbar"><i id="g1bar"></i></div><div class="ratchet" id="g1rat"></div><div class="spg"><span>必殺</span><div class="spbar"><i id="g1sp"></i></div></div></div>
-    <div class="gauge r panel cut"><div class="eyebrow">對手轉速</div><div class="rpm num" id="g2rpm">0<small>RPM</small></div><div class="gbar"><i id="g2bar"></i></div><div class="ratchet" id="g2rat"></div><div class="spg"><span>必殺</span><div class="spbar"><i id="g2sp"></i></div></div></div>
+    <div class="gauge l panel cut"><div class="deckrow" id="g1deck"></div><div class="eyebrow">你的轉速</div><div class="rpm num" id="g1rpm">0<small>RPM</small></div><div class="gbar"><i id="g1bar"></i></div><div class="ratchet" id="g1rat"></div><div class="spg"><span>必殺</span><div class="spbar"><i id="g1sp"></i></div></div></div>
+    <div class="gauge r panel cut"><div class="deckrow" id="g2deck"></div><div class="eyebrow">對手轉速</div><div class="rpm num" id="g2rpm">0<small>RPM</small></div><div class="gbar"><i id="g2bar"></i></div><div class="ratchet" id="g2rat"></div><div class="spg"><span>必殺</span><div class="spbar"><i id="g2sp"></i></div></div></div>
     <button class="spbtn cut" id="spBtn" disabled><span class="k">SPACE</span><span><b>必殺技</b><small id="spName"></small></span></button>
+    <div class="cine" id="cine">
+      <div class="cn-dark"></div>
+      <div class="cn-lines"></div>
+      <div class="cn-panel cn-a"><div class="cn-portrait" id="cnPortrait"></div></div>
+      <div class="cn-panel cn-b"><img id="cnBlade" alt=""></div>
+      <div class="cn-ink" id="cnInk"></div>
+      <div class="cn-text"><div class="cn-who" id="cnWho"></div><div class="cn-name" id="cnName"></div><div class="cn-kind" id="cnKind"></div></div>
+      <div class="cn-slash"><i></i><i></i><i></i></div>
+      <div class="cn-flash"></div>
+      <div class="cn-skip">按任意鍵跳過</div>
+    </div>
     <div class="cutin" id="cutin"><div class="ci-lines"></div><div class="ci-band"><img id="ciImg" alt=""><div class="ci-txt"><div class="ci-who" id="ciWho"></div><div class="ci-name" id="ciName"></div><div class="ci-kind" id="ciKind"></div></div></div></div>
     <div class="count pe-none" id="count"></div>
     <div class="banner" id="banner"><div class="sub" id="bnSub"></div><div class="big" id="bnBig"></div><div class="pts" id="bnPts"></div></div>
@@ -368,7 +446,7 @@ h1,h2,h3{margin:0;text-wrap:balance}
       <div class="aimrow"><span>中央</span><input type="range" id="aim" min="-100" max="100" value="20" aria-label="發射角度"><span>外圈軌道</span></div>
       <div class="track" id="track"><div class="fill" id="tfill"></div><div class="handle" id="handle">PULL</div></div>
       <div class="powread" id="powread"></div>
-      <div class="hint" id="lhint">按住拉柄，聽到「GO SHOOT」後<br>快速往下拉到底！越快轉速越高</div>
+      <div class="hint" id="lhint">按住拉柄，聽到「旋鋒出擊」後<br>快速往下拉到底！越快轉速越高</div>
     </div>
     <button class="btn quit cut" id="quitBattle">退出對戰</button>
   </section>
@@ -376,7 +454,7 @@ h1,h2,h3{margin:0;text-wrap:balance}
   <!-- RESULT -->
   <section class="screen" id="s-result" hidden>
     <div class="res-card panel cut">
-      <div class="eyebrow" id="resEye">MATCH RESULT</div>
+      <div class="res-av" id="resAv"></div><div class="eyebrow" id="resEye">MATCH RESULT</div>
       <div class="res-title" id="resTitle"></div>
       <div class="res-score num" id="resScore"></div>
       <div class="res-list" id="resList"></div>
@@ -411,9 +489,9 @@ h1,h2,h3{margin:0;text-wrap:balance}
     <div class="coll">
       <div class="coll-main">
         <div class="tabs" role="tablist">
-          <button class="tab" role="tab" data-ctab="blade" aria-selected="true">戰刃</button>
-          <button class="tab" role="tab" data-ctab="ratchet" aria-selected="false">固鎖輪</button>
-          <button class="tab" role="tab" data-ctab="bit" aria-selected="false">軸心</button>
+          <button class="tab" role="tab" data-ctab="blade" aria-selected="true">鋒輪</button>
+          <button class="tab" role="tab" data-ctab="ratchet" aria-selected="false">鎖芯</button>
+          <button class="tab" role="tab" data-ctab="bit" aria-selected="false">旋尖</button>
         </div>
         <div class="progress" id="collProg"></div>
         <div class="coll-grid" id="collGrid"></div>
@@ -426,41 +504,46 @@ h1,h2,h3{margin:0;text-wrap:balance}
   <section class="screen" id="s-rules" hidden>
     <div class="topbar" data-topbar></div>
     <article class="rules panel cut">
-      <div class="eyebrow">Official-style Battle Rules</div>
+      <div class="eyebrow">Battle Rules</div>
       <h2>比賽規則</h2>
-      <p>本遊戲採用 X 世代競技陀螺的標準賽制：兩名刀鋒玩家同時發射，陀螺在對戰盤內碰撞，依照終結方式取得分數，<b>先取得 4 分的一方獲勝</b>。</p>
+      <p>兩名旋鬥士同時發射陀螺，陀螺在戰鬥盤內碰撞，依照終結方式取得分數，<b>先取得 4 分的一方獲勝</b>。</p>
       <h3>四種終結方式</h3>
       <div class="ftable">
         <div class="fcell"><b>旋轉終結</b><span class="num">1</span><small>對手的陀螺先停止旋轉（倒下）。</small></div>
-        <div class="fcell"><b>擊飛終結</b><span class="num">2</span><small>把對手撞進兩側的「場外區」。</small></div>
-        <div class="fcell"><b>爆裂終結</b><span class="num">2</span><small>撞擊讓對手的固鎖輪鬆脫，陀螺解體成零件。</small></div>
-        <div class="fcell"><b>極限終結</b><span class="num">3</span><small>把對手撞進正對面的「極限區」。</small></div>
+        <div class="fcell"><b>場外終結</b><span class="num">2</span><small>把對手撞進「場外區」。</small></div>
+        <div class="fcell"><b>解體終結</b><span class="num">2</span><small>撞擊讓對手的鎖芯鬆脫，陀螺解體成零件。</small></div>
+        <div class="fcell"><b>裂界終結</b><span class="num">3</span><small>把對手撞進「裂界區」。</small></div>
       </div>
       <h3>陀螺構造</h3>
       <ul>
-        <li><b>戰刃</b>：最上層的金屬刃，決定攻擊、防禦、持久的基本性能與重量。</li>
-        <li><b>固鎖輪</b>：以「齒數-高度」標示，例如 3-60 代表 3 個卡榫、高度 6.0mm。齒數越多越不容易爆裂；高度越高，打擊點越高但重心不穩。</li>
-        <li><b>軸心</b>：與盤面接觸的底部零件，決定移動方式。軸心外圈的齒輪咬住對戰盤的「極限軌道」時，會觸發<b>極限衝刺</b>瞬間加速。</li>
+        <li><b>鋒輪</b>：最上層的金屬刃，決定攻擊、防禦、持久的基本性能與重量。</li>
+        <li><b>鎖芯</b>：編號 C＋爪數＋高度，例如 C4L 代表 4 爪、低位（L 低／M 中／H 高）。爪越多越不容易解體；位置越高，打擊點越高但重心不穩。</li>
+        <li><b>旋尖</b>：與盤面接觸的底部零件，決定移動方式。旋尖外圈的齒圈咬住戰鬥盤的「驅動軌道」時，會觸發<b>軌道驅衝</b>瞬間加速。</li>
       </ul>
-      <h3>對戰盤</h3>
+      <h3>戰鬥盤</h3>
       <ul>
-        <li>外圈是一整圈齒狀的<b>極限軌道</b>。抓地力高的軸心（平軸、突擊軸、橡膠平軸）衝上軌道後會高速衝刺，帶著動能撞向對手。</li>
-        <li>正對面的缺口是<b>極限區</b>（3 分），左右兩側靠近玩家的缺口是<b>場外區</b>（2 分）。</li>
+        <li>外圈是一整圈齒狀的<b>驅動軌道</b>。抓地力高的旋尖衝上軌道後會高速驅衝，帶著動能撞向對手。</li>
+        <li>每位對手都有自己的戰鬥盤，盤面深淺、軌道強弱、摩擦力，以及<b>裂界區</b>（3 分）和<b>場外區</b>（2 分）的位置都不一樣。選擇對手時可以看到戰鬥盤的特性。</li>
       </ul>
       <h3>發射規範</h3>
       <ul>
-        <li>倒數「3、2、1、GO SHOOT！」喊到 GO SHOOT 時才可以拉繩發射。</li>
+        <li>倒數「3、2、1、旋鋒出擊！」喊到「旋鋒出擊」時才可以拉繩發射。</li>
         <li>太早或太晚發射都算<b>發射失誤</b>。同一場比賽第一次失誤為警告，<b>第二次失誤對手得 1 分</b>，然後重新發射。</li>
         <li>拉繩的速度越快，陀螺的初始轉速越高。發射角度可以選擇往中央或往外圈軌道。</li>
+      </ul>
+      <h3>必殺技</h3>
+      <ul>
+        <li>每把鋒輪都有專屬必殺技。開戰後自動集氣，撞擊和軌道驅衝會集得更快。</li>
+        <li>集滿後按<b>空白鍵</b>或必殺技按鈕施放，每回合限用一次。</li>
       </ul>
       <h3>3 對 3 牌組戰</h3>
       <ul>
         <li>每位玩家登錄 3 顆陀螺，每一回合依照 1 → 2 → 3 號機的順序上場，用完後重新輪替。</li>
-        <li>同一個牌組內，<b>同名的零件只能使用一次</b>（不能有兩個相同的戰刃、固鎖輪或軸心）。</li>
+        <li>同一個牌組內，<b>同名的零件只能使用一次</b>（不能有兩個相同的鋒輪、鎖芯或旋尖）。</li>
         <li>雙方同時終結（例如同時停止）判定為平手，該回合不計分並重新發射。</li>
       </ul>
       <h3>類型相剋</h3>
-      <p><span class="t-atk">攻擊型</span> 擅長擊飛持久型・<span class="t-sta">持久型</span> 靠長時間旋轉贏過防禦型・<span class="t-def">防禦型</span> 能承受攻擊型的衝擊・<span class="t-bal">平衡型</span> 攻守兼備，視發射技巧而定。</p>
+      <p><span class="t-atk">攻擊型</span> 擅長擊出持久型・<span class="t-sta">持久型</span> 靠長時間旋轉贏過防禦型・<span class="t-def">防禦型</span> 能承受攻擊型的衝擊・<span class="t-bal">平衡型</span> 攻守兼備，視發射技巧而定。</p>
     </article>
   </section>
 </div>

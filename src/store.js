@@ -74,11 +74,11 @@ function newProfile(name, starter) {
     { b: otherBlades[0], r: rs[0], t: ts[0] },
     { b: otherBlades[1], r: rs[1], t: ts[1] },
   ];
-  return { v: 1, name, starter, coins: 300, inv, decks, ladder: 0, stats: { w: 0, l: 0, spin: 0, over: 0, burst: 0, xtreme: 0, pulls: 0 }, createdAt: Date.now(), updatedAt: Date.now() };
+  return { v: 1, name, starter, coins: 300, inv, decks, ladder: 0, stats: { w: 0, l: 0, spin: 0, out: 0, burst: 0, rift: 0, pulls: 0 }, createdAt: Date.now(), updatedAt: Date.now() };
 }
 function migrate(p) {
   if (!p || typeof p !== 'object' || !p.inv || !Array.isArray(p.decks)) return null;
-  p.stats = Object.assign({ w: 0, l: 0, spin: 0, over: 0, burst: 0, xtreme: 0, pulls: 0 }, p.stats || {});
+  p.stats = Object.assign({ w: 0, l: 0, spin: 0, out: 0, burst: 0, rift: 0, pulls: 0 }, p.stats || {});
   p.coins = Math.max(0, p.coins | 0);
   p.ladder = p.ladder | 0;
   for (const k of ['blade', 'ratchet', 'bit']) p.inv[k] = p.inv[k] || {};

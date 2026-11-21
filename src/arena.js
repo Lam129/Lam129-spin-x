@@ -8,16 +8,23 @@ const AR = {
   G: 4.0,
   RAD: 0.46,        // bey contact radius
   DRAIN: 0.03,
+  rail: 1, drag: 1, stadium: 'training',
   pockets: [
-    { kind: 'xtreme', phi: Math.PI, half: 0.42, vmin: 1.7 },
-    { kind: 'over', phi: 0.38 * Math.PI, half: 0.3, vmin: 2.1 },
-    { kind: 'over', phi: -0.38 * Math.PI, half: 0.3, vmin: 2.1 },
+    { kind: 'rift', phi: Math.PI, half: 0.42, vmin: 1.7 },
+    { kind: 'out', phi: 0.38 * Math.PI, half: 0.3, vmin: 2.1 },
+    { kind: 'out', phi: -0.38 * Math.PI, half: 0.3, vmin: 2.1 },
   ],
   launchPos: [{ x: 1.0, z: 2.3 }, { x: -1.0, z: -2.3 }],
 };
 function surfH(r) { return r < AR.RB ? AR.K * r * r : AR.K * AR.RB * AR.RB + (r - AR.RB) * 0.12; }
 function surfSlope(r) { return r < AR.RB ? 2 * AR.K * r : 0.12; }
 function angDiff(a, b) { let d = (a - b) % TAU; if (d > Math.PI) d -= TAU; if (d < -Math.PI) d += TAU; return d; }
+/* load a stadium's physics into AR */
+function applyStadium(id) {
+  const S = STADIUMS[id] || STADIUMS.training;
+  AR.stadium = id; AR.K = S.K; AR.G = 4.0 * S.grav; AR.rail = S.rail; AR.drag = S.drag;
+  AR.pockets = S.pockets.map((p) => ({ ...p, vmin: p.kind === 'rift' ? 1.7 : 2.1 }));
+}
 function pocketAt(phi) { for (const p of AR.pockets) if (Math.abs(angDiff(phi, p.phi)) < p.half) return p; return null; }
 
 function physCfg(cfg) {
@@ -114,7 +121,7 @@ class Arena {
       b.prec += dt * (6 + (0.25 - s) * 20);
       ax += Math.cos(b.prec) * w; az += Math.sin(b.prec) * w;
     }
-    const drag = 0.18 + (1 - c.mob) * 0.5;
+    const drag = (0.18 + (1 - c.mob) * 0.5) * AR.drag;
     ax -= vx * drag; az -= vz * drag;
     // Xtreme rail
     b.dash = 0;
@@ -122,7 +129,7 @@ class Arena {
     if (r >= AR.RB - 0.05 && !(b.kick > 0)) {
       const tx = -rz, tz = rx;
       if (c.grip > 0.1 && s > 0.1) {
-        const acc = 7.5 * c.grip * (0.35 + 0.65 * s) * (1 + rush * 0.7);
+        const acc = 7.5 * c.grip * (0.35 + 0.65 * s) * (1 + rush * 0.7) * AR.rail;
         ax += tx * acc; az += tz * acc;
         const vt = vx * tx + vz * tz;
         b.railT = (b.railT || 0) + dt;

@@ -150,10 +150,10 @@ def build_blade(b):
         wing = smoothstep(0, 0.12, u) * (1 - smoothstep(0.32, 0.5, u)) if u < 0.5 else 0
         return 0.255 + wing * (s['base'] - 0.22)
     # sub blade
-    sub = solid_ring('sub', sub_fn, 0.2, wedge(0.035, 0.3), z0=0.0, K=3, N=160)
+    sub = solid_ring('sub', sub_fn, 0.2, wedge(0.035, 0.3), z0=0.0, K=2, N=128)
     rotate_z(sub, math.pi / n); finish(sub, 0.003)
     # main blade with windows
-    main = solid_ring('metal', main_fn, 0.205, wedge(0.075, 0.62), z0=0.03, K=6, N=224)
+    main = solid_ring('metal', main_fn, 0.205, wedge(0.075, 0.62), z0=0.03, K=5, N=176)
     cutters = []
     rr = s['base'] - 0.04
     if rr > 0.27:
@@ -170,9 +170,9 @@ def build_blade(b):
     boolean_diff(main, cutters)
     finish(main, 0.005, 3)
     # polymer frame
-    frame = solid_ring('frame', frame_fn, 0.19, wedge(0.05, 0.5), z0=0.1, K=4, N=180)
+    frame = solid_ring('frame', frame_fn, 0.19, wedge(0.05, 0.5), z0=0.1, K=3, N=144)
     rotate_z(frame, -0.22); finish(frame, 0.006, 3)
-    clear = solid_ring('clear', lambda th: frame_fn(th + 0.35) * 0.96, 0.19, wedge(0.02, 0.2), z0=0.155, K=2, N=160)
+    clear = solid_ring('clear', lambda th: frame_fn(th + 0.35) * 0.96, 0.19, wedge(0.02, 0.2), z0=0.155, K=2, N=128)
     finish(clear, 0.003)
     # centre chip ring (12-point faceted)
     def chip_fn(th):
@@ -221,7 +221,7 @@ def build_ratchet(r):
     export(os.path.join(OUT, f"ratchet_{r['id']}.glb"))
 
 # ------------------------------------------------------------------ bits
-BIT_LEN = {'flat': 0.25, 'rush': 0.25, 'rubber': 0.25, 'taper': 0.26, 'point': 0.26, 'ball': 0.26, 'needle': 0.28, 'hneedle': 0.34}
+BIT_LEN = {'flat': 0.25, 'rush': 0.25, 'rubber': 0.25, 'taper': 0.26, 'point': 0.26, 'ball': 0.26, 'needle': 0.28, 'hneedle': 0.34, 'lowflat': 0.22, 'accel': 0.25, 'orb': 0.25, 'htaper': 0.32}
 def bit_profile(tip, L):
     p = [(0.001, 0), (0.19, 0), (0.2, -0.01), (0.2, -0.045), (0.16, -0.06), (0.145, -0.075), (0.145, -0.13), (0.135, -0.14)]
     if tip == 'flat': p += [(0.12, -0.16), (0.115, -L + 0.012), (0.105, -L), (0.001, -L)]
@@ -233,6 +233,11 @@ def bit_profile(tip, L):
         p += [(0.1, -0.16)] + [(math.cos(i / 10 * math.pi / 2) * 0.075 + 0.001, -L + 0.075 - math.sin(i / 10 * math.pi / 2) * 0.075) for i in range(11)]
     elif tip == 'needle': p += [(0.095, -0.15), (0.03, -L + 0.03), (0.004, -L)]
     elif tip == 'hneedle': p += [(0.11, -0.16), (0.085, -0.25), (0.03, -L + 0.03), (0.004, -L)]
+    elif tip == 'lowflat': p += [(0.13, -0.15), (0.13, -L + 0.012), (0.12, -L), (0.001, -L)]
+    elif tip == 'accel': p += [(0.125, -0.16), (0.118, -0.19), (0.128, -0.2), (0.11, -L + 0.012), (0.095, -L), (0.001, -L)]
+    elif tip == 'orb':
+        p += [(0.12, -0.15)] + [(math.cos(i / 10 * math.pi / 2) * 0.115 + 0.001, -L + 0.06 - math.sin(i / 10 * math.pi / 2) * 0.06) for i in range(11)]
+    elif tip == 'htaper': p += [(0.11, -0.16), (0.08, -0.24), (0.045, -L + 0.012), (0.035, -L), (0.001, -L)]
     return p
 
 def lathe(name, prof, segs=96, z_off=0.0):
@@ -253,7 +258,7 @@ def build_bit(b):
     reset()
     L = BIT_LEN[b['tip']]
     prof = bit_profile(b['tip'], L)
-    body = lathe('body', prof, 72, z_off=L)
+    body = lathe('body', prof, 56, z_off=L)
     # vertical grip flutes on the body (boolean), lock tabs
     cut = []
     for i in range(10):
@@ -285,6 +290,12 @@ def build_bit(b):
             return 0.15
         g = solid_ring('gear', gear_fn, 0.12, lambda t, th: 0.032, z0=L - 0.14, K=1, N=teeth * 8)
         finish(g, 0.003, 2, 40)
+        if b['tip'] == 'accel':
+            g2 = solid_ring('gear2', gear_fn, 0.12, lambda t, th: 0.022, z0=L - 0.185, K=1, N=teeth * 8)
+            rotate_z(g2, math.pi / teeth); finish(g2, 0.003, 2, 40)
+            for o in bpy.context.selected_objects: o.select_set(False)
+            g.select_set(True); g2.select_set(True); bpy.context.view_layer.objects.active = g
+            bpy.ops.object.join(); g.name = 'gear'; g.data.name = 'gear'
     else:
         g = lathe('guard', [(0.12, -0.10), (0.162, -0.10), (0.166, -0.115), (0.162, -0.13), (0.12, -0.13)], 96, z_off=L)
         finish(g, 0.0, 1, weighted=False)

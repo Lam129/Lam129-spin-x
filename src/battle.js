@@ -12,9 +12,12 @@ const Battle = {
     this.oDeck = opp.deck.map(([b, r, t]) => ({ b, r, t }));
     if (mode === '1v1') this.oDeck = [this.oDeck[Math.min(OPPONENTS.indexOf(opp) % 3, 2)]];
     this.score = [0, 0]; this.round = 0; this.errors = [0, 0]; this.finishes = []; this.active = true;
+    GL.battle.setStadium(opp.stadium || 'training');
     GL.setMode('battle');
     UI.show('battle');
     $('#p1n').textContent = P.name; $('#p2n').textContent = opp.name;
+    $('#p1av').innerHTML = playerAvatar(40); $('#p2av').innerHTML = oppAvatar(opp, 40);
+    this.slotRes = [[], []];
     SFX.ensure(); SFX.startGrind();
     this.renderPips();
     this.nextRound();
@@ -32,7 +35,7 @@ const Battle = {
     scene.setBeys(a, b);
     scene.zoomTo = null; scene.follow = null;
     this.arena = new Arena(a, b, this.hooks());
-    this.renderRatchet();
+    this.renderRatchet(); this.renderDecks();
     scene.placeForLaunch(0); scene.placeForLaunch(1);
     this.playerLaunched = false; this.aiLaunched = false; this.ripStarted = false; this.aiSpecialAt = rand(0.5, 3);
     this.renderSpecial();
@@ -70,7 +73,7 @@ const Battle = {
           sc.fx.spark(b.x + rx * 0.42, surfH(r) + 0.08, b.z + rz * 0.42, 3, 2.5 + b.dash * 3, b.side ? 0x8fe6ff : 0xffa040, 0.35, 0.6, back, 1.4);
         }
       },
-      onOut: (b, pk) => { SFX.fall(); const sc = scene(); sc.fx.spark(b.x, surfH(AR.WALL) + 0.2, b.z, 40, 4, pk.kind === 'xtreme' ? 0xff4a1a : 0xffb347, 0.6, 1.2); },
+      onOut: (b, pk) => { SFX.fall(); const sc = scene(); sc.fx.spark(b.x, surfH(AR.WALL) + 0.2, b.z, 40, 4, pk.kind === 'rift' ? 0xff4a1a : 0xffb347, 0.6, 1.2); },
       onBurst: (b, nx, nz) => { scene().burstBey(b.side, b, nx, nz); scene().shake = 1.4; SFX.burst(); this.timeScale = 0.2; this.slowT = 1.0; },
       onStop: () => {},
       onSpecialHit: (a, b, ka, kb) => {
@@ -89,13 +92,14 @@ const Battle = {
   setPhase(p) { this.phase = p; this.phaseT = 0; },
   async countdown() {
     const el = $('#count');
-    const seq = ['3', '2', '1', 'GO SHOOT!'];
+    const seq = ['3', '2', '1', '旋鋒出擊！'];
+    const voice = ['三', '二', '一', '旋鋒出擊！'];
     this.goAt = 0;
     const token = (this._cd = Symbol());
     for (let i = 0; i < seq.length; i++) {
       if (this._cd !== token || !this.active) return;
-      el.textContent = seq[i]; el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
-      SFX.beep(i === 3);
+      el.textContent = seq[i]; el.classList.toggle('long', i === 3); el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
+      SFX.beep(i === 3); SFX.say(voice[i], { rate: i === 3 ? 1.25 : 1.3, pitch: i === 3 ? 1.15 : 1 });
       if (i === 3) { this.goAt = performance.now(); this.setPhase('go'); }
       await wait(i === 3 ? 650 : 700);
     }
@@ -202,27 +206,63 @@ const Battle = {
       this.renderSpecial();
     }
   },
+  /* Cinematic signature move: charge -> cut-in -> burst -> resume (~2.4s, skippable) */
   useSpecial(side) {
-    if (!this.active || this.phase !== 'fight' || this.cutin) return;
+    if (!this.active || this.phase !== 'fight' || this.cine) return;
     const sp = this.arena.special(side); if (!sp) return;
-    const b = this.arena.beys[side], sc = GL.battle;
-    const y = surfH(Math.hypot(b.x, b.z));
-    sc.fx.specialBurst(b.x, y, b.z, sp.color);
-    sc.shake = 0.8; sc.blurAt = new THREE.Vector3(b.x, y, b.z); sc.blurKick = 1.2;
-    this.timeScale = 0.06; this.slowT = 1.15; this.cutin = true;
-    SFX.special();
+    const b = this.arena.beys[side], sc = GL.battle, y = surfH(Math.hypot(b.x, b.z));
+    const col = '#' + sp.color.toString(16).padStart(6, '0');
     const cfg = side ? this.cur[1] : this.cur[0];
-    const el = $('#cutin');
-    el.className = 'cutin ' + (side ? 'right' : 'left');
-    el.style.setProperty('--sc', '#' + sp.color.toString(16).padStart(6, '0'));
-    $('#ciImg').src = Thumbs.get('blade', cfg.b);
-    $('#ciWho').textContent = `${side ? this.opp.name : Store.profile.name}・${BLADE[cfg.b].name}`;
-    $('#ciName').textContent = sp.name;
-    $('#ciKind').textContent = SPECIAL_KIND[sp.kind];
-    void el.offsetWidth; el.classList.add('show');
-    setTimeout(() => { el.classList.remove('show'); this.cutin = false; }, 1150);
+    this.cine = { side, sp, t0: performance.now(), stage: 'charge', timers: [] };
+    this.timeScale = 0.02; this.slowT = 99;
+    SFX.specialCharge();
+    // 3D: close orbit camera + ground sigil
+    sc.cine = { x: b.x, z: b.z, a: side ? Math.PI * 0.8 : -Math.PI * 0.2, t: 0 };
+    sc.fx.sigil(b.x, y + 0.03, b.z, sp.color);
+    sc.fx.spark(b.x, y + 0.2, b.z, 60, 2, sp.color, 1.2, 2);
+    if (sc.fx.post) { sc.fx.post.uVig.value = 0.9; }
+    // DOM overlay
+    const el = $('#cine');
+    el.className = 'cine ' + (side ? 'right' : 'left');
+    el.style.setProperty('--sc', col);
+    $('#cnPortrait').innerHTML = side ? oppAvatar(this.opp, 300) : playerAvatar(300);
+    $('#cnBlade').src = Thumbs.get('blade', cfg.b);
+    $('#cnWho').textContent = `${side ? this.opp.name : Store.profile.name}・${BLADE[cfg.b].name}`;
+    $('#cnKind').textContent = SPECIAL_KIND[sp.kind];
+    $('#cnName').innerHTML = [...sp.name].map((ch, k) => `<span style="--d:${(k * 0.07).toFixed(2)}s">${ch === '・' ? '<i class="dot"></i>' : esc(ch)}</span>`).join('');
+    $('#cnInk').innerHTML = Array.from({ length: 14 }, () => `<i style="left:${rand(5, 95).toFixed(1)}%;top:${rand(15, 85).toFixed(1)}%;--s:${rand(0.4, 1.6).toFixed(2)};--d:${rand(0, 0.25).toFixed(2)}s"></i>`).join('');
+    void el.offsetWidth; el.classList.add('on', 'charge');
+    const T = (ms, fn) => this.cine.timers.push(setTimeout(fn, ms));
+    T(480, () => this.cineCut());
+    T(1450, () => this.cineBurst());
     this.renderSpecial();
   },
+  cineCut() {
+    const c = this.cine; if (!c || c.stage !== 'charge') return;
+    c.stage = 'cut';
+    const el = $('#cine'); el.classList.remove('charge'); el.classList.add('cut');
+    SFX.specialCut();
+    SFX.say(c.sp.name.replace('・', '，'), { rate: 1.2, pitch: c.side ? 0.9 : 1.1 });
+    GL.battle.shake = 0.5;
+  },
+  cineBurst() {
+    const c = this.cine; if (!c || c.stage === 'burst') return;
+    c.stage = 'burst';
+    c.timers.forEach(clearTimeout); c.timers = [];
+    const sc = GL.battle, b = this.arena.beys[c.side], y = surfH(Math.hypot(b.x, b.z));
+    const el = $('#cine'); el.classList.remove('charge', 'cut'); el.classList.add('burst');
+    sc.cine = null;
+    sc.fx.specialBurst(b.x, y, b.z, c.sp.color);
+    sc.fx.dome(b.x, y, b.z, c.sp.color);
+    sc.fx.cracks(b.x, y + 0.02, b.z, c.sp.color);
+    sc.shake = 1.6; sc.blurAt = new THREE.Vector3(b.x, y, b.z); sc.blurKick = 2.2; sc.fovKick = 14;
+    if (sc.fx.post) { sc.fx.post.uVig.value = 0.35; sc.fx.post.uFlash.value = 0.9; sc.fx.post.uFlashCol.value.set(0xffffff); sc.fx.post.uAb.value = 2.4; }
+    SFX.specialBurst();
+    this.timeScale = 0.3; this.slowT = 0.55;
+    setTimeout(() => { el.classList.remove('on', 'burst'); }, 650);
+    this.cine = null;
+  },
+  skipCine() { if (this.cine) this.cineBurst(); },
   renderSpecial() {
     if (!this.arena) return;
     this.arena.beys.forEach((b, i) => {
@@ -242,7 +282,7 @@ const Battle = {
     let ev;
     if (evs.length > 1 && evs[0].side !== evs[1].side) {
       // simultaneous finish: draw (official), unless one is a burst/out and other a spin stop
-      const ranks = { xtreme: 3, over: 2, burst: 2, spin: 1 };
+      const ranks = { rift: 3, out: 2, burst: 2, spin: 1 };
       if (ranks[evs[0].type] === ranks[evs[1].type]) return this.roundDraw();
       ev = ranks[evs[0].type] > ranks[evs[1].type] ? evs[0] : evs[1];
     } else ev = evs[0];
@@ -250,6 +290,9 @@ const Battle = {
     const F = FINISH[ev.type];
     this.score[winner] += F.pts;
     this.finishes.push({ round: this.round, winner, type: ev.type });
+    const ri = this.round - 1;
+    for (const sd of [0, 1]) { const d = sd ? this.oDeck : this.pDeck; const k = ri % d.length; (this.slotRes[sd][k] = this.slotRes[sd][k] || []).push(sd === winner ? `+${F.pts}` : '—'); }
+    setTimeout(() => this.renderDecks(), 300);
     this.setPhase('finish');
     const sc = GL.battle, lb = this.arena.beys[loser];
     sc.zoomTo = { x: clamp(lb.x, -4, 4), z: clamp(lb.z, -4, 4) };
@@ -257,7 +300,7 @@ const Battle = {
     const fy = surfH(Math.min(Math.hypot(lb.x, lb.z), AR.WALL)) + 0.1;
     sc.fx.ring(lb.x, fy, lb.z, winner ? 0x36d3ff : 0xff6a1a, 3, 0.7);
     sc.blurAt = new THREE.Vector3(lb.x, fy, lb.z); sc.blurKick = 1.1;
-    if (ev.type === 'xtreme' || ev.type === 'over') { sc.fx.star(lb.x, fy + 0.3, lb.z, 4, ev.type === 'xtreme' ? 0xff3b1a : 0xffb347, 0.4); sc.fx.spark(lb.x, fy, lb.z, 80, 5, ev.type === 'xtreme' ? 0xff5a2a : 0xffc060, 0.8, 1.3); if (sc.fx.post) { sc.fx.post.uFlash.value = 0.35; sc.fx.post.uFlashCol.value.set(ev.type === 'xtreme' ? 0xff6a3a : 0xffd090); } }
+    if (ev.type === 'rift' || ev.type === 'out') { sc.fx.star(lb.x, fy + 0.3, lb.z, 4, ev.type === 'rift' ? 0xff3b1a : 0xffb347, 0.4); sc.fx.spark(lb.x, fy, lb.z, 80, 5, ev.type === 'rift' ? 0xff5a2a : 0xffc060, 0.8, 1.3); if (sc.fx.post) { sc.fx.post.uFlash.value = 0.35; sc.fx.post.uFlashCol.value.set(ev.type === 'rift' ? 0xff6a3a : 0xffd090); } }
     setTimeout(() => {
       SFX.finish();
       UI.banner(F.en, F.name, `${winner === 0 ? Store.profile.name : this.opp.name} +${F.pts}`, winner === 1);
@@ -274,6 +317,13 @@ const Battle = {
     UI.banner('DRAW', '同時終結', '平手・本回合不計分', false);
     setTimeout(() => { if (this.active) this.nextRound(true); }, 2800);
   },
+  renderDecks() {
+    const ri = this.round - 1;
+    for (const sd of [0, 1]) {
+      const d = sd ? this.oDeck : this.pDeck, cur = ri % d.length;
+      $(sd ? '#g2deck' : '#g1deck').innerHTML = d.map((cfg, k) => `<span class="dk ${k === cur ? 'cur' : ''}" title="${esc(beyName(cfg))}"><img src="${Thumbs.get('blade', cfg.b)}" alt=""><i>${k + 1}</i><em>${(this.slotRes[sd][k] || []).join(' ')}</em></span>`).join('');
+    }
+  },
   renderPips() {
     for (const [i, id] of [[0, '#p1pips'], [1, '#p2pips']]) {
       $(id).innerHTML = Array.from({ length: WIN_POINTS }, (_, k) => `<span class="pip ${k < this.score[i] ? 'on' : ''}"></span>`).join('');
@@ -289,11 +339,11 @@ const Battle = {
     if (!this.arena) return;
     this.arena.beys.forEach((b, i) => {
       const n = RATCHET[b.cfg.r].prongs, filled = Math.min(n, Math.floor(clamp(b.meter, 0, 1) * n + 0.0001));
-      $(i ? '#g2rat' : '#g1rat').innerHTML = `<span>固鎖輪</span>` + Array.from({ length: n }, (_, k) => `<i class="${k < filled ? 'on' : ''}"></i>`).join('');
+      $(i ? '#g2rat' : '#g1rat').innerHTML = `<span>鎖芯</span>` + Array.from({ length: n }, (_, k) => `<i class="${k < filled ? 'on' : ''}"></i>`).join('');
     });
   },
   endMatch() {
-    this.active = false; this._cd = null;
+    this.active = false; this._cd = null; this.cine = null; GL.battle.cine = null;
     SFX.stopGrind();
     const won = this.score[0] > this.score[1];
     const P = Store.profile, opp = this.opp, idx = OPPONENTS.indexOf(opp);
@@ -312,6 +362,7 @@ const Battle = {
     $('#resTitle').textContent = won ? 'VICTORY' : 'DEFEAT';
     $('#resTitle').style.color = won ? 'var(--hot2)' : 'var(--dim)';
     $('#resEye').textContent = `${opp.title}・${opp.name}`;
+    $('#resAv').innerHTML = `${playerAvatar(64)}<span class="vs">VS</span>${oppAvatar(opp, 64)}`;
     $('#resScore').innerHTML = `<span style="color:var(--hot)">${this.score[0]}</span> : <span style="color:var(--ice)">${this.score[1]}</span>`;
     const fin = this.finishes.map((f) => `<span>第 ${f.round} 回合・${f.winner === 0 ? '你' : opp.name}</span><span>${f.type === 'error' ? '發射失誤 +1' : FINISH[f.type].name + ' +' + FINISH[f.type].pts}</span>`).join('');
     $('#resList').innerHTML = fin + rows.map(([k, v]) => `<span style="color:var(--hot2)">${k}</span><span style="color:var(--hot2)">+${v} 金幣</span>`).join('') + (firstClear && idx + 1 < OPPONENTS.length ? `<span style="color:var(--sta)">解鎖新對手</span><span style="color:var(--sta)">${OPPONENTS[idx + 1].name}</span>` : '');

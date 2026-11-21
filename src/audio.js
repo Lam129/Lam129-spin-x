@@ -1,13 +1,33 @@
 /* ============================== AUDIO (synthesized) ============================== */
 const SFX = {
   ctx: null, master: null, noiseBuf: null, grind: null, hums: [],
+  vol: (() => { try { return Object.assign({ master: 0.8, sfx: 0.8, voice: 0.9 }, JSON.parse(localStorage.getItem('spinx-vol') || '{}')); } catch (e) { return { master: 0.8, sfx: 0.8, voice: 0.9 }; } })(),
+  setVol(k, v) { this.vol[k] = v; try { localStorage.setItem('spinx-vol', JSON.stringify(this.vol)); } catch (e) {} if (this.master) this.master.gain.value = 0.7 * this.vol.master * this.vol.sfx; },
+  /* spoken call-outs via the browser's speech engine (Traditional Chinese voice when available) */
+  voiceObj: null,
+  say(text, opts = {}) {
+    const vv = this.vol.master * this.vol.voice;
+    if (!('speechSynthesis' in window) || vv <= 0.01) return;
+    try {
+      const synth = window.speechSynthesis;
+      if (!this.voiceObj) {
+        const vs = synth.getVoices();
+        this.voiceObj = vs.find((v) => /zh[-_]TW/i.test(v.lang)) || vs.find((v) => /zh[-_]HK/i.test(v.lang)) || vs.find((v) => /^zh/i.test(v.lang)) || null;
+      }
+      if (opts.cancel !== false) synth.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = this.voiceObj ? this.voiceObj.lang : 'zh-TW'; if (this.voiceObj) u.voice = this.voiceObj;
+      u.rate = opts.rate || 1.15; u.pitch = opts.pitch || 1.05; u.volume = vv;
+      synth.speak(u);
+    } catch (e) {}
+  },
   ensure() {
     if (this.ctx) { if (this.ctx.state === 'suspended') this.ctx.resume(); return true; }
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return false;
     try {
       this.ctx = new AC();
-      this.master = this.ctx.createGain(); this.master.gain.value = 0.55;
+      this.master = this.ctx.createGain(); this.master.gain.value = 0.7 * this.vol.master * this.vol.sfx;
       const comp = this.ctx.createDynamicsCompressor();
       this.master.connect(comp); comp.connect(this.ctx.destination);
       const len = this.ctx.sampleRate * 1.5;
@@ -63,6 +83,20 @@ const SFX = {
     const seq = r === 'sr' ? [784, 988, 1175, 1568, 1976] : r === 'rare' ? [659, 880, 1175] : [880];
     seq.forEach((f, i) => this.tone(f, 0.3, 0.1, 'triangle', i * 0.08));
   },
+  specialCharge() {
+    const n = this.noise(0.6, 200, 0.8, 0.35, 'bandpass'); if (n) n.f.frequency.exponentialRampToValueAtTime(3000, this.ctx.currentTime + 0.5);
+    this.tone(70, 0.6, 0.3, 'sawtooth', 0, 220);
+  },
+  specialCut() {
+    this.noise(0.25, 2500, 0.6, 0.35, 'highpass');
+    [392, 523, 659].forEach((f, i) => this.tone(f, 0.5, 0.08, 'square', i * 0.04));
+    this.tone(55, 0.9, 0.3, 'sine', 0, 40);
+  },
+  specialBurst() {
+    this.noise(1.2, 90, 0.6, 0.8, 'lowpass'); this.noise(0.6, 3000, 0.7, 0.45);
+    this.tone(60, 1.0, 0.4, 'sawtooth', 0, 30);
+    [523, 784, 1046, 1568, 2093].forEach((f, i) => this.tone(f, 0.7, 0.07, 'square', 0.05 + i * 0.04));
+  },
   special() {
     const n = this.noise(1.0, 300, 0.7, 0.4, 'bandpass'); if (n) n.f.frequency.exponentialRampToValueAtTime(6000, this.ctx.currentTime + 0.8);
     this.tone(110, 1.0, 0.25, 'sawtooth', 0, 440);
@@ -73,28 +107,36 @@ const SFX = {
   startGrind() {
     if (!this.ctx || this.grind) return;
     const src = this.ctx.createBufferSource(); src.buffer = this.noiseBuf; src.loop = true;
-    const f = this.ctx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 2400; f.Q.value = 2;
+    const f = this.ctx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 1300; f.Q.value = 0.8;
     const g = this.ctx.createGain(); g.gain.value = 0;
     src.connect(f); f.connect(g); g.connect(this.master); src.start();
     this.grind = { src, f, g };
     // spin hums for two beys
-    this.hums = [0, 1].map(() => {
-      const o = this.ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = 120;
-      const lp = this.ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 900;
+    // soft low whir per bey: triangle + sine an octave up, heavily low-passed, slow wobble
+    this.hums = [0, 1].map((i) => {
+      const o = this.ctx.createOscillator(); o.type = 'triangle'; o.frequency.value = 70;
+      const o2 = this.ctx.createOscillator(); o2.type = 'sine'; o2.frequency.value = 140;
+      const lfo = this.ctx.createOscillator(); lfo.frequency.value = 5 + i; const lg = this.ctx.createGain(); lg.gain.value = 0.25;
+      const lp = this.ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 320; lp.Q.value = 0.5;
       const hg = this.ctx.createGain(); hg.gain.value = 0;
-      o.connect(lp); lp.connect(hg); hg.connect(this.master); o.start();
-      return { o, hg };
+      const g2 = this.ctx.createGain(); g2.gain.value = 0.35;
+      o.connect(lp); o2.connect(g2); g2.connect(lp); lp.connect(hg); hg.connect(this.master);
+      lfo.connect(lg); lg.connect(hg.gain);
+      o.start(); o2.start(); lfo.start();
+      return { o, o2, lfo, hg, lg };
     });
   },
-  setGrind(level) { if (this.grind) this.grind.g.gain.setTargetAtTime(clamp(level, 0, 1) * 0.22, this.ctx.currentTime, 0.05); },
+  setGrind(level) { if (this.grind) this.grind.g.gain.setTargetAtTime(clamp(level - 0.15, 0, 1) * 0.07, this.ctx.currentTime, 0.08); },
   setHum(i, spin, alive) {
     const h = this.hums[i]; if (!h) return;
-    h.o.frequency.setTargetAtTime(60 + spin * 160, this.ctx.currentTime, 0.1);
-    h.hg.gain.setTargetAtTime(alive ? 0.018 + spin * 0.02 : 0, this.ctx.currentTime, 0.15);
+    const f = 48 + spin * 70;
+    h.o.frequency.setTargetAtTime(f, this.ctx.currentTime, 0.2); h.o2.frequency.setTargetAtTime(f * 2, this.ctx.currentTime, 0.2);
+    const g = alive ? 0.012 + spin * 0.014 : 0;
+    h.hg.gain.setTargetAtTime(g, this.ctx.currentTime, 0.25); h.lg.gain.setTargetAtTime(g * 0.3, this.ctx.currentTime, 0.25);
   },
   stopGrind() {
     if (!this.grind) return;
-    try { this.grind.src.stop(); this.hums.forEach((h) => h.o.stop()); } catch (e) {}
+    try { this.grind.src.stop(); this.hums.forEach((h) => { h.o.stop(); h.o2.stop(); h.lfo.stop(); }); } catch (e) {}
     this.grind = null; this.hums = [];
   },
 };

@@ -259,10 +259,13 @@ class FX {
     this.flashes = this.flashes.filter((f) => { if (f.t > 0.7) { this.scene.remove(f.l); return false; } return true; });
     for (const r of this.rays) {
       r.t += dt;
+      if (r.sigil) { r.g.material.opacity = Math.min(0.9, r.t * 3) * Math.max(0, 1 - Math.max(0, r.t - 1.6) * 2); r.g.rotation.z += dt * 1.4; r.g.scale.setScalar(0.6 + Math.min(r.t, 0.5) * 0.8); continue; }
+      if (r.dome) { const k = r.t / 0.8; r.g.scale.setScalar(0.3 + (1 - Math.pow(1 - Math.min(k, 1), 3)) * 4.5); r.g.material.uniforms.uA.value = Math.max(0, 1 - k); continue; }
+      if (r.crack) { r.g.material.opacity = r.t < 0.15 ? 1.4 : Math.max(0, 1 - (r.t - 0.15) / 2.4); continue; }
       if (r.pillar) { const k = r.t / 0.9; r.g.scale.set(1 + k * 0.6, Math.min(1, k * 6), 1 + k * 0.6); r.g.material.opacity = Math.max(0, 1 - k); r.g.rotation.y += dt * 2; continue; }
       r.g.scale.setScalar(0.5 + r.t * 2.5); r.g.rotation.y += dt * 0.6; r.g.traverse((m) => { if (m.material) m.material.opacity = Math.max(0, 1 - r.t / 0.9); });
     }
-    this.rays = this.rays.filter((r) => { if (r.t > 0.9) { this.scene.remove(r.g); return false; } return true; });
+    this.rays = this.rays.filter((r) => { const life = r.sigil ? 2.2 : r.crack ? 2.6 : 0.9; if (r.t > life) { this.scene.remove(r.g); return false; } return true; });
     for (const d of this.debris) {
       d.t += dt; d.v.y -= 12 * dt;
       d.obj.position.addScaledVector(d.v, dt);
@@ -347,3 +350,45 @@ class Shield {
     this.mesh.position.set(x, y, z); this.wire.rotation.y = t * 0.8; this.mesh.scale.setScalar(1 + hitPulse * 0.15);
   }
 }
+
+/* ---------- cinematic special: ground sigil, shock dome, glowing cracks ---------- */
+Object.assign(FX.prototype, {
+  sigil(x, y, z, color) {
+    const tex = canvasTex('sigil', 512, 512, (g) => {
+      g.translate(256, 256); g.strokeStyle = '#fff'; g.fillStyle = '#fff';
+      const ring = (r, w) => { g.lineWidth = w; g.beginPath(); g.arc(0, 0, r, 0, TAU); g.stroke(); };
+      ring(246, 6); ring(226, 2); ring(150, 4); ring(70, 3);
+      for (let i = 0; i < 48; i++) { g.save(); g.rotate((i / 48) * TAU); g.fillRect(-2, -240, 4, i % 4 ? 10 : 22); g.restore(); }
+      g.lineWidth = 3;
+      for (let k = 0; k < 2; k++) { g.beginPath(); for (let i = 0; i <= 3; i++) { const a = (i / 3) * TAU + k * Math.PI / 3 - Math.PI / 2; const px = Math.cos(a) * 220, py = Math.sin(a) * 220; i ? g.lineTo(px, py) : g.moveTo(px, py); } g.stroke(); }
+      for (let i = 0; i < 8; i++) { g.save(); g.rotate((i / 8) * TAU); g.beginPath(); g.moveTo(0, -150); g.lineTo(10, -185); g.lineTo(0, -205); g.lineTo(-10, -185); g.closePath(); g.fill(); g.restore(); }
+    }, false);
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(3.4, 3.4), new THREE.MeshBasicMaterial({ map: tex, color, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
+    m.rotation.x = -Math.PI / 2; m.position.set(x, y, z); this.scene.add(m);
+    this.rays.push({ g: m, t: 0, sigil: true });
+  },
+  dome(x, y, z, color) {
+    const m = new THREE.Mesh(new THREE.SphereGeometry(1, 40, 20, 0, TAU, 0, Math.PI / 2), new THREE.ShaderMaterial({
+      uniforms: { uColor: { value: new THREE.Color(color) }, uA: { value: 1 } },
+      vertexShader: 'varying vec3 vN; varying vec3 vV; void main(){ vec4 wp=modelMatrix*vec4(position,1.0); vN=normalize(mat3(modelMatrix)*normal); vV=normalize(cameraPosition-wp.xyz); gl_Position=projectionMatrix*viewMatrix*wp; }',
+      fragmentShader: 'uniform vec3 uColor; uniform float uA; varying vec3 vN; varying vec3 vV; void main(){ float f=pow(1.0-abs(dot(vN,vV)),2.5); gl_FragColor=vec4(mix(uColor,vec3(1.0),f*0.6)*2.0,(f*0.9+0.08)*uA); }',
+      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+    }));
+    m.position.set(x, y, z); this.scene.add(m);
+    this.rays.push({ g: m, t: 0, dome: true });
+  },
+  cracks(x, y, z, color) {
+    const c = document.createElement('canvas'); c.width = c.height = 512; const g = c.getContext('2d');
+    g.translate(256, 256); g.strokeStyle = '#fff'; g.lineCap = 'round'; g.shadowColor = '#fff'; g.shadowBlur = 10;
+    for (let k = 0; k < 11; k++) {
+      let a = (k / 11) * TAU + rand(-0.2, 0.2), r = 20; g.lineWidth = rand(3, 6);
+      g.beginPath(); g.moveTo(Math.cos(a) * r, Math.sin(a) * r);
+      while (r < 240) { r += rand(14, 30); a += rand(-0.25, 0.25); g.lineTo(Math.cos(a) * r, Math.sin(a) * r); if (Math.random() < 0.2) { const b = a + rand(-0.6, 0.6); g.moveTo(Math.cos(a) * r, Math.sin(a) * r); g.lineTo(Math.cos(b) * (r + 30), Math.sin(b) * (r + 30)); g.moveTo(Math.cos(a) * r, Math.sin(a) * r); } g.lineWidth *= 0.92; }
+      g.stroke();
+    }
+    const tex = new THREE.CanvasTexture(c);
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 4.2), new THREE.MeshBasicMaterial({ map: tex, color, transparent: true, opacity: 1, blending: THREE.AdditiveBlending, depthWrite: false }));
+    m.rotation.x = -Math.PI / 2; m.rotation.z = Math.random() * TAU; m.position.set(x, y, z); this.scene.add(m);
+    this.rays.push({ g: m, t: 0, crack: true });
+  },
+});
