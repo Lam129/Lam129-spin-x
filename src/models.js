@@ -203,7 +203,7 @@ function buildBlade(bl) {
     const u = (((th * n * 2) / TAU) % 1 + 1) % 1;
     return (sh.base - 0.02) + 0.035 * (u < 0.25 ? u / 0.25 : 1 - (u - 0.25) / 0.75);
   };
-  const AK = 'blade_' + bl.id, useA = Assets.has(AK);
+  const AK = 'blade_' + (bl.base || bl.id), useA = Assets.has(AK);
   const subGeo = useA ? Assets.geo(AK, 'sub') : cachedGeo('bs-' + bl.id, () => wedgeExtrude(makeOutlineShape(subFn, 0.2), 0.035, subFn, { thin: 0.3 }));
   const eng = setUV(engraveTex(bl.id, n, bl.accent).clone()); eng.needsUpdate = true;
   const metalMat = MAT.metal(new THREE.Color(bl.metal).multiplyScalar(0.82), 0.26, eng);
@@ -283,7 +283,7 @@ function buildRatchet(rt) {
   const h = rt.h / 500; // 60 -> 0.12
   const col = new THREE.Color(rt.color);
   // body: notched ring
-  const AK = 'ratchet_' + rt.id, useA = Assets.has(AK);
+  const AK = 'ratchet_' + (rt.base || rt.id), useA = Assets.has(AK);
   const body = new THREE.Mesh(useA ? Assets.geo(AK, 'body') : cachedGeo('rbody' + rt.prongs + rt.h, () => {
     const s = new THREE.Shape(), N = 120;
     for (let i = 0; i <= N; i++) {
@@ -366,7 +366,7 @@ function gearGeo(teeth, rIn, rOut, depth) {
 function buildBit(bt) {
   const g = new THREE.Group(); g.name = 'bit';
   const L = BIT_LEN[bt.tip];
-  const AK = 'bit_' + bt.id;
+  const AK = 'bit_' + (bt.base || bt.id);
   if (Assets.has(AK)) {
     const add = (name, mat) => { const gg = Assets.geo(AK, name); if (!gg) return null; const m = new THREE.Mesh(gg, mat); m.position.y = -L; m.castShadow = true; g.add(m); return m; };
     add('body', MAT.plastic(bt.tip === 'rubber' ? 0xd9dde6 : bt.color));
@@ -472,6 +472,32 @@ const Thumbs = {
     const d = new THREE.DirectionalLight(0xffffff, 1.6); d.position.set(2, 4, 3); this.scene.add(d);
     const r1 = new THREE.PointLight(0xff7a2a, 1.5, 6); r1.position.set(-1.5, 0.5, -1); this.scene.add(r1);
     this.cam = new THREE.PerspectiveCamera(30, 1, 0.01, 50);
+  },
+  /* lazy thumbnails: <img> placeholder rendered only when scrolled into view, a few per frame */
+  lazy(kind, id) {
+    const k = kind + ':' + id;
+    return this.cache[k] ? `<img src="${this.cache[k]}" alt="">` : `<img class="lz" data-k="${kind}" data-i="${id}" alt="">`;
+  },
+  queue: [], io: null,
+  observe(root) {
+    if (!this.io) this.io = new IntersectionObserver((ents) => {
+      for (const e of ents) if (e.isIntersecting) { this.io.unobserve(e.target); this.queue.push(e.target); }
+      this.pump();
+    }, { rootMargin: '200px' });
+    root.querySelectorAll('img.lz').forEach((img) => this.io.observe(img));
+  },
+  pump() {
+    if (this._pumping) return; this._pumping = true;
+    const step = () => {
+      const t0 = performance.now();
+      while (this.queue.length && performance.now() - t0 < 12) {
+        const img = this.queue.shift();
+        if (!img.isConnected) continue;
+        img.src = this.get(img.dataset.k, img.dataset.i); img.classList.remove('lz');
+      }
+      if (this.queue.length) requestAnimationFrame(step); else this._pumping = false;
+    };
+    requestAnimationFrame(step);
   },
   get(kind, id) {
     const k = kind + ':' + id; if (this.cache[k]) return this.cache[k];

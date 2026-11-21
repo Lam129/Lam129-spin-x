@@ -16,10 +16,12 @@ const TYPES = {
   bal: { name: '平衡型', color: 0xf6c632, css: 'var(--bal)', desc: '攻守兼備，可依發射角度改變戰術。' },
 };
 const RARITY = {
-  common: { name: '普通', w: 62 },
-  rare: { name: '稀有', w: 29 },
-  sr: { name: '超稀有', w: 9 },
+  common: { name: '普通', w: 55 },
+  rare: { name: '稀有', w: 30 },
+  sr: { name: '超稀有', w: 12 },
+  ur: { name: '傳說', w: 3 },
 };
+const RARITY_ORDER = ['common', 'rare', 'sr', 'ur'];
 
 /* Blades: shape drives the procedural outline. recoil = how hard contact points bounce. */
 const BLADES = [
@@ -120,6 +122,32 @@ const BITS = [
   { id: 'GN', code: 'GP', name: '齒針', rarity: 'rare', type: 'def', mob: 0.2, grip: 0.5, drain: 0.7, stab: 0.86, atk: -4, def: 9, sta: 7, dash: 40, wt: 2.1, tip: 'needle', color: 0x9adfc0, desc: '針尖加上齒圈，被撞到外圈時能靠驅衝回到中央。' },
   { id: 'HT', code: 'HC', name: '高錐', rarity: 'common', type: 'bal', mob: 0.5, grip: 0.55, drain: 0.85, stab: 0.66, atk: 4, def: 4, sta: 1, dash: 50, wt: 2.2, tip: 'htaper', color: 0xb8c8e0, desc: '加高的錐鋒，打擊點高，適合對付高位的對手。' },
 ];
+/* ---- colourway series (original palettes): each base part gets variants with small stat shifts ---- */
+const BLADE_VARIANTS = [
+  { key: 'ob', name: '黑曜版', bump: 0, metal: 0x4a4a56, plastic: 0x18181f, accent: 0xff3a3a, d: { atk: 3, sta: -2 } },
+  { key: 'pt', name: '白金版', bump: 1, metal: 0xf4f6fb, plastic: 0xe2e6ef, accent: 0x6ad8ff, d: { sta: 3, atk: -1 } },
+  { key: 'rd', name: '赤焰版', bump: 1, metal: 0xffd2b0, plastic: 0xc81e10, accent: 0xffd040, d: { atk: 4, def: -2 } },
+  { key: 'ic', name: '冰晶版', bump: 1, metal: 0xd8f4ff, plastic: 0x3a98d8, accent: 0xffffff, d: { def: 4, atk: -2 } },
+  { key: 'nt', name: '暗夜版', bump: 1, metal: 0x8a7ab8, plastic: 0x2a1650, accent: 0xc06aff, d: { def: 2, sta: 2 } },
+  { key: 'gd', name: '黃金限定', bump: 2, metal: 0xffd86a, plastic: 0xb88a10, accent: 0xfff6c0, d: { atk: 2, def: 2, sta: 2 } },
+  { key: 'cr', name: '水晶限定', bump: 2, metal: 0xe0f8ff, plastic: 0x8fd0f8, accent: 0xff8ad8, d: { atk: 3, def: 3, sta: 3 } },
+];
+const PART_VARIANTS = [
+  { key: 'ob', name: '黑曜', bump: 0, color: 0x15151a, d: { atk: 2 } },
+  { key: 'gd', name: '金屬金', bump: 1, color: 0x9a7a18, d: { sta: 2 } },
+  { key: 'cr', name: '透明', bump: 1, color: 0x6a8aa8, d: { def: 2 } },
+  { key: 'rd', name: '赤紅', bump: 1, color: 0x7a1a14, d: { atk: 3, def: -1 } },
+];
+const bumpRarity = (r, n) => RARITY_ORDER[Math.min(3, RARITY_ORDER.indexOf(r) + n)];
+const addStats = (p, d) => { for (const k in d) p[k] = (p[k] || 0) + d[k]; return p; };
+BLADES.forEach((b) => { b.base = b.id; b.series = '標準版'; });
+RATCHETS.forEach((r) => { r.base = r.id; r.series = '標準'; });
+BITS.forEach((t) => { t.base = t.id; t.series = '標準'; });
+for (const b of BLADES.slice()) for (const v of BLADE_VARIANTS) BLADES.push(addStats({ ...b, id: `${b.id}@${v.key}`, base: b.id, series: v.name, name: `${b.name}・${v.name}`, rarity: bumpRarity(b.rarity, v.bump), metal: v.metal, plastic: v.plastic, accent: v.accent }, v.d));
+for (const r of RATCHETS.slice()) for (const v of PART_VARIANTS) RATCHETS.push(addStats({ ...r, id: `${r.id}@${v.key}`, base: r.id, series: v.name, code: r.code, rarity: bumpRarity(r.rarity, v.bump), color: v.color, burst: r.burst + (v.key === 'gd' ? 0.05 : 0) }, v.d));
+for (const t of BITS.slice()) for (const v of PART_VARIANTS) BITS.push(addStats({ ...t, id: `${t.id}@${v.key}`, base: t.id, series: v.name, rarity: bumpRarity(t.rarity, v.bump), color: v.color === 0x15151a ? 0x2a2a32 : v.color, dash: t.dash + (v.key === 'rd' ? 4 : 0) }, v.d));
+const baseOf = (id) => String(id).split('@')[0];
+const specOf = (bladeId) => SPECIALS[baseOf(bladeId)];
 const BLADE = Object.fromEntries(BLADES.map((b) => [b.id, b]));
 const RATCHET = Object.fromEntries(RATCHETS.map((b) => [b.id, b]));
 const BIT = Object.fromEntries(BITS.map((b) => [b.id, b]));
@@ -129,7 +157,7 @@ const KINDS = {
   bit: { name: '旋尖', list: BITS, map: BIT, key: 't' },
 };
 /* display name of a part */
-function partName(kind, p) { return kind === 'ratchet' ? p.code : kind === 'bit' ? `${p.name} ${p.code}` : p.name; }
+function partName(kind, p) { const sfx = p.base && p.base !== p.id ? `・${p.series}` : ''; return kind === 'ratchet' ? p.code + sfx : kind === 'bit' ? `${p.name} ${p.code}${sfx}` : p.name; }
 
 const STARTERS = {
   atk: { b: 'wolf', r: '3-60', t: 'F' },
@@ -168,21 +196,21 @@ const STADIUMS = {
 
 /* Opponents: original characters. av = avatar recipe. */
 const OPPONENTS = [
-  { id: 'o1', name: '阿哲', title: '見習旋鬥士', type: 'bal', stadium: 'training', deck: [['phoenix', '4-60', 'T'], ['moon', '5-60', 'B'], ['wolf', '3-60', 'F']], pow: [0.5, 0.72], smart: 0.35, boss: -0.24, reward: 120,
+  { id: 'o1', name: '阿哲', title: '見習旋鬥士', type: 'bal', stadium: 'training', deck: [['phoenix', '4-60', 'T'], ['moon', '5-60', 'B'], ['wolf', '3-60', 'F']], pow: [0.5, 0.72], smart: 0.35, boss: -0.24, reward: 60,
     av: { hair: 'spiky', hairC: '#6a3a1e', skin: '#f6d2b4', eye: '#3a7aff', eyes: 'round', brow: 'firm', mouth: 'grin', acc: 'band', accC: '#ff6a1a', bg: '#f6b432', pose: 'fist' } },
-  { id: 'o2', name: '小晴', title: '月下舞者', type: 'sta', stadium: 'lake', deck: [['moon', '6-60', 'B'], ['crane', '4-60', 'O'], ['mantis', '3-60', 'T']], pow: [0.58, 0.8], smart: 0.5, boss: -0.14, reward: 150,
+  { id: 'o2', name: '小晴', title: '月下舞者', type: 'sta', stadium: 'lake', deck: [['moon', '6-60', 'B'], ['crane', '4-60', 'O'], ['mantis', '3-60', 'T']], pow: [0.58, 0.8], smart: 0.5, boss: -0.14, reward: 75,
     av: { hair: 'long', hairC: '#7a5ad8', skin: '#fbe0cc', eye: '#a07aff', eyes: 'round', brow: 'soft', mouth: 'smile', acc: 'flower', accC: '#ffd84a', bg: '#3ad28a', pose: 'wave' } },
-  { id: 'o3', name: '鐵拳・剛', title: '不動要塞', type: 'def', stadium: 'fortress', deck: [['turtle', '5-60', 'N'], ['rhino', '4-70', 'P'], ['silver', '6-60', 'B']], pow: [0.66, 0.86], smart: 0.62, boss: 0.16, reward: 180,
+  { id: 'o3', name: '鐵拳・剛', title: '不動要塞', type: 'def', stadium: 'fortress', deck: [['turtle', '5-60', 'N'], ['rhino', '4-70', 'P'], ['silver', '6-60', 'B']], pow: [0.66, 0.86], smart: 0.62, boss: 0.16, reward: 90,
     av: { hair: 'buzz', hairC: '#26262c', skin: '#d8a070', eye: '#5a3a24', eyes: 'narrow', brow: 'angry', mouth: 'calm', acc: 'scar', accC: '#a04a3a', bg: '#3d7bdf', pose: 'punch' } },
-  { id: 'o4', name: '疾風・凜', title: '疾風迅雷', type: 'atk', stadium: 'gale', deck: [['thunder', '3-60', 'R'], ['hawk', '4-60', 'LF'], ['phoenix', '5-60', 'T']], pow: [0.74, 0.92], smart: 0.72, boss: 0.38, reward: 220,
+  { id: 'o4', name: '疾風・凜', title: '疾風迅雷', type: 'atk', stadium: 'gale', deck: [['thunder', '3-60', 'R'], ['hawk', '4-60', 'LF'], ['phoenix', '5-60', 'T']], pow: [0.74, 0.92], smart: 0.72, boss: 0.38, reward: 110,
     av: { hair: 'pony', hairC: '#1a7a5a', skin: '#f6d2b4', eye: '#2affb0', eyes: 'sharp', brow: 'cocky', mouth: 'smirk', acc: 'scarf', accC: '#e8ff7a', bg: '#e83a3a', pose: 'point' } },
-  { id: 'o5', name: '星羅', title: '雙子星', type: 'bal', stadium: 'twin', deck: [['darkstar', '5-70', 'P'], ['phantom', '4-60', 'GB'], ['tiger', '3-80', 'F']], pow: [0.8, 0.95], smart: 0.8, boss: -0.16, reward: 260,
+  { id: 'o5', name: '星羅', title: '雙子星', type: 'bal', stadium: 'twin', deck: [['darkstar', '5-70', 'P'], ['phantom', '4-60', 'GB'], ['tiger', '3-80', 'F']], pow: [0.8, 0.95], smart: 0.8, boss: -0.16, reward: 130,
     av: { hair: 'twin', hairC: '#f0a8ff', skin: '#fde4d4', eye: '#ff4fd8', eyes: 'round', brow: 'soft', mouth: 'grin', acc: 'star', accC: '#ffd84a', bg: '#8a5ae8', pose: 'bey' } },
-  { id: 'o6', name: '雪乃', title: '冰之女王', type: 'sta', stadium: 'ice', deck: [['jelly', '9-60', 'B'], ['crab', '5-60', 'HN'], ['owl', '6-70', 'O']], pow: [0.86, 0.98], smart: 0.88, boss: -0.34, reward: 300,
+  { id: 'o6', name: '雪乃', title: '冰之女王', type: 'sta', stadium: 'ice', deck: [['jelly', '9-60', 'B'], ['crab', '5-60', 'HN'], ['owl', '6-70', 'O']], pow: [0.86, 0.98], smart: 0.88, boss: -0.34, reward: 150,
     av: { hair: 'bob', hairC: '#dcecfa', skin: '#fdeee6', eye: '#36c8ff', eyes: 'narrow', brow: 'soft', mouth: 'calm', acc: 'crown', accC: '#9ae0ff', bg: '#4ab0d8', pose: 'chest' } },
-  { id: 'o7', name: '獅堂', title: '狂嵐之王', type: 'atk', stadium: 'lava', deck: [['flame', '1-60', 'RF'], ['scorpion', '3-80', 'A'], ['fortress', '9-60', 'N']], pow: [0.9, 1.0], smart: 0.94, boss: 0.0, reward: 360,
+  { id: 'o7', name: '獅堂', title: '狂嵐之王', type: 'atk', stadium: 'lava', deck: [['flame', '1-60', 'RF'], ['scorpion', '3-80', 'A'], ['fortress', '9-60', 'N']], pow: [0.9, 1.0], smart: 0.94, boss: 0.0, reward: 180,
     av: { hair: 'mane', hairC: '#e05a1a', skin: '#e8b080', eye: '#ffb020', eyes: 'sharp', brow: 'angry', mouth: 'shout', acc: 'earring', accC: '#ffd27a', bg: '#d83a1a', pose: 'fist' } },
-  { id: 'o8', name: '黑曜', title: '陀螺王者', type: 'bal', stadium: 'throne', deck: [['darkstar', '7-60', 'P'], ['scorpion', '1-60', 'RF'], ['jelly', '5-70', 'GN']], pow: [0.95, 1.0], smart: 1.0, boss: 0.05, reward: 500,
+  { id: 'o8', name: '黑曜', title: '陀螺王者', type: 'bal', stadium: 'throne', deck: [['darkstar', '7-60', 'P'], ['scorpion', '1-60', 'RF'], ['jelly', '5-70', 'GN']], pow: [0.95, 1.0], smart: 1.0, boss: 0.05, reward: 250,
     av: { hair: 'slick', hairC: '#1c1628', skin: '#f0d0b8', eye: '#c04cff', eyes: 'sharp', brow: 'cocky', mouth: 'smirk', acc: 'mask', accC: '#2a2236', bg: '#b08a2a', pose: 'temple' } },
 ];
 

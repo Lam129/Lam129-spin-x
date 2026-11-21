@@ -364,7 +364,7 @@ class BattleScene {
       o.rotation.z = nx * sl * 0.6 + Math.cos(pa) * wob;
       const spinning = b.state === 'spin';
       const bf = spinning && b.buff && b.buff.t > 0 ? b.buff : null;
-      const spc = bf ? SPECIALS[b.cfg.b].color : this.baseCols[i];
+      const spc = bf ? specOf(b.cfg.b).color : this.baseCols[i];
       aura.mat.uniforms.uColor.value.lerp(new THREE.Color(spc), 0.15);
       trail.color.lerp(new THREE.Color(spc), 0.15);
       aura.update(this.t, b.x, y, b.z, spinning ? clamp(0.25 + b.s * 0.75 + (bf ? 0.9 : 0), 0, 1.8) : 0, spinning ? Math.max(b.dash, bf && bf.kind === 'rush' ? 0.8 : 0) : 0, dt, o.userData.bladeY);

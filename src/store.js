@@ -1,9 +1,44 @@
 /* ============================== ACCOUNT / SAVE ============================== */
+/* Public-site backend client. Any 503 "busy" / network failure is reported as overload. */
+const Api = {
+  get base() { return (window.SPIN_CONFIG && window.SPIN_CONFIG.api || '').replace(/\/$/, ''); },
+  cred: null, CKEY: 'spinx-guest',
+  busy: false,
+  async call(method, path, body) {
+    let res;
+    try {
+      res = await fetch(this.base + path, { method, headers: { 'Content-Type': 'application/json', ...(this.cred ? { Authorization: `Bearer ${this.cred.id}.${this.cred.token}` } : {}) }, body: body ? JSON.stringify(body) : undefined });
+    } catch (e) { this.flagBusy(); throw Object.assign(new Error('network'), { code: 'busy' }); }
+    if (res.status === 503 || res.status === 429) { this.flagBusy(); throw Object.assign(new Error('busy'), { code: 'busy' }); }
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw Object.assign(new Error(data.error || 'error'), { code: data.error || 'error', status: res.status });
+    this.busy = false;
+    return data;
+  },
+  flagBusy() {
+    if (!this.busy && typeof UI !== 'undefined' && UI.toast) UI.toast('目前流量過大，請稍後再試。進度先存在這台電腦上。');
+    this.busy = true;
+  },
+  async ensureGuest() {
+    try { this.cred = JSON.parse(localStorage.getItem(this.CKEY) || 'null'); } catch (e) { this.cred = null; }
+    if (this.cred && this.cred.id && this.cred.token) return this.cred;
+    const g = await this.call('POST', '/api/guest');
+    this.cred = { id: g.id, token: g.token };
+    try { localStorage.setItem(this.CKEY, JSON.stringify(this.cred)); } catch (e) {}
+    return this.cred;
+  },
+};
+
 const Store = {
   mode: 'local', uid: null, db: null, user: null, accountName: '', profile: null,
   _t: null, _writing: false, _dirty: false,
   LKEY: 'spinx-profile-v1',
   async init() {
+    // public site: our own backend (guest account, cloud save)
+    if (Api.base && !(window.claude && typeof window.claude.use === 'function')) {
+      try { await Api.ensureGuest(); this.mode = 'server'; this.uid = Api.cred.id; } catch (e) { this.mode = 'local'; }
+      return this.load();
+    }
     const c = window.claude;
     if (c && typeof c.use === 'function') {
       try {
@@ -22,6 +57,20 @@ const Store = {
   },
   docRef() { return this.db.doc('data/users/' + this.uid + '/profile'); },
   async load() {
+    if (this.mode === 'server') {
+      try {
+        const r = await Api.call('GET', '/api/profile');
+        const local = this.readLocal();
+        const remote = r.profile ? migrate(r.profile) : null;
+        // keep whichever copy is newer (local may hold progress saved while the server was busy)
+        this.profile = remote && (!local || (remote.updatedAt | 0) >= (local.updatedAt | 0)) ? remote : local;
+        if (this.profile && this.profile !== remote) this.saveNow();
+        return this.profile;
+      } catch (e) {
+        if (e.status === 401) { try { localStorage.removeItem(Api.CKEY); } catch (er) {} }
+        this.profile = this.readLocal(); return this.profile;
+      }
+    }
     if (this.mode === 'cloud') {
       try {
         const snap = await Promise.race([this.docRef().get(), new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 10000))]);
@@ -45,6 +94,14 @@ const Store = {
     if (!this.profile) return;
     this.profile.updatedAt = Date.now();
     try { localStorage.setItem(this.LKEY, JSON.stringify(this.profile)); } catch (e) {}
+    if (this.mode === 'server') {
+      if (this._writing) { this._dirty = true; return; }
+      this._writing = true;
+      try { await Api.call('PUT', '/api/profile', { profile: this.profile }); }
+      catch (e) { if (e.code === 'busy') setTimeout(() => this.save(), 30000); }
+      finally { this._writing = false; if (this._dirty) { this._dirty = false; this.save(); } }
+      return;
+    }
     if (this.mode !== 'cloud') return;
     if (this._writing) { this._dirty = true; return; }
     this._writing = true;
@@ -74,7 +131,7 @@ function newProfile(name, starter) {
     { b: otherBlades[0], r: rs[0], t: ts[0] },
     { b: otherBlades[1], r: rs[1], t: ts[1] },
   ];
-  return { v: 2, name, starter, coins: 300, inv, decks, builds: decks.map((d, i) => ({ id: 'b' + (i + 1), ...d })), deckIds: ['b1', 'b2', 'b3'], ladder: 0, stats: { w: 0, l: 0, spin: 0, out: 0, burst: 0, rift: 0, pulls: 0 }, createdAt: Date.now(), updatedAt: Date.now() };
+  return { v: 2, name, starter, coins: 200, inv, decks, builds: decks.map((d, i) => ({ id: 'b' + (i + 1), ...d })), deckIds: ['b1', 'b2', 'b3'], ladder: 0, stats: { w: 0, l: 0, spin: 0, out: 0, burst: 0, rift: 0, pulls: 0 }, createdAt: Date.now(), updatedAt: Date.now() };
 }
 function migrate(p) {
   if (!p || typeof p !== 'object' || !p.inv || !Array.isArray(p.decks)) return null;
@@ -100,9 +157,12 @@ function syncDecks(p) {
 /* Leaderboard backend. Today: the artifact's shared db (each player writes only their own row).
    To move to a public server later, implement the same three methods against your own API. */
 const Board = {
-  get backend() { return Store.mode === 'cloud' && Store.db ? 'artifact' : 'local'; },
+  get backend() { return Store.mode === 'server' ? 'server' : Store.mode === 'cloud' && Store.db ? 'artifact' : 'local'; },
   LKEY: 'spinx-board',
   async top(n = 5) {
+    if (this.backend === 'server') {
+      try { return (await Api.call('GET', `/api/leaderboard?n=${n}`)).rows || []; } catch (e) { return this.localTop(n); }
+    }
     if (this.backend === 'artifact') {
       try {
         const snap = await Promise.race([Store.db.collection('leaderboard').orderBy('best', 'desc').limit(n).get(), new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 8000))]);
@@ -115,9 +175,10 @@ const Board = {
     const P = Store.profile; const best = (P && P.stats.best) | 0;
     return best > 0 ? [{ id: 'me', name: P.name, best }] : [];
   },
-  myId() { return this.backend === 'artifact' ? Store.uid : 'me'; },
+  myId() { return this.backend === 'local' ? 'me' : Store.uid; },
   async submit(best) {
     const P = Store.profile;
+    if (this.backend === 'server' && best) { try { await Api.call('POST', '/api/leaderboard', { best }); } catch (e) {} return; }
     if (this.backend !== 'artifact' || !best) return;
     try {
       const ref = Store.db.doc('leaderboard/' + Store.uid);

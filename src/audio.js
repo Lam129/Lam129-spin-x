@@ -121,13 +121,14 @@ const SFX = {
   finish() { [523, 659, 784, 1046].forEach((f, i) => this.tone(f, 0.35, 0.12, 'square', i * 0.07)); },
   coin() { this.tone(1320, 0.08, 0.1, 'square'); this.tone(1760, 0.18, 0.1, 'square', 0.07); },
   gachaCharge(r) {
+    if (r === 'ur') r = 'sr';
     const n = this.noise(r === 'sr' ? 1.5 : 1.0, 300, 0.8, 0.25, 'bandpass'); if (n) n.f.frequency.exponentialRampToValueAtTime(r === 'sr' ? 7000 : 4000, this.ctx.currentTime + (r === 'sr' ? 1.4 : 0.9));
     const steps = r === 'sr' ? 10 : r === 'rare' ? 7 : 4;
     for (let i = 0; i < steps; i++) this.tone(392 * Math.pow(1.09, i), 0.12, 0.06, 'triangle', i * (r === 'sr' ? 0.14 : 0.13));
     if (r === 'sr') this.tone(80, 1.5, 0.25, 'sawtooth', 0, 220);
   },
   rareJingle(r) {
-    const seq = r === 'sr' ? [784, 988, 1175, 1568, 1976] : r === 'rare' ? [659, 880, 1175] : [880];
+    const seq = r === 'ur' ? [523, 659, 784, 1046, 1318, 1568, 2093] : r === 'sr' ? [784, 988, 1175, 1568, 1976] : r === 'rare' ? [659, 880, 1175] : [880];
     seq.forEach((f, i) => this.tone(f, 0.3, 0.1, 'triangle', i * 0.08));
   },
   specialCharge() {

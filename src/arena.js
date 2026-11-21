@@ -70,7 +70,7 @@ class Arena {
   }
   special(side) {
     const b = this.beys[side]; if (b.state !== 'spin' || b.usedSpecial || (b.charge || 0) < 1) return null;
-    const sp = SPECIALS[b.cfg.b];
+    const sp = specOf(b.cfg.b);
     b.usedSpecial = true; b.charge = 0;
     b.buff = { kind: sp.kind, t: sp.dur, fx: sp.fx };
     if (sp.kind === 'regen') b.s = Math.min(1, b.s + 0.03);

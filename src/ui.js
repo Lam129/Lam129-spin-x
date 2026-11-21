@@ -50,7 +50,7 @@ const UI = {
     box.innerHTML = '<div class="desc">讀取中…</div>';
     const rows = await Board.top(5);
     const me = Board.myId();
-    $('#lbBoardNote').textContent = Board.backend === 'artifact' ? 'ALL TIME' : '本機紀錄';
+    $('#lbBoardNote').textContent = Board.backend === 'local' ? '本機紀錄' : 'ALL TIME';
     box.innerHTML = rows.length ? rows.map((r, i) => `<div class="lr ${i === 0 ? 'g' : i === 1 ? 's2' : i === 2 ? 'b3' : ''} ${r.id === me ? 'me' : ''}">${i < 3 ? this.medal(i + 1) : `<span class="rn">${i + 1}</span>`}<span class="ln">${esc(r.name || '旋鬥士')}${r.id === me ? '（你）' : ''}</span><span class="s">${r.best | 0}<small>連勝</small></span></div>`).join('')
       : '<div class="desc" style="padding:10px 4px">還沒有紀錄。挑戰生存模式，成為第一名！</div>';
   },
@@ -59,7 +59,7 @@ const UI = {
     const titles = { assembly: '組裝工坊', select: '對戰', gacha: '扭蛋機', collection: '收藏圖鑑', rules: '比賽規則' };
     const back = name !== 'hub' ? `<button class="btn cut" data-go="hub" style="padding:8px 14px" aria-label="返回">‹ 返回</button>` : '';
     return `${back}<div class="brand">陀螺對決<small style="font-family:var(--f-disp);color:var(--hot);margin-left:6px;letter-spacing:.2em">SPIN DUEL</small>${titles[name] ? `<small>／ ${titles[name]}</small>` : ''}</div><div class="spacer"></div>
-      <div class="chip"><span class="dot ${Store.mode === 'cloud' ? '' : 'off'}"></span><span>${esc(P.name)}</span><span style="color:var(--mute);font-size:12px">${Store.mode === 'cloud' ? '雲端存檔' : '本機存檔'}</span></div>
+      <div class="chip"><span class="dot ${Store.mode === 'cloud' || Store.mode === 'server' ? '' : 'off'}"></span><span>${esc(P.name)}</span><span style="color:var(--mute);font-size:12px">${Store.mode === 'cloud' || Store.mode === 'server' ? '雲端存檔' : '本機存檔'}</span></div>
       <div class="chip"><span class="coin"></span><b class="num" id="coinNum">${P.coins.toLocaleString('en-US')}</b></div>
       <div class="corner">${name === 'hub' ? '' : `
         <button class="ibtn" data-go="collection" title="收藏圖鑑" aria-label="收藏圖鑑"><svg viewBox="0 0 24 24"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg><span>圖鑑 ${this.ownedCount()}/${BLADES.length + RATCHETS.length + BITS.length}</span></button>
@@ -91,6 +91,7 @@ const UI = {
   acctLine() {
     const el = $('#acctLine');
     if (Store.mode === 'cloud') el.innerHTML = `<span class="dot"></span><span>已連結 claude.ai 帳號${Store.accountName ? '：' + esc(Store.accountName) : ''}，進度會存在你的帳號裡</span>`;
+    else if (Store.mode === 'server') el.innerHTML = `<span class="dot"></span><span>已建立訪客帳號，進度會自動存到雲端（同一台電腦、同一個瀏覽器）</span>`;
     else el.innerHTML = `<span class="dot off"></span><span>目前無法使用雲端帳號，進度會存在這台電腦的瀏覽器裡</span>`;
   },
 
@@ -110,27 +111,24 @@ const UI = {
       const meta = this.asmTab === 'blade' ? `<span class="t-${p.type}">${TYPES[p.type].name}</span><span>${p.wt}g</span>` : this.asmTab === 'ratchet' ? `<span>抗解體 ${Math.round(p.burst * 52)}</span><span>${p.wt}g</span>` : `<span class="t-${p.type}">${TYPES[p.type].name}</span><span>衝刺 ${p.dash}</span>`;
       return `<button class="pcard cut" data-part="${p.id}" aria-pressed="${sel}">
         <span class="cnt">×${P.inv[this.asmTab][p.id]}</span>
-        <img src="${Thumbs.get(this.asmTab, p.id)}" alt="">
+        ${Thumbs.lazy(this.asmTab, p.id)}
         <span class="pn">${esc(partName(this.asmTab, p))}</span>
         <span class="pm"><span class="r-${p.rarity}">${RARITY[p.rarity].name}</span>${meta}</span></button>`;
     }).join('') || '<div class="desc">還沒有這類零件，去扭蛋機抽抽看吧。</div>';
+    Thumbs.observe($('#plist'));
     this.renderAsmInfo();
-    // build library
+    // build library (bottom dock): horizontal cards, drag onto deck slots
     const slotOf = (id) => P.deckIds.indexOf(id);
-    $('#buildList').innerHTML = P.builds.map((b) => {
+    $('#buildList').innerHTML = `<button class="bcard new" data-bact="new"><i>＋</i>新組裝</button>` + P.builds.map((b) => {
       const sl = slotOf(b.id);
-      return `<button class="bcard cut" data-build="${b.id}" aria-pressed="${b.id === d.id}">
-        <img src="${Thumbs.get('blade', b.b)}" alt=""><span class="bi"><b>${esc(beyName(b))}</b><small>${beyCode(b)}・${TYPES[beyStats(b).type].name}</small></span>
-        ${sl >= 0 ? `<span class="bslot">${sl + 1} 號機</span>` : ''}</button>`;
+      return `<button class="bcard" data-build="${b.id}" data-drag="build" aria-pressed="${b.id === d.id}">
+        ${sl >= 0 ? `<span class="bslot">${sl + 1} 號機</span>` : ''}<img src="${Thumbs.get('blade', b.b)}" alt=""><b>${esc(beyName(b))}</b><small>${beyCode(b)}</small></button>`;
     }).join('');
     const sl = slotOf(d.id);
-    $('#buildActs').innerHTML = `
-      <div class="eyebrow">把目前這顆設為預設</div>
-      <div class="setslots">${[0, 1, 2].map((k) => `<button class="btn cut ${P.deckIds[k] === d.id ? 'on' : ''}" data-setslot="${k}">${k + 1} 號機</button>`).join('')}</div>
-      <div class="bacts"><button class="btn cut" data-bact="new">＋ 新組裝</button><button class="btn cut" data-bact="copy">複製</button><button class="btn cut" data-bact="del" ${sl >= 0 || P.builds.length <= 3 ? 'disabled' : ''}>刪除</button></div>`;
-    $('#deckSlots').innerHTML = P.deckIds.map((id, k) => { const b = P.builds.find((x) => x.id === id); return `<button class="slot cut" data-build="${id}" aria-pressed="${id === d.id}"><span class="n">${k + 1}</span><span><div class="sn">${esc(beyName(b))}</div><div class="sc">${beyCode(b)}・${TYPES[beyStats(b).type].name}</div></span></button>`; }).join('');
+    $('#buildActs').innerHTML = `<button class="btn cut" data-bact="copy">複製</button><button class="btn cut" data-bact="del" ${sl >= 0 || P.builds.length <= 3 ? 'disabled title="預設牌組中的陀螺不能刪除"' : ''}>刪除</button>`;
+    $('#deckSlots').innerHTML = P.deckIds.map((id, k) => { const b = P.builds.find((x) => x.id === id); return `<button class="dslot" data-slotdrop="${k}" data-build="${id}" data-drag="slot" aria-pressed="${id === d.id}"><img src="${Thumbs.get('blade', b.b)}" alt=""><span class="meta"><span class="top"><span class="n">${k + 1}</span><span class="sn">${esc(beyName(b))}</span></span><span class="sc">${beyCode(b)}・${TYPES[beyStats(b).type].name}</span></span></button>`; }).join('');
     const dup = this.deckDupes();
-    $('#deckWarn').textContent = dup ? `預設牌組內有重複零件（${dup}）。3 對 3 牌組戰中同名零件只能使用一次。` : '';
+    $('#deckWarn').textContent = dup ? `有重複零件：${dup}` : '';
     if (fresh) GL.show.showBey(d);
   },
   renderAsmInfo() {
@@ -174,13 +172,14 @@ const UI = {
     }
     syncDecks(P); Store.save(); this.renderAssembly(true);
   },
-  setSlot(k) {
-    const P = Store.profile, d = this.curBuild();
-    const other = P.deckIds.indexOf(d.id);
-    if (other >= 0 && other !== k) P.deckIds[other] = P.deckIds[k]; // swap positions
-    P.deckIds[k] = d.id;
+  setSlot(k, buildId) {
+    const P = Store.profile, id = buildId || this.curBuild().id;
+    const other = P.deckIds.indexOf(id);
+    if (other === k) return;
+    if (other >= 0) P.deckIds[other] = P.deckIds[k]; // swap positions
+    P.deckIds[k] = id;
     syncDecks(P); Store.save(); this.renderAssembly(false);
-    this.toast(`已設為預設牌組 ${k + 1} 號機`);
+    this.toast(`已放入預設牌組 ${k + 1} 號機`); SFX.tone(1320, 0.08, 0.08, 'square'); SFX.tone(1760, 0.12, 0.06, 'square', 0.06);
   },
 
   /* ---------- SELECT ---------- */
@@ -202,7 +201,7 @@ const UI = {
     const S = STADIUMS[o.stadium];
     $('#oppStadium').innerHTML = `<b>${esc(S.name)}</b>・${esc(S.desc)}<br><span style="color:var(--mute)">裂界區 ${S.pockets.filter((p) => p.kind === 'rift').length} 個・場外區 ${S.pockets.filter((p) => p.kind === 'out').length} 個</span>`;
     const od = o.deck.map(([b, r, t]) => `${BLADE[b].name} ${beyCode({ b, r, t })}`);
-    $('#oppInfo').innerHTML = `擅長：${TYPES[o.type].name}<br>牌組：${od.map(esc).join('／')}<br>勝利獎金 ${o.reward} 金幣${this.oppSel >= P.ladder ? '，首次擊敗再加 200' : ''}`;
+    $('#oppInfo').innerHTML = `擅長：${TYPES[o.type].name}<br>牌組：${od.map(esc).join('／')}<br>勝利獎金 ${o.reward} 金幣${this.oppSel >= P.ladder ? '，首次擊敗再加 120' : ''}`;
     $$('#modeSeg button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.mode === this.mode));
     const decks = this.mode === '3v3' ? P.decks : [P.decks[0]];
     $('#selDeck').innerHTML = decks.map((d, i) => `<div><span>${i + 1}. ${esc(beyName(d))}</span><span class="num" style="color:var(--dim)">${beyCode(d)}</span></div>`).join('');
@@ -214,13 +213,18 @@ const UI = {
 
   /* ---------- GACHA ---------- */
   rollOne(guaranteeRare) {
-    let r = Math.random() * 100;
-    let rarity = r < RARITY.sr.w ? 'sr' : r < RARITY.sr.w + RARITY.rare.w ? 'rare' : 'common';
-    if (guaranteeRare && rarity === 'common') rarity = Math.random() < 0.24 ? 'sr' : 'rare';
+    let r = Math.random() * 100, rarity = 'common';
+    for (const k of ['ur', 'sr', 'rare']) { if (r < RARITY[k].w) { rarity = k; break; } r -= RARITY[k].w; }
+    if (guaranteeRare && rarity === 'common') { const q = Math.random(); rarity = q < 0.07 ? 'ur' : q < 0.3 ? 'sr' : 'rare'; }
+    const P = Store.profile;
+    P.pity = (P.pity | 0) + 1;
+    if (P.pity >= 60) rarity = 'ur';          // pity: guaranteed legendary within 60 pulls
+    if (rarity === 'ur') P.pity = 0;
     const pool = [];
-    for (const [k, K] of Object.entries(KINDS)) for (const p of K.list) if (p.rarity === rarity) pool.push([k, p]);
-    const [kind, part] = pick(pool);
-    return { kind, part, rarity };
+    for (const [k, K] of Object.entries(KINDS)) for (const p of K.list) if (p.rarity === rarity) pool.push([k, p, (P.inv[k][p.id] | 0) ? 1 : 3]);
+    let w = Math.random() * pool.reduce((a, x) => a + x[2], 0);
+    const hit = pool.find((x) => (w -= x[2]) <= 0) || pool[0];
+    return { kind: hit[0], part: hit[1], rarity };
   },
   /* ---------- gacha ceremony ---------- */
   async pull(n) {
@@ -237,12 +241,12 @@ const UI = {
     for (const r of res) {
       r.had = P.inv[r.kind][r.part.id] | 0;
       r.isNew = !r.had;
-      if (r.had) { refund += 30; r.dup = true; }
+      if (r.had) { refund += 10; r.dup = true; }
       P.inv[r.kind][r.part.id] = r.had + 1;
     }
     P.coins += refund; P.stats.pulls += n;
     Store.save();
-    const rank = (r) => ['common', 'rare', 'sr'].indexOf(r.rarity);
+    const rank = (r) => RARITY_ORDER.indexOf(r.rarity);
     const best = res.reduce((a, b) => (rank(b) > rank(a) ? b : a));
     // 1) crank + capsule drop
     const dome = $('#dome'), crank = $('#crank');
@@ -258,16 +262,16 @@ const UI = {
     // 2) build-up: the capsule glows in the colour of the best rarity it holds
     ov.classList.add('charge');
     SFX.gachaCharge(best.rarity);
-    await wait(this._skip ? 0 : (best.rarity === 'sr' ? 1500 : best.rarity === 'rare' ? 1100 : 750));
+    await wait(this._skip ? 0 : (best.rarity === 'ur' ? 2000 : best.rarity === 'sr' ? 1500 : best.rarity === 'rare' ? 1100 : 750));
     // 3) open each capsule in turn
     for (let k = 0; k < res.length; k++) {
       const r = res[k], cap = $(`#gcRow [data-k="${k}"]`);
       cap.classList.add('open'); ov.classList.add('flash-' + r.rarity);
       SFX.rareJingle(r.rarity); SFX.tone(1200, 0.08, 0.06, 'square');
-      if (n === 1 || r.rarity === 'sr' || (k === res.length - 1 && n === 10)) {
+      if (n === 1 || r.rarity === 'sr' || r.rarity === 'ur' || (k === res.length - 1 && n === 10)) {
         this.showCard(r); cap.innerHTML += `<img src="${Thumbs.get(r.kind, r.part.id)}" alt="">`;
-        GL.show.showPart(r.kind, r.part.id); GL.show.spinSpeed = 1.4; GL.show.flash = r.rarity === 'sr' ? 2.2 : 1.2;
-        await wait(this._skip ? 120 : (r.rarity === 'sr' ? 1700 : 1100));
+        GL.show.showPart(r.kind, r.part.id); GL.show.spinSpeed = 1.4; GL.show.flash = r.rarity === 'ur' ? 3 : r.rarity === 'sr' ? 2.2 : 1.2;
+        await wait(this._skip ? 120 : (r.rarity === 'ur' ? 2300 : r.rarity === 'sr' ? 1700 : 1100));
       } else {
         cap.innerHTML += `<img src="${Thumbs.get(r.kind, r.part.id)}" alt="">`;
         await wait(this._skip ? 30 : 260);
@@ -284,17 +288,17 @@ const UI = {
   },
   showCard(r) {
     const c = $('#gcCard'); c.hidden = false; c.className = 'gc-card cut r-' + r.rarity;
-    const stars = r.rarity === 'sr' ? 3 : r.rarity === 'rare' ? 2 : 1;
-    c.innerHTML = `<div class="gc-stars">${'★'.repeat(stars)}${'☆'.repeat(3 - stars)}</div>
+    const stars = RARITY_ORDER.indexOf(r.rarity) + 1;
+    c.innerHTML = `<div class="gc-stars">${'★'.repeat(stars)}${'☆'.repeat(4 - stars)}</div>
       <div class="gc-kind">${RARITY[r.rarity].name}・${KINDS[r.kind].name}</div>
       <div class="gc-name">${esc(partName(r.kind, r.part))}</div>
-      ${r.isNew ? '<div class="gc-new">NEW！ 首次取得</div>' : `<div class="gc-dup">已擁有 ×${r.had} → 轉換為 <span class="coin"></span> 30</div>`}`;
+      ${r.isNew ? '<div class="gc-new">NEW！ 首次取得</div>' : `<div class="gc-dup">已擁有 ×${r.had} → 轉換為 <span class="coin"></span> 10</div>`}`;
     void c.offsetWidth; c.classList.add('in');
   },
   showSummary(res) {
     const s = $('#gcSum'); s.hidden = false; $('#gcCard').hidden = true;
     s.innerHTML = `<div class="eyebrow" style="margin-bottom:8px">10 連抽結果</div><div class="gc-grid">${res.map((r) => `<div class="gc-it r-${r.rarity} ${r.isNew ? 'isnew' : ''}"><img src="${Thumbs.get(r.kind, r.part.id)}" alt=""><b>${esc(partName(r.kind, r.part))}</b><small>${r.isNew ? 'NEW' : `已擁有 ×${r.had}`}</small></div>`).join('')}</div>
-      <div class="desc" style="margin-top:8px">新零件 ${res.filter((r) => r.isNew).length} 個・重複 ${res.filter((r) => r.dup).length} 個（共退還 ${res.filter((r) => r.dup).length * 30} 金幣）</div>`;
+      <div class="desc" style="margin-top:8px">新零件 ${res.filter((r) => r.isNew).length} 個・重複 ${res.filter((r) => r.dup).length} 個（共退還 ${res.filter((r) => r.dup).length * 10} 金幣）</div>`;
     $('#gcClose').hidden = false;
   },
   closeGacha() { $('#gcOverlay').hidden = true; $('#gcClose').hidden = true; },
@@ -302,7 +306,7 @@ const UI = {
     const list = $('#pullList'); list.innerHTML = '';
     res.forEach((r, i) => {
       const el = document.createElement('div'); el.className = 'pull-item'; el.style.animationDelay = `${i * 0.04}s`;
-      el.innerHTML = `<img src="${Thumbs.get(r.kind, r.part.id)}" alt=""><div><div style="font-weight:700">${esc(partName(r.kind, r.part))} ${r.isNew ? '<span class="new">NEW</span>' : '<span class="own">已擁有</span>'}</div><div style="font-size:12px;color:var(--dim)">${KINDS[r.kind].name}${r.dup ? '・重複 → +30 金幣' : ''}</div></div><span class="r-${r.rarity}" style="font-weight:700;font-size:12px">${RARITY[r.rarity].name}</span>`;
+      el.innerHTML = `<img src="${Thumbs.get(r.kind, r.part.id)}" alt=""><div><div style="font-weight:700">${esc(partName(r.kind, r.part))} ${r.isNew ? '<span class="new">NEW</span>' : '<span class="own">已擁有</span>'}</div><div style="font-size:12px;color:var(--dim)">${KINDS[r.kind].name}${r.dup ? '・重複 → +10 金幣' : ''}</div></div><span class="r-${r.rarity}" style="font-weight:700;font-size:12px">${RARITY[r.rarity].name}</span>`;
       list.appendChild(el);
     });
   },
@@ -313,11 +317,12 @@ const UI = {
     for (const [k, K] of Object.entries(KINDS)) for (const p of K.list) all.push([k, p]);
     const owned = all.filter(([k, p]) => (inv[k][p.id] | 0) > 0).length;
     $('#poolHead').innerHTML = `獎池一覽 <span class="num" style="color:var(--hot)">${owned}</span><span style="color:var(--dim)"> / ${all.length} 已擁有</span>`;
-    const order = ['sr', 'rare', 'common'];
+    const order = ['ur', 'sr', 'rare', 'common'];
     $('#poolGrid').innerHTML = order.map((rr) => `<div class="pool-r r-${rr}">${RARITY[rr].name}</div>` + all.filter(([, p]) => p.rarity === rr).map(([k, p]) => {
       const c = inv[k][p.id] | 0;
-      return `<div class="pool-it ${c ? 'have' : 'miss'}" title="${esc(partName(k, p))}"><img src="${Thumbs.get(k, p.id)}" alt=""><span>${c ? '×' + c : '未擁有'}</span></div>`;
+      return `<div class="pool-it ${c ? 'have' : 'miss'}" title="${esc(partName(k, p))}">${Thumbs.lazy(k, p.id)}<span>${c ? '×' + c : '未擁有'}</span></div>`;
     }).join('')).join('');
+    Thumbs.observe($('#poolGrid'));
   },
   renderDome() {
     const cols = ['#ff4141', '#3d8bff', '#2fd27a', '#f6c632', '#ff7a1a', '#c66bff', '#36d3ff'];
@@ -338,11 +343,16 @@ const UI = {
     const all = this.ownedCount(), total = BLADES.length + RATCHETS.length + BITS.length;
     $('#collProg').innerHTML = `<span>${K.name} <b class="num" style="color:var(--fg)">${owned}/${K.list.length}</b></span><span>全部零件 <b class="num" style="color:var(--fg)">${all}/${total}</b></span><span>總抽數 <b class="num" style="color:var(--fg)">${Store.profile.stats.pulls}</b></span>`;
     if (!this.collSel || this.collSel.kind !== this.collTab) this.collSel = { kind: this.collTab, id: K.list[0].id };
-    $('#collGrid').innerHTML = K.list.map((p) => {
-      const has = inv[p.id] > 0;
-      const nm = partName(this.collTab, p);
-      return `<button class="pcard cut ${has ? '' : 'locked'}" data-cpart="${p.id}" aria-pressed="${this.collSel.id === p.id}"><span class="cnt">${has ? '×' + inv[p.id] : ''}</span><img src="${Thumbs.get(this.collTab, p.id)}" alt=""><span class="pn">${has ? esc(nm) : '？？？'}</span><span class="pm"><span class="r-${p.rarity}">${RARITY[p.rarity].name}</span></span></button>`;
+    const bases = K.list.filter((p) => p.base === p.id);
+    $('#collGrid').innerHTML = bases.map((bp) => {
+      const fam = K.list.filter((p) => p.base === bp.id);
+      const got = fam.filter((p) => inv[p.id] > 0).length;
+      return `<div class="cg-row"><div class="cg-h"><b>${esc(this.collTab === 'ratchet' ? bp.code : bp.name)}</b><span>${got}/${fam.length}</span></div><div class="cg-items">` + fam.map((p) => {
+        const has = inv[p.id] > 0;
+        return `<button class="pcard cut ${has ? '' : 'locked'}" data-cpart="${p.id}" aria-pressed="${this.collSel.id === p.id}"><span class="cnt">${has ? '×' + inv[p.id] : ''}</span>${Thumbs.lazy(this.collTab, p.id)}<span class="pn">${has ? esc(p.series) : '？？？'}</span><span class="pm"><span class="r-${p.rarity}">${RARITY[p.rarity].name}</span></span></button>`;
+      }).join('') + '</div></div>';
     }).join('');
+    Thumbs.observe($('#collGrid'));
     this.renderCollInfo();
   },
   renderCollInfo() {
@@ -361,7 +371,7 @@ const UI = {
 /* ============================== EVENTS / BOOT ============================== */
 function bindEvents() {
   document.addEventListener('click', (e) => {
-    const t = e.target.closest('button'); if (!t) return;
+    const t = e.target.closest('button'); if (!t || UI._suppressClick) return;
     SFX.ensure();
     if (t.dataset.go === 'survival') { SFX.click(); return Battle.startSurvival(); }
     if (t.dataset.go === 'online') { SFX.click(); return UI.toast('線上對戰開發中，敬請期待！'); }
@@ -397,6 +407,40 @@ function bindEvents() {
   $('#cine').addEventListener('pointerdown', () => Battle.skipCine());
   $('#resAgain').addEventListener('click', () => Battle.again());
   $('#resHome').addEventListener('click', () => UI.go('hub'));
+  // drag a build card (or a filled slot) onto one of the 3 deck slots
+  (() => {
+    let drag = null;
+    const ghost = $('#dragGhost');
+    document.addEventListener('pointerdown', (e) => {
+      const src = e.target.closest('[data-drag]'); if (!src || UI.cur !== 'assembly') return;
+      drag = { id: src.dataset.build, from: src.dataset.drag === 'slot' ? +src.dataset.slotdrop : -1, x: e.clientX, y: e.clientY, on: false, src };
+    });
+    document.addEventListener('pointermove', (e) => {
+      if (!drag) return;
+      if (!drag.on && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > 8) {
+        drag.on = true; const b = Store.profile.builds.find((x) => x.id === drag.id);
+        ghost.innerHTML = `<img src="${Thumbs.get('blade', b.b)}" alt=""><span>${esc(beyName(b))}</span>`; ghost.hidden = false;
+        document.body.style.cursor = 'grabbing';
+      }
+      if (!drag.on) return;
+      ghost.style.left = e.clientX + 'px'; ghost.style.top = e.clientY + 'px';
+      const over = document.elementFromPoint(e.clientX, e.clientY);
+      const slot = over && over.closest('[data-slotdrop]');
+      $$('.dslot').forEach((x) => x.classList.toggle('over', x === slot));
+    });
+    const end = (e) => {
+      if (!drag) return;
+      const d0 = drag; drag = null; ghost.hidden = true; document.body.style.cursor = '';
+      $$('.dslot').forEach((x) => x.classList.remove('over'));
+      if (!d0.on) return;
+      const over = document.elementFromPoint(e.clientX, e.clientY);
+      const slot = over && over.closest('[data-slotdrop]');
+      if (slot) UI.setSlot(+slot.dataset.slotdrop, d0.id);
+      UI._suppressClick = true; setTimeout(() => (UI._suppressClick = false), 0);
+    };
+    document.addEventListener('pointerup', end);
+    document.addEventListener('pointercancel', () => { drag = null; ghost.hidden = true; $$('.dslot').forEach((x) => x.classList.remove('over')); });
+  })();
   $('#pull1').addEventListener('click', () => UI.pull(1));
   $$('[data-vol]').forEach((el) => el.addEventListener('input', () => SFX.setVol(el.dataset.vol, el.value / 100)));
   $('#pull10').addEventListener('click', () => UI.pull(10));

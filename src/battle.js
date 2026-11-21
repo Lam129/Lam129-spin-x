@@ -89,10 +89,10 @@ const Battle = {
         for (const [bb, k] of [[a, ka], [b, kb]]) {
           if (!k) continue;
           bb.hitPulse = 1;
-          const col = SPECIALS[bb.cfg.b].color, y = surfH(Math.hypot(bb.x, bb.z)) + 0.3;
+          const col = specOf(bb.cfg.b).color, y = surfH(Math.hypot(bb.x, bb.z)) + 0.3;
           if (k === 'guard') sc.fx.ring(bb.x, y - 0.2, bb.z, col, 1.4, 0.3);
           if (k === 'counter' || k === 'gravity') { sc.fx.star(bb.x, y, bb.z, 2.5, col, 0.25); sc.fx.spark(bb.x, y, bb.z, 30, 5, col, 0.5); }
-          if (k === 'rush') { sc.fx.star(bb.x, y, bb.z, 3, col, 0.3); if (SPECIALS[bb.cfg.b].fx === 'thunder') sc.fx.bolt(bb.x, y + 4, bb.z, bb.x, y, bb.z, 0xffffff); }
+          if (k === 'rush') { sc.fx.star(bb.x, y, bb.z, 3, col, 0.3); if (specOf(bb.cfg.b).fx === 'thunder') sc.fx.bolt(bb.x, y + 4, bb.z, bb.x, y, bb.z, 0xffffff); }
         }
       },
     };
@@ -205,7 +205,7 @@ const Battle = {
       if (!ai.usedSpecial && (ai.charge || 0) >= 1 && ai.state === 'spin') {
         this.aiSpecialAt -= dtReal;
         // AI fires when it's useful: attackers near the opponent, others when low or under pressure
-        const kind = SPECIALS[ai.cfg.b].kind, me = this.arena.beys[0];
+        const kind = specOf(ai.cfg.b).kind, me = this.arena.beys[0];
         const near = Math.hypot(ai.x - me.x, ai.z - me.z) < 2.2;
         const want = kind === 'rush' ? near : kind === 'regen' ? ai.s < 0.45 : kind === 'guard' ? (me.buff && me.buff.t > 0) || ai.meter > 0.4 || near : near;
         if (this.aiSpecialAt <= 0 && (want || ai.s < 0.25)) this.useSpecial(1);
@@ -257,7 +257,7 @@ const Battle = {
     const c = this.cine; if (!c || c.stage !== 'cut') return;
     c.stage = 'beast';
     const el = $('#cine'); el.classList.remove('cut'); el.classList.add('beast');
-    SFX.roar(BEAST_OF[(c.side ? this.cur[1] : this.cur[0]).b]);
+    SFX.roar(BEAST_OF[baseOf((c.side ? this.cur[1] : this.cur[0]).b)]);
     playRigs($('#cnBeast'), 1200);
     GL.battle.shake = 0.6;
   },
@@ -291,7 +291,7 @@ const Battle = {
     const me = this.arena.beys[0], btn = $('#spBtn');
     const ready = this.phase === 'fight' && !me.usedSpecial && (me.charge || 0) >= 1 && me.state === 'spin';
     btn.disabled = !ready; btn.classList.toggle('ready', ready);
-    const sp = SPECIALS[(this.cur && this.cur[0].b) || 'wolf'];
+    const sp = specOf((this.cur && this.cur[0].b) || 'wolf');
     $('#spName').textContent = me.usedSpecial ? '本回合已使用' : sp.name;
   },
   resolve(evs) {
@@ -375,7 +375,7 @@ const Battle = {
     const P = Store.profile, opp = this.opp, r = this.run;
     this.lastWon = won;
     let coins = 0;
-    if (won) { r.streak++; coins = 40 + Math.floor(r.streak / 5) * 60; r.coins += coins; P.coins += coins; P.stats.w++; }
+    if (won) { r.streak++; coins = 15 + Math.floor(r.streak / 5) * 25; r.coins += coins; P.coins += coins; P.stats.w++; }
     else P.stats.l++;
     for (const f of this.finishes) if (f.winner === 0 && FINISH[f.type]) P.stats[f.type] = (P.stats[f.type] | 0) + 1;
     const newBest = r.streak > (P.stats.best | 0);
@@ -403,14 +403,15 @@ const Battle = {
     $('#resAgain').textContent = '再戰一次'; $('#resHome').textContent = '回到大廳';
     const P = Store.profile, opp = this.opp, idx = OPPONENTS.indexOf(opp);
     const firstClear = won && idx >= P.ladder;
-    let coins = won ? opp.reward : Math.round(opp.reward * 0.3);
+    // first clear pays full; replays pay 40%; a loss pays 10%
+    let coins = won ? (idx >= P.ladder ? opp.reward : Math.round(opp.reward * 0.4)) : Math.round(opp.reward * 0.1);
     const rows = [];
     rows.push([won ? '勝利獎金' : '參戰獎勵', coins]);
     let finishBonus = 0;
-    for (const f of this.finishes) if (f.winner === 0 && FINISH[f.type]) { finishBonus += FINISH[f.type].pts * 10; P.stats[f.type] = (P.stats[f.type] | 0) + 1; }
+    for (const f of this.finishes) if (f.winner === 0 && FINISH[f.type]) { finishBonus += FINISH[f.type].pts * 3; P.stats[f.type] = (P.stats[f.type] | 0) + 1; }
     if (finishBonus) rows.push(['終結獎勵', finishBonus]);
     coins += finishBonus;
-    if (firstClear) { rows.push(['首次擊敗', 200]); coins += 200; P.ladder = idx + 1; }
+    if (firstClear) { rows.push(['首次擊敗', 120]); coins += 120; P.ladder = idx + 1; }
     P.coins += coins;
     won ? P.stats.w++ : P.stats.l++;
     Store.save();

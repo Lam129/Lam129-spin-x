@@ -41,3 +41,9 @@ node blender/pack.js
 
 - 倒數語音 `assets/voice/*.mp3`：使用開源 Piper TTS 引擎與 `en_US-joe-medium` 語音模型（訓練資料為 CC0）生成，再經 ffmpeg 音效處理。
 - Three.js：MIT 授權。字型：Google Fonts（SIL Open Font License）。
+
+## 公開版（GitHub Pages + Cloudflare）
+
+- 網頁：`.github/workflows/pages.yml` 會在推送 `main` 時自動建置並部署到 GitHub Pages。
+- 後端：`server/`（Cloudflare Workers + D1），架設步驟見 [server/README.md](server/README.md)。
+- 在 claude.ai Artifact 裡執行時使用平台資料庫；在公開網站執行時（有設定 `SPIN_API_URL`）改用自己的後端。

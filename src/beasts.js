@@ -158,7 +158,7 @@ const BEAST_OF = {
   phoenix: 'phoenix', tiger: 'tiger', mantis: 'mantis', darkstar: 'star',
 };
 function beastSVG(bladeId, color) {
-  const key = BEAST_OF[bladeId] || 'wolf', B = BEASTS[key];
+  const key = BEAST_OF[baseOf(bladeId)] || 'wolf', B = BEASTS[key];
   const c = '#' + new THREE.Color(color).getHexString();
   const id = 'b' + Math.random().toString(36).slice(2, 7);
   const eyes = [B.eye, B.eye2].filter(Boolean).map(([[x0, y0], [x1, y1]]) => `<path d="M${x0},${y0} L${x1},${y1}" stroke="#fff" stroke-width="5" stroke-linecap="round"/><path d="M${x0},${y0} L${x1},${y1}" stroke="${c}" stroke-width="2" stroke-linecap="round" opacity="0.8"/>`).join('');
