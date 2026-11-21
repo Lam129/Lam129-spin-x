@@ -156,6 +156,7 @@ const BEAST_OF = {
   silver: 'shield', turtle: 'turtle', fortress: 'castle', rhino: 'rhino', crab: 'crab',
   moon: 'rabbit', phantom: 'dragon', crane: 'crane', owl: 'owl', jelly: 'jelly',
   phoenix: 'phoenix', tiger: 'tiger', mantis: 'mantis', darkstar: 'star',
+  viper: 'dragon', falcon: 'bird', bull: 'rhino', golem: 'castle', beetle: 'turtle', dragonfly: 'crane', lotus: 'jelly', kirin: 'tiger', fox: 'wolf', raven: 'bird',
 };
 function beastSVG(bladeId, color) {
   const key = BEAST_OF[baseOf(bladeId)] || 'wolf', B = BEASTS[key];

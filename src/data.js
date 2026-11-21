@@ -85,6 +85,36 @@ const BLADES = [
   { id: 'mantis', name: '螳螂雙鐮', glyph: '螳', type: 'bal', rarity: 'common', atk: 50, def: 44, sta: 50, wt: 33.8, recoil: 0.98,
     shape: { kind: 'star', n: 4, base: 0.35, amp: 0.09 }, metal: 0xd8ecd0, plastic: 0x3a9a3a, accent: 0xe8ff7a,
     desc: '四枚鐮刃均勻分布，動作靈活的入門平衡型。' },
+  { id: 'viper', name: '赤蛇迅牙', glyph: '蛇', type: 'atk', rarity: 'common', atk: 61, def: 27, sta: 29, wt: 33.2, recoil: 1.14,
+    shape: { kind: 'fang', n: 5, base: 0.33, amp: 0.1 }, metal: 0xd8e0c8, plastic: 0x2a7a2a, accent: 0xd8ff5a,
+    desc: '五枚細長的蛇牙刃，連續撞擊讓對手來不及反應。' },
+  { id: 'falcon', name: '隼翼裂風', glyph: '隼', type: 'atk', rarity: 'rare', atk: 73, def: 28, sta: 30, wt: 35.0, recoil: 1.2,
+    shape: { kind: 'saw', n: 4, base: 0.33, amp: 0.12 }, metal: 0xe8e8f0, plastic: 0x3a4a8a, accent: 0x8ad8ff,
+    desc: '四片斜削的翼刃，從斜角切入時威力最強。' },
+  { id: 'bull', name: '狂牛重角', glyph: '牛', type: 'atk', rarity: 'sr', atk: 87, def: 36, sta: 24, wt: 38.0, recoil: 1.32,
+    shape: { kind: 'hybrid', n: 2, base: 0.34, amp: 0.14 }, metal: 0xf0d8c8, plastic: 0x8a2a10, accent: 0xffb070,
+    desc: '一對巨大的衝角，正面撞上時幾乎無人能擋。' },
+  { id: 'golem', name: '岩魔磐石', glyph: '岩', type: 'def', rarity: 'common', atk: 30, def: 63, sta: 38, wt: 35.4, recoil: 0.72,
+    shape: { kind: 'hex', n: 8, base: 0.41, amp: 0 }, metal: 0xc8c0b0, plastic: 0x5a5048, accent: 0xffa040,
+    desc: '八角形的岩石外殼，穩穩擋下正面衝擊。' },
+  { id: 'beetle', name: '甲蟲重盾', glyph: '甲', type: 'def', rarity: 'rare', atk: 36, def: 75, sta: 40, wt: 37.6, recoil: 0.68,
+    shape: { kind: 'gear', n: 8, base: 0.38, amp: 0.06 }, metal: 0xc0d0c8, plastic: 0x1a4a3a, accent: 0x6affb0,
+    desc: '八片甲殼交疊，越撞越堅固。' },
+  { id: 'dragonfly', name: '蜻蜓薄翼', glyph: '蜓', type: 'sta', rarity: 'common', atk: 21, def: 35, sta: 64, wt: 32.2, recoil: 0.82,
+    shape: { kind: 'wing', n: 6, base: 0.37, amp: 0.06 }, metal: 0xe8f4f0, plastic: 0x2a9a8a, accent: 0xb8fff0,
+    desc: '六片輕薄的翅翼，旋轉時幾乎沒有阻力。' },
+  { id: 'lotus', name: '青蓮靜輪', glyph: '蓮', type: 'sta', rarity: 'rare', atk: 23, def: 40, sta: 76, wt: 35.0, recoil: 0.76,
+    shape: { kind: 'round', n: 12, base: 0.4, amp: 0.02 }, metal: 0xf0e8f4, plastic: 0x8a4ab8, accent: 0xffd8f0,
+    desc: '十二瓣的蓮花外緣，平穩得像靜止一樣。' },
+  { id: 'kirin', name: '麒麟天角', glyph: '麟', type: 'bal', rarity: 'sr', atk: 62, def: 60, sta: 58, wt: 36.6, recoil: 1.02,
+    shape: { kind: 'star', n: 6, base: 0.35, amp: 0.1 }, metal: 0xfff0c8, plastic: 0x2a6aa8, accent: 0xffe060,
+    desc: '六道天角均勻展開，攻守兼備的頂級平衡型。' },
+  { id: 'fox', name: '九尾幻狐', glyph: '狐', type: 'bal', rarity: 'rare', atk: 56, def: 50, sta: 54, wt: 34.8, recoil: 1.0,
+    shape: { kind: 'star', n: 9, base: 0.34, amp: 0.08 }, metal: 0xfff0e0, plastic: 0xe86a2a, accent: 0xffffff,
+    desc: '九枚尾狀刃，讓對手抓不準撞擊的時機。' },
+  { id: 'raven', name: '黑鴉夜刃', glyph: '鴉', type: 'atk', rarity: 'rare', atk: 70, def: 30, sta: 32, wt: 34.6, recoil: 1.16,
+    shape: { kind: 'fang', n: 6, base: 0.33, amp: 0.09 }, metal: 0xb8b8c8, plastic: 0x1a1a2a, accent: 0xc06aff,
+    desc: '六片羽刃在夜色中劃出殘影。' },
 ];
 
 /* 鎖芯 (lock core): code = C<claws><height L/M/H>. burst = burst resistance multiplier. Internal ids kept for saves. */
@@ -102,6 +132,12 @@ const RATCHETS = [
   { id: '7-60', prongs: 7, h: 60, rarity: 'sr', burst: 1.58, atk: 2, def: 6, sta: 4, stab: 0.07, wt: 6.9, color: 0x1e3a4a, desc: '七爪低位鎖芯，在抗解體和攻擊力之間取得平衡。' },
   { id: '4-80', prongs: 4, h: 80, rarity: 'rare', burst: 1.08, atk: 8, def: 0, sta: -2, stab: -0.04, wt: 6.8, color: 0x4a3a1e, desc: '四爪高位鎖芯，專門從上方壓制低矮的對手。' },
   { id: '6-70', prongs: 6, h: 70, rarity: 'common', burst: 1.4, atk: 2, def: 4, sta: 3, stab: 0.03, wt: 6.9, color: 0x2e2e3a, desc: '六爪中位鎖芯，什麼組合都能搭的萬用款。' },
+  { id: '2-60', prongs: 2, h: 60, rarity: 'common', burst: 0.92, atk: 9, def: -1, sta: 0, stab: 0.05, wt: 6.1, color: 0x3a2a2a, desc: '兩爪低位鎖芯，輕巧又有爆發力。' },
+  { id: '8-60', prongs: 8, h: 60, rarity: 'sr', burst: 1.65, atk: 0, def: 7, sta: 5, stab: 0.08, wt: 7.0, color: 0x2a3a3a, desc: '八爪低位鎖芯，抗解體能力僅次於九爪。' },
+  { id: '3-70', prongs: 3, h: 70, rarity: 'common', burst: 0.98, atk: 8, def: 0, sta: -1, stab: 0.0, wt: 6.4, color: 0x3a3022, desc: '三爪中位鎖芯，打擊點稍高的攻擊款。' },
+  { id: '7-70', prongs: 7, h: 70, rarity: 'rare', burst: 1.52, atk: 2, def: 5, sta: 4, stab: 0.03, wt: 6.9, color: 0x22303a, desc: '七爪中位鎖芯，穩定又耐打。' },
+  { id: '9-70', prongs: 9, h: 70, rarity: 'rare', burst: 1.7, atk: -1, def: 7, sta: 4, stab: 0.02, wt: 7.1, color: 0x30223a, desc: '九爪中位鎖芯，給高針、高錐用的防禦款。' },
+  { id: '5-80', prongs: 5, h: 80, rarity: 'rare', burst: 1.22, atk: 7, def: 2, sta: -1, stab: -0.04, wt: 6.9, color: 0x3a2236, desc: '五爪高位鎖芯，高位打擊也不容易解體。' },
 ];
 RATCHETS.forEach((r) => (r.code = `C${r.prongs}${HCODE[r.h]}`));
 
@@ -121,6 +157,12 @@ const BITS = [
   { id: 'O', code: 'DK', name: '盤旋', rarity: 'common', type: 'sta', mob: 0.3, grip: 0.14, drain: 0.64, stab: 0.82, atk: -5, def: 4, sta: 11, dash: 12, wt: 2.3, tip: 'orb', color: 0xe8e0c8, desc: '寬大的圓盤底，即使傾斜也能繼續轉。' },
   { id: 'GN', code: 'GP', name: '齒針', rarity: 'rare', type: 'def', mob: 0.2, grip: 0.5, drain: 0.7, stab: 0.86, atk: -4, def: 9, sta: 7, dash: 40, wt: 2.1, tip: 'needle', color: 0x9adfc0, desc: '針尖加上齒圈，被撞到外圈時能靠驅衝回到中央。' },
   { id: 'HT', code: 'HC', name: '高錐', rarity: 'common', type: 'bal', mob: 0.5, grip: 0.55, drain: 0.85, stab: 0.66, atk: 4, def: 4, sta: 1, dash: 50, wt: 2.2, tip: 'htaper', color: 0xb8c8e0, desc: '加高的錐鋒，打擊點高，適合對付高位的對手。' },
+  { id: 'C', code: 'CO', name: '錐突', rarity: 'rare', type: 'atk', mob: 0.9, grip: 0.85, drain: 0.86, stab: 0.45, atk: 10, def: -3, sta: -4, dash: 80, wt: 2.0, tip: 'cone', color: 0xff8a4a, desc: '尖錐狀的攻擊旋尖，轉向靈活。' },
+  { id: 'D', code: 'DM', name: '圓頂', rarity: 'common', type: 'sta', mob: 0.24, grip: 0.15, drain: 0.66, stab: 0.86, atk: -6, def: 3, sta: 12, dash: 12, wt: 2.2, tip: 'dome', color: 0xd8c8f8, desc: '大圓頂底，傾斜時依然轉得平穩。' },
+  { id: 'Q', code: 'QR', name: '環刃', rarity: 'rare', type: 'bal', mob: 0.55, grip: 0.7, drain: 0.86, stab: 0.68, atk: 5, def: 2, sta: 2, dash: 60, wt: 2.2, tip: 'ring', color: 0x6ad8ff, desc: '環狀接地面，攻守切換自如。' },
+  { id: 'W', code: 'WD', name: '寬平', rarity: 'common', type: 'atk', mob: 1.05, grip: 0.95, drain: 0.95, stab: 0.32, atk: 11, def: -5, sta: -9, dash: 82, wt: 2.1, tip: 'wideflat', color: 0xffd04a, desc: '超寬的平底，移動範圍最大。' },
+  { id: 'S', code: 'SK', name: '尖錐', rarity: 'rare', type: 'def', mob: 0.12, grip: 0.3, drain: 0.68, stab: 0.9, atk: -6, def: 10, sta: 8, dash: 22, wt: 2.1, tip: 'spike', color: 0xa8b8c8, desc: '細長的尖錐守住中央，被撞開也能靠齒圈回位。' },
+  { id: 'G', code: 'GA', name: '守衡', rarity: 'sr', type: 'bal', mob: 0.42, grip: 0.62, drain: 0.74, stab: 0.8, atk: 3, def: 6, sta: 6, dash: 52, wt: 2.3, tip: 'cup', color: 0xffe8a8, desc: '杯狀的旋尖，攻守持久都很平均。' },
 ];
 /* ---- colourway series (original palettes): each base part gets variants with small stat shifts ---- */
 const BLADE_VARIANTS = [
@@ -131,20 +173,32 @@ const BLADE_VARIANTS = [
   { key: 'nt', name: '暗夜版', bump: 1, metal: 0x8a7ab8, plastic: 0x2a1650, accent: 0xc06aff, d: { def: 2, sta: 2 } },
   { key: 'gd', name: '黃金限定', bump: 2, metal: 0xffd86a, plastic: 0xb88a10, accent: 0xfff6c0, d: { atk: 2, def: 2, sta: 2 } },
   { key: 'cr', name: '水晶限定', bump: 2, metal: 0xe0f8ff, plastic: 0x8fd0f8, accent: 0xff8ad8, d: { atk: 3, def: 3, sta: 3 } },
+  { key: 'em', name: '翡翠版', bump: 1, metal: 0xc8f0d8, plastic: 0x18905a, accent: 0xa8ffcc, d: { sta: 2, def: 1 } },
+  { key: 'sk', name: '櫻花版', bump: 1, metal: 0xffe4ee, plastic: 0xff7aa8, accent: 0xffffff, d: { sta: 2, atk: 1 } },
+  { key: 'lv', name: '熔岩版', bump: 1, metal: 0x6a3a24, plastic: 0xff4a00, accent: 0xffd000, d: { atk: 3, sta: -1 } },
+  { key: 'dp', name: '深海版', bump: 1, metal: 0x6a8ab0, plastic: 0x0a2a5a, accent: 0x3affe0, d: { def: 3, atk: -1 } },
+  { key: 'cm', name: '迷彩版', bump: 0, metal: 0x8a8a6a, plastic: 0x4a5a2a, accent: 0xd0c080, d: { def: 2 } },
+  { key: 'tl', name: '雷光版', bump: 1, metal: 0xfffad0, plastic: 0x2a2a3a, accent: 0xffe83a, d: { atk: 2, def: 1 } },
+  { key: 'sy', name: '星空限定', bump: 2, metal: 0x9aa8ff, plastic: 0x14104a, accent: 0xffffff, d: { atk: 3, def: 2, sta: 2 } },
+  { key: 'rb', name: '彩虹傳說', bump: 3, metal: 0xffffff, plastic: 0xff3aa0, accent: 0x3affff, d: { atk: 4, def: 4, sta: 4 } },
 ];
 const PART_VARIANTS = [
   { key: 'ob', name: '黑曜', bump: 0, color: 0x15151a, d: { atk: 2 } },
   { key: 'gd', name: '金屬金', bump: 1, color: 0x9a7a18, d: { sta: 2 } },
   { key: 'cr', name: '透明', bump: 1, color: 0x6a8aa8, d: { def: 2 } },
   { key: 'rd', name: '赤紅', bump: 1, color: 0x7a1a14, d: { atk: 3, def: -1 } },
+  { key: 'em', name: '翡翠', bump: 1, color: 0x18905a, d: { sta: 1, def: 1 } },
+  { key: 'sk', name: '櫻花', bump: 1, color: 0xff7aa8, d: { sta: 2 } },
+  { key: 'sy', name: '星空限定', bump: 2, color: 0x2a2470, d: { atk: 1, def: 1, sta: 1 } },
 ];
+const RATCHET_ONLY_VARIANTS = [{ key: 'rb', name: '彩虹傳說', bump: 3, color: 0xd02a8a, d: { atk: 2, def: 2, sta: 2 } }];
 const bumpRarity = (r, n) => RARITY_ORDER[Math.min(3, RARITY_ORDER.indexOf(r) + n)];
 const addStats = (p, d) => { for (const k in d) p[k] = (p[k] || 0) + d[k]; return p; };
 BLADES.forEach((b) => { b.base = b.id; b.series = '標準版'; });
 RATCHETS.forEach((r) => { r.base = r.id; r.series = '標準'; });
 BITS.forEach((t) => { t.base = t.id; t.series = '標準'; });
 for (const b of BLADES.slice()) for (const v of BLADE_VARIANTS) BLADES.push(addStats({ ...b, id: `${b.id}@${v.key}`, base: b.id, series: v.name, name: `${b.name}・${v.name}`, rarity: bumpRarity(b.rarity, v.bump), metal: v.metal, plastic: v.plastic, accent: v.accent }, v.d));
-for (const r of RATCHETS.slice()) for (const v of PART_VARIANTS) RATCHETS.push(addStats({ ...r, id: `${r.id}@${v.key}`, base: r.id, series: v.name, code: r.code, rarity: bumpRarity(r.rarity, v.bump), color: v.color, burst: r.burst + (v.key === 'gd' ? 0.05 : 0) }, v.d));
+for (const r of RATCHETS.slice()) for (const v of [...PART_VARIANTS, ...RATCHET_ONLY_VARIANTS]) RATCHETS.push(addStats({ ...r, id: `${r.id}@${v.key}`, base: r.id, series: v.name, code: r.code, rarity: bumpRarity(r.rarity, v.bump), color: v.color, burst: r.burst + (v.key === 'gd' ? 0.05 : 0) }, v.d));
 for (const t of BITS.slice()) for (const v of PART_VARIANTS) BITS.push(addStats({ ...t, id: `${t.id}@${v.key}`, base: t.id, series: v.name, rarity: bumpRarity(t.rarity, v.bump), color: v.color === 0x15151a ? 0x2a2a32 : v.color, dash: t.dash + (v.key === 'rd' ? 4 : 0) }, v.d));
 const baseOf = (id) => String(id).split('@')[0];
 const specOf = (bladeId) => SPECIALS[baseOf(bladeId)];
@@ -294,6 +348,16 @@ const SPECIALS = {
   phoenix:  { name: '赤鳳・浴火重生', kind: 'counter', fx: 'phoenix', color: 0xffa030, dur: 5.5, desc: '鳳凰之火回復少量轉速，並把受到的撞擊反彈給對手。' },
   tiger:    { name: '猛虎・雙牙反噬', kind: 'counter', fx: 'fire',    color: 0xffa020, dur: 5.5, desc: '咬住撲來的對手，把衝擊原封不動還回去。' },
   mantis:   { name: '螳螂・鐮刃迴旋', kind: 'counter', fx: 'wind',    color: 0xb8ff6a, dur: 5.0, desc: '雙鐮迴旋，在對手撞上來的瞬間反斬。' },
+  viper:    { name: '赤蛇・毒牙纏身', kind: 'rush',    fx: 'dark',    color: 0x8aff3a, dur: 4.2, desc: '如蛇般纏上對手，連續撕咬。' },
+  falcon:   { name: '隼翼・裂風俯衝', kind: 'rush',    fx: 'wind',    color: 0x8ad8ff, dur: 4.2, desc: '從高空俯衝，速度快到看不清。' },
+  bull:     { name: '狂牛・怒角衝鋒', kind: 'rush',    fx: 'fire',    color: 0xff6a2a, dur: 4.5, desc: '低頭狂奔，一路撞開所有阻礙。' },
+  golem:    { name: '岩魔・磐石不動', kind: 'guard',   fx: 'steel',   color: 0xffa040, dur: 6.5, desc: '化身岩石，紋風不動。' },
+  beetle:   { name: '甲蟲・重甲護身', kind: 'guard',   fx: 'steel',   color: 0x6affb0, dur: 6.5, desc: '收起甲殼，把衝擊全部擋下。' },
+  dragonfly:{ name: '蜻蜓・輕翼浮空', kind: 'regen',   fx: 'wind',    color: 0xb8fff0, dur: 6.0, desc: '輕盈浮空，轉速緩緩回升。' },
+  lotus:    { name: '青蓮・靜水流轉', kind: 'regen',   fx: 'water',   color: 0xd8a8ff, dur: 6.5, desc: '如蓮花在靜水上旋轉，幾乎不損失轉速。' },
+  kirin:    { name: '麒麟・天雷反擊', kind: 'counter', fx: 'thunder', color: 0xffe060, dur: 5.5, desc: '天雷護身，把撞擊反彈回去。' },
+  fox:      { name: '九尾・幻影迷蹤', kind: 'counter', fx: 'moon',    color: 0xffa060, dur: 5.5, desc: '九道幻影迷惑對手，趁機反擊。' },
+  raven:    { name: '黑鴉・夜羽急襲', kind: 'rush',    fx: 'dark',    color: 0xc06aff, dur: 4.2, desc: '在夜色中無聲急襲。' },
   darkstar: { name: '暗星・黑洞引力', kind: 'gravity', fx: 'dark',    color: 0xc04cff, dur: 4.5, desc: '製造引力場把對手拉近，並以反擊姿態迎擊。' },
 };
 const SPECIAL_KIND = { rush: '突擊強化', guard: '防禦強化', regen: '轉速回復', counter: '反擊', gravity: '引力反擊' };

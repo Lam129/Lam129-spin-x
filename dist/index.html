@@ -481,10 +481,122 @@ img.lz{background:linear-gradient(90deg,#0b0f1a,#151b2a,#0b0f1a);background-size
 .fcell small{color:var(--dim);font-size:12px;line-height:1.5;display:block}
 #loading{position:fixed;inset:0;z-index:9;display:grid;place-items:center;background:var(--bg);font-family:var(--f-disp);letter-spacing:.3em;color:var(--dim)}
 @media (max-width:900px){
-  .asm,.sel,.gacha,.coll{grid-template-columns:1fr;overflow:auto}
-  .hub-menu{width:calc(100% - 44px)}
   .ladder{grid-template-columns:repeat(2,minmax(0,1fr))}
   .ftable{grid-template-columns:1fr 1fr}
+}
+/* ================= phones & small tablets (portrait or narrow) ================= */
+@media (max-width:820px){
+  body{font-size:14px}
+  #ui .screen{overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+  .topbar{position:sticky;top:0;z-index:3;gap:8px;padding:10px max(12px,env(safe-area-inset-left,0px)) 10px max(12px,env(safe-area-inset-right,0px));flex-wrap:wrap}
+  .brand{font-size:17px}.brand small{display:none}
+  .chip{padding:5px 9px;font-size:12px}.chip span:nth-child(3){display:none}
+  .corner .ibtn span{display:none}.ibtn{padding:6px 8px}
+  .btn{padding:10px 16px}
+  /* lobby: single scrolling column, 3D bey shows through a spacer */
+  #s-hub{display:flex;flex-direction:column;gap:12px;padding:0 max(12px,env(safe-area-inset-right,0px)) 18px max(12px,env(safe-area-inset-left,0px))}
+  #s-hub > *{position:static!important;translate:none!important;width:auto!important}
+  #s-hub .topbar{margin:0 calc(-1 * max(12px,env(safe-area-inset-left,0px)))}
+  .lb-rays{position:fixed!important;left:50%!important;top:40%!important;translate:-50% -50%!important;width:1600px!important}
+  .lb-logo{font-size:30px;margin-top:-4px}
+  .lb-player{width:auto}
+  .lb-bey{margin-top:min(46vh,340px);text-align:center}
+  .lb-menu{display:grid;gap:8px}
+  .mi{width:100%!important;height:auto!important;min-height:76px;padding:12px 18px 12px 30px;clip-path:polygon(18px 0,100% 0,100% 100%,0 100%)}
+  .mi h4,.m1 h4{font-size:26px}.mi .k{display:none}.mi:hover{transform:none}
+  .lb-board{width:auto}
+  .lb-dock{display:grid!important;grid-template-columns:repeat(2,1fr);gap:8px}
+  .lb-dock .lbk{justify-content:center}
+  /* assembly */
+  #s-assembly{display:flex;flex-direction:column}
+  .asm{position:static;display:flex;flex-direction:column;gap:10px;padding:0 12px;inset:auto}
+  .asm .col:first-child{order:1}
+  .asm .plist{display:flex;overflow-x:auto;overflow-y:hidden;height:150px;flex:none;gap:6px;padding-bottom:4px}
+  .asm .plist .pcard{flex:none;width:110px}
+  .stage-info{order:2;margin-top:min(30vh,240px);align-self:center}
+  .stage-info .nm{font-size:24px}
+  .asm .col:last-child{order:3}
+  .asm-dock{position:static;height:auto;grid-template-columns:1fr;margin:10px 12px 18px;gap:12px}
+  .ad-cards{min-height:140px}
+  .bcard{touch-action:pan-x}
+  .ad-slots{grid-template-columns:1fr;gap:6px}
+  .dslot{grid-template-columns:auto 1fr;padding:6px 10px}
+  .dslot img{width:46px;height:46px}
+  /* battle select */
+  .sel{position:static;display:flex;flex-direction:column;gap:12px;padding:0 12px 18px;inset:auto}
+  .ladder{overflow:visible}
+  .opp{min-height:0;padding:10px}
+  .side{padding:14px}
+  /* gacha */
+  .gacha{position:static;display:flex;flex-direction:column;gap:12px;padding:0 12px 18px;inset:auto}
+  .dome-wrap{max-width:260px;margin:0 auto;width:100%}
+  .reveal{min-height:34vh;align-self:center}
+  .pull-res{max-height:none}.pull-list{max-height:none}
+  .pool{grid-template-columns:repeat(5,minmax(0,1fr))}
+  .gc-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .gc-row{top:22%;gap:8px}.gc-cap{width:54px;height:54px}
+  .gc-name{font-size:24px}
+  /* collection */
+  .coll{position:static;display:flex;flex-direction:column;gap:12px;padding:0 12px 18px;inset:auto}
+  .coll-main{min-height:60vh;background:rgba(6,8,14,.96);position:relative;z-index:1;padding:6px;margin:0 -6px}
+  .cg-items{grid-template-columns:repeat(auto-fill,minmax(86px,1fr))}
+  #collInfo{align-self:stretch!important;margin-top:min(32vh,240px)}
+  /* rules */
+  .rules{position:static;margin:0 12px 18px;padding:18px 16px;inset:auto}
+  /* result & auth */
+  .res-title{font-size:44px}.res-score{font-size:28px}
+  .starter-grid{grid-template-columns:repeat(2,1fr)}
+  .auth-card{padding:24px 20px}
+  .settings{right:12px;left:12px;width:auto}
+  /* battle HUD */
+  #s-battle{overflow:hidden!important}
+  .hud-top{top:max(8px,env(safe-area-inset-top,0px));gap:6px;width:calc(100% - 16px);grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)}
+  .pl{padding:6px 8px;gap:6px}.pl .who span{display:none}.pl .who b{font-size:13px}
+  .hav{width:30px;height:30px}.hav svg{width:30px;height:30px}
+  .pips{gap:3px}.pip{width:10px;height:16px}
+  .round{padding:4px 10px}.round .num{font-size:20px}.round .eyebrow{display:none}
+  .gauge{width:calc(50% - 18px);padding:8px 10px;gap:4px;bottom:max(8px,env(safe-area-inset-bottom,0px))}
+  .gauge.l{left:8px}.gauge.r{right:8px}
+  .gauge .rpm{font-size:18px}.gauge .eyebrow{display:none}
+  .deckrow{gap:3px}.dk{width:30px}.dk img{width:28px;height:28px}.dk em{font-size:9px;min-height:10px}
+  .ratchet i{width:9px;height:5px}
+  .launcher{right:8px;top:auto;bottom:calc(max(8px,env(safe-area-inset-bottom,0px)) + 118px);transform:none;width:132px;padding:8px;gap:6px}
+  .launcher .eyebrow,.launcher .hint{display:none}
+  .aimrow{font-size:10px;gap:4px}.aimrow span{display:none}
+  .track{height:min(34vh,220px);width:52px}
+  .handle{left:-12px;right:-12px;height:30px}
+  .powread{font-size:14px;min-height:16px}
+  .spbtn{left:8px;bottom:calc(max(8px,env(safe-area-inset-bottom,0px)) + 118px);padding:8px 10px}
+  .spbtn small{display:none}.spbtn .k{display:none}
+  .quit{bottom:auto;top:calc(max(8px,env(safe-area-inset-top,0px)) + 56px);left:auto;right:8px;transform:none;padding:6px 10px;font-size:12px}
+  .count{font-size:clamp(56px,18vw,110px);top:26%}
+  .count.long{font-size:clamp(40px,12vw,80px)}
+  .banner .big{font-size:clamp(34px,11vw,64px)}
+  .ci-band{height:110px;padding:0 6%}.ci-band img{width:90px;height:90px}
+  .cn-name{font-size:clamp(34px,10vw,64px)}
+  .cn-panel{width:72%}
+  .toast{width:calc(100% - 32px);text-align:center}
+}
+/* landscape phones: short screens */
+@media (max-height:500px) and (orientation:landscape){
+  .hud-top{top:max(6px,env(safe-area-inset-top,0px));width:min(620px,calc(100% - 200px));gap:6px}
+  .pl{padding:5px 8px;gap:6px}.pl .who span{display:none}.pl .who b{font-size:13px}
+  .hav{width:28px;height:28px}.hav svg{width:28px;height:28px}
+  .pip{width:10px;height:15px}.pips{gap:3px}
+  .round{padding:3px 10px}.round .num{font-size:18px}.round .eyebrow{display:none}
+  .gauge{width:min(210px,26vw);padding:6px 8px;gap:3px;bottom:max(6px,env(safe-area-inset-bottom,0px))}
+  .gauge.l{left:max(6px,env(safe-area-inset-left,0px))}.gauge.r{right:max(6px,env(safe-area-inset-right,0px))}
+  .gauge .eyebrow{display:none}.gauge .rpm{font-size:16px}
+  .deckrow{gap:3px}.dk{width:28px}.dk img{width:26px;height:26px}.dk em{font-size:9px;min-height:10px}
+  .ratchet i{width:9px;height:5px}
+  .spbtn{left:max(6px,env(safe-area-inset-left,0px));padding:6px 10px}.spbtn small,.spbtn .k{display:none}
+  .quit{top:max(6px,env(safe-area-inset-top,0px));bottom:auto;left:auto;right:max(6px,env(safe-area-inset-right,0px));transform:none;padding:5px 10px;font-size:12px}
+  .launcher{top:50%;bottom:auto;transform:translateY(-50%);width:130px;padding:8px}
+  .launcher .hint,.launcher .eyebrow{display:none}
+  .track{height:46vh}
+  .spbtn{bottom:auto;top:36%}
+  .lb-menu{top:70px}.mi{height:70px}.m1{height:84px}
+  .lb-board{display:none}
 }
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
@@ -849,6 +961,36 @@ const BLADES = [
   { id: 'mantis', name: '螳螂雙鐮', glyph: '螳', type: 'bal', rarity: 'common', atk: 50, def: 44, sta: 50, wt: 33.8, recoil: 0.98,
     shape: { kind: 'star', n: 4, base: 0.35, amp: 0.09 }, metal: 0xd8ecd0, plastic: 0x3a9a3a, accent: 0xe8ff7a,
     desc: '四枚鐮刃均勻分布，動作靈活的入門平衡型。' },
+  { id: 'viper', name: '赤蛇迅牙', glyph: '蛇', type: 'atk', rarity: 'common', atk: 61, def: 27, sta: 29, wt: 33.2, recoil: 1.14,
+    shape: { kind: 'fang', n: 5, base: 0.33, amp: 0.1 }, metal: 0xd8e0c8, plastic: 0x2a7a2a, accent: 0xd8ff5a,
+    desc: '五枚細長的蛇牙刃，連續撞擊讓對手來不及反應。' },
+  { id: 'falcon', name: '隼翼裂風', glyph: '隼', type: 'atk', rarity: 'rare', atk: 73, def: 28, sta: 30, wt: 35.0, recoil: 1.2,
+    shape: { kind: 'saw', n: 4, base: 0.33, amp: 0.12 }, metal: 0xe8e8f0, plastic: 0x3a4a8a, accent: 0x8ad8ff,
+    desc: '四片斜削的翼刃，從斜角切入時威力最強。' },
+  { id: 'bull', name: '狂牛重角', glyph: '牛', type: 'atk', rarity: 'sr', atk: 87, def: 36, sta: 24, wt: 38.0, recoil: 1.32,
+    shape: { kind: 'hybrid', n: 2, base: 0.34, amp: 0.14 }, metal: 0xf0d8c8, plastic: 0x8a2a10, accent: 0xffb070,
+    desc: '一對巨大的衝角，正面撞上時幾乎無人能擋。' },
+  { id: 'golem', name: '岩魔磐石', glyph: '岩', type: 'def', rarity: 'common', atk: 30, def: 63, sta: 38, wt: 35.4, recoil: 0.72,
+    shape: { kind: 'hex', n: 8, base: 0.41, amp: 0 }, metal: 0xc8c0b0, plastic: 0x5a5048, accent: 0xffa040,
+    desc: '八角形的岩石外殼，穩穩擋下正面衝擊。' },
+  { id: 'beetle', name: '甲蟲重盾', glyph: '甲', type: 'def', rarity: 'rare', atk: 36, def: 75, sta: 40, wt: 37.6, recoil: 0.68,
+    shape: { kind: 'gear', n: 8, base: 0.38, amp: 0.06 }, metal: 0xc0d0c8, plastic: 0x1a4a3a, accent: 0x6affb0,
+    desc: '八片甲殼交疊，越撞越堅固。' },
+  { id: 'dragonfly', name: '蜻蜓薄翼', glyph: '蜓', type: 'sta', rarity: 'common', atk: 21, def: 35, sta: 64, wt: 32.2, recoil: 0.82,
+    shape: { kind: 'wing', n: 6, base: 0.37, amp: 0.06 }, metal: 0xe8f4f0, plastic: 0x2a9a8a, accent: 0xb8fff0,
+    desc: '六片輕薄的翅翼，旋轉時幾乎沒有阻力。' },
+  { id: 'lotus', name: '青蓮靜輪', glyph: '蓮', type: 'sta', rarity: 'rare', atk: 23, def: 40, sta: 76, wt: 35.0, recoil: 0.76,
+    shape: { kind: 'round', n: 12, base: 0.4, amp: 0.02 }, metal: 0xf0e8f4, plastic: 0x8a4ab8, accent: 0xffd8f0,
+    desc: '十二瓣的蓮花外緣，平穩得像靜止一樣。' },
+  { id: 'kirin', name: '麒麟天角', glyph: '麟', type: 'bal', rarity: 'sr', atk: 62, def: 60, sta: 58, wt: 36.6, recoil: 1.02,
+    shape: { kind: 'star', n: 6, base: 0.35, amp: 0.1 }, metal: 0xfff0c8, plastic: 0x2a6aa8, accent: 0xffe060,
+    desc: '六道天角均勻展開，攻守兼備的頂級平衡型。' },
+  { id: 'fox', name: '九尾幻狐', glyph: '狐', type: 'bal', rarity: 'rare', atk: 56, def: 50, sta: 54, wt: 34.8, recoil: 1.0,
+    shape: { kind: 'star', n: 9, base: 0.34, amp: 0.08 }, metal: 0xfff0e0, plastic: 0xe86a2a, accent: 0xffffff,
+    desc: '九枚尾狀刃，讓對手抓不準撞擊的時機。' },
+  { id: 'raven', name: '黑鴉夜刃', glyph: '鴉', type: 'atk', rarity: 'rare', atk: 70, def: 30, sta: 32, wt: 34.6, recoil: 1.16,
+    shape: { kind: 'fang', n: 6, base: 0.33, amp: 0.09 }, metal: 0xb8b8c8, plastic: 0x1a1a2a, accent: 0xc06aff,
+    desc: '六片羽刃在夜色中劃出殘影。' },
 ];
 
 /* 鎖芯 (lock core): code = C<claws><height L/M/H>. burst = burst resistance multiplier. Internal ids kept for saves. */
@@ -866,6 +1008,12 @@ const RATCHETS = [
   { id: '7-60', prongs: 7, h: 60, rarity: 'sr', burst: 1.58, atk: 2, def: 6, sta: 4, stab: 0.07, wt: 6.9, color: 0x1e3a4a, desc: '七爪低位鎖芯，在抗解體和攻擊力之間取得平衡。' },
   { id: '4-80', prongs: 4, h: 80, rarity: 'rare', burst: 1.08, atk: 8, def: 0, sta: -2, stab: -0.04, wt: 6.8, color: 0x4a3a1e, desc: '四爪高位鎖芯，專門從上方壓制低矮的對手。' },
   { id: '6-70', prongs: 6, h: 70, rarity: 'common', burst: 1.4, atk: 2, def: 4, sta: 3, stab: 0.03, wt: 6.9, color: 0x2e2e3a, desc: '六爪中位鎖芯，什麼組合都能搭的萬用款。' },
+  { id: '2-60', prongs: 2, h: 60, rarity: 'common', burst: 0.92, atk: 9, def: -1, sta: 0, stab: 0.05, wt: 6.1, color: 0x3a2a2a, desc: '兩爪低位鎖芯，輕巧又有爆發力。' },
+  { id: '8-60', prongs: 8, h: 60, rarity: 'sr', burst: 1.65, atk: 0, def: 7, sta: 5, stab: 0.08, wt: 7.0, color: 0x2a3a3a, desc: '八爪低位鎖芯，抗解體能力僅次於九爪。' },
+  { id: '3-70', prongs: 3, h: 70, rarity: 'common', burst: 0.98, atk: 8, def: 0, sta: -1, stab: 0.0, wt: 6.4, color: 0x3a3022, desc: '三爪中位鎖芯，打擊點稍高的攻擊款。' },
+  { id: '7-70', prongs: 7, h: 70, rarity: 'rare', burst: 1.52, atk: 2, def: 5, sta: 4, stab: 0.03, wt: 6.9, color: 0x22303a, desc: '七爪中位鎖芯，穩定又耐打。' },
+  { id: '9-70', prongs: 9, h: 70, rarity: 'rare', burst: 1.7, atk: -1, def: 7, sta: 4, stab: 0.02, wt: 7.1, color: 0x30223a, desc: '九爪中位鎖芯，給高針、高錐用的防禦款。' },
+  { id: '5-80', prongs: 5, h: 80, rarity: 'rare', burst: 1.22, atk: 7, def: 2, sta: -1, stab: -0.04, wt: 6.9, color: 0x3a2236, desc: '五爪高位鎖芯，高位打擊也不容易解體。' },
 ];
 RATCHETS.forEach((r) => (r.code = `C${r.prongs}${HCODE[r.h]}`));
 
@@ -885,6 +1033,12 @@ const BITS = [
   { id: 'O', code: 'DK', name: '盤旋', rarity: 'common', type: 'sta', mob: 0.3, grip: 0.14, drain: 0.64, stab: 0.82, atk: -5, def: 4, sta: 11, dash: 12, wt: 2.3, tip: 'orb', color: 0xe8e0c8, desc: '寬大的圓盤底，即使傾斜也能繼續轉。' },
   { id: 'GN', code: 'GP', name: '齒針', rarity: 'rare', type: 'def', mob: 0.2, grip: 0.5, drain: 0.7, stab: 0.86, atk: -4, def: 9, sta: 7, dash: 40, wt: 2.1, tip: 'needle', color: 0x9adfc0, desc: '針尖加上齒圈，被撞到外圈時能靠驅衝回到中央。' },
   { id: 'HT', code: 'HC', name: '高錐', rarity: 'common', type: 'bal', mob: 0.5, grip: 0.55, drain: 0.85, stab: 0.66, atk: 4, def: 4, sta: 1, dash: 50, wt: 2.2, tip: 'htaper', color: 0xb8c8e0, desc: '加高的錐鋒，打擊點高，適合對付高位的對手。' },
+  { id: 'C', code: 'CO', name: '錐突', rarity: 'rare', type: 'atk', mob: 0.9, grip: 0.85, drain: 0.86, stab: 0.45, atk: 10, def: -3, sta: -4, dash: 80, wt: 2.0, tip: 'cone', color: 0xff8a4a, desc: '尖錐狀的攻擊旋尖，轉向靈活。' },
+  { id: 'D', code: 'DM', name: '圓頂', rarity: 'common', type: 'sta', mob: 0.24, grip: 0.15, drain: 0.66, stab: 0.86, atk: -6, def: 3, sta: 12, dash: 12, wt: 2.2, tip: 'dome', color: 0xd8c8f8, desc: '大圓頂底，傾斜時依然轉得平穩。' },
+  { id: 'Q', code: 'QR', name: '環刃', rarity: 'rare', type: 'bal', mob: 0.55, grip: 0.7, drain: 0.86, stab: 0.68, atk: 5, def: 2, sta: 2, dash: 60, wt: 2.2, tip: 'ring', color: 0x6ad8ff, desc: '環狀接地面，攻守切換自如。' },
+  { id: 'W', code: 'WD', name: '寬平', rarity: 'common', type: 'atk', mob: 1.05, grip: 0.95, drain: 0.95, stab: 0.32, atk: 11, def: -5, sta: -9, dash: 82, wt: 2.1, tip: 'wideflat', color: 0xffd04a, desc: '超寬的平底，移動範圍最大。' },
+  { id: 'S', code: 'SK', name: '尖錐', rarity: 'rare', type: 'def', mob: 0.12, grip: 0.3, drain: 0.68, stab: 0.9, atk: -6, def: 10, sta: 8, dash: 22, wt: 2.1, tip: 'spike', color: 0xa8b8c8, desc: '細長的尖錐守住中央，被撞開也能靠齒圈回位。' },
+  { id: 'G', code: 'GA', name: '守衡', rarity: 'sr', type: 'bal', mob: 0.42, grip: 0.62, drain: 0.74, stab: 0.8, atk: 3, def: 6, sta: 6, dash: 52, wt: 2.3, tip: 'cup', color: 0xffe8a8, desc: '杯狀的旋尖，攻守持久都很平均。' },
 ];
 /* ---- colourway series (original palettes): each base part gets variants with small stat shifts ---- */
 const BLADE_VARIANTS = [
@@ -895,20 +1049,32 @@ const BLADE_VARIANTS = [
   { key: 'nt', name: '暗夜版', bump: 1, metal: 0x8a7ab8, plastic: 0x2a1650, accent: 0xc06aff, d: { def: 2, sta: 2 } },
   { key: 'gd', name: '黃金限定', bump: 2, metal: 0xffd86a, plastic: 0xb88a10, accent: 0xfff6c0, d: { atk: 2, def: 2, sta: 2 } },
   { key: 'cr', name: '水晶限定', bump: 2, metal: 0xe0f8ff, plastic: 0x8fd0f8, accent: 0xff8ad8, d: { atk: 3, def: 3, sta: 3 } },
+  { key: 'em', name: '翡翠版', bump: 1, metal: 0xc8f0d8, plastic: 0x18905a, accent: 0xa8ffcc, d: { sta: 2, def: 1 } },
+  { key: 'sk', name: '櫻花版', bump: 1, metal: 0xffe4ee, plastic: 0xff7aa8, accent: 0xffffff, d: { sta: 2, atk: 1 } },
+  { key: 'lv', name: '熔岩版', bump: 1, metal: 0x6a3a24, plastic: 0xff4a00, accent: 0xffd000, d: { atk: 3, sta: -1 } },
+  { key: 'dp', name: '深海版', bump: 1, metal: 0x6a8ab0, plastic: 0x0a2a5a, accent: 0x3affe0, d: { def: 3, atk: -1 } },
+  { key: 'cm', name: '迷彩版', bump: 0, metal: 0x8a8a6a, plastic: 0x4a5a2a, accent: 0xd0c080, d: { def: 2 } },
+  { key: 'tl', name: '雷光版', bump: 1, metal: 0xfffad0, plastic: 0x2a2a3a, accent: 0xffe83a, d: { atk: 2, def: 1 } },
+  { key: 'sy', name: '星空限定', bump: 2, metal: 0x9aa8ff, plastic: 0x14104a, accent: 0xffffff, d: { atk: 3, def: 2, sta: 2 } },
+  { key: 'rb', name: '彩虹傳說', bump: 3, metal: 0xffffff, plastic: 0xff3aa0, accent: 0x3affff, d: { atk: 4, def: 4, sta: 4 } },
 ];
 const PART_VARIANTS = [
   { key: 'ob', name: '黑曜', bump: 0, color: 0x15151a, d: { atk: 2 } },
   { key: 'gd', name: '金屬金', bump: 1, color: 0x9a7a18, d: { sta: 2 } },
   { key: 'cr', name: '透明', bump: 1, color: 0x6a8aa8, d: { def: 2 } },
   { key: 'rd', name: '赤紅', bump: 1, color: 0x7a1a14, d: { atk: 3, def: -1 } },
+  { key: 'em', name: '翡翠', bump: 1, color: 0x18905a, d: { sta: 1, def: 1 } },
+  { key: 'sk', name: '櫻花', bump: 1, color: 0xff7aa8, d: { sta: 2 } },
+  { key: 'sy', name: '星空限定', bump: 2, color: 0x2a2470, d: { atk: 1, def: 1, sta: 1 } },
 ];
+const RATCHET_ONLY_VARIANTS = [{ key: 'rb', name: '彩虹傳說', bump: 3, color: 0xd02a8a, d: { atk: 2, def: 2, sta: 2 } }];
 const bumpRarity = (r, n) => RARITY_ORDER[Math.min(3, RARITY_ORDER.indexOf(r) + n)];
 const addStats = (p, d) => { for (const k in d) p[k] = (p[k] || 0) + d[k]; return p; };
 BLADES.forEach((b) => { b.base = b.id; b.series = '標準版'; });
 RATCHETS.forEach((r) => { r.base = r.id; r.series = '標準'; });
 BITS.forEach((t) => { t.base = t.id; t.series = '標準'; });
 for (const b of BLADES.slice()) for (const v of BLADE_VARIANTS) BLADES.push(addStats({ ...b, id: `${b.id}@${v.key}`, base: b.id, series: v.name, name: `${b.name}・${v.name}`, rarity: bumpRarity(b.rarity, v.bump), metal: v.metal, plastic: v.plastic, accent: v.accent }, v.d));
-for (const r of RATCHETS.slice()) for (const v of PART_VARIANTS) RATCHETS.push(addStats({ ...r, id: `${r.id}@${v.key}`, base: r.id, series: v.name, code: r.code, rarity: bumpRarity(r.rarity, v.bump), color: v.color, burst: r.burst + (v.key === 'gd' ? 0.05 : 0) }, v.d));
+for (const r of RATCHETS.slice()) for (const v of [...PART_VARIANTS, ...RATCHET_ONLY_VARIANTS]) RATCHETS.push(addStats({ ...r, id: `${r.id}@${v.key}`, base: r.id, series: v.name, code: r.code, rarity: bumpRarity(r.rarity, v.bump), color: v.color, burst: r.burst + (v.key === 'gd' ? 0.05 : 0) }, v.d));
 for (const t of BITS.slice()) for (const v of PART_VARIANTS) BITS.push(addStats({ ...t, id: `${t.id}@${v.key}`, base: t.id, series: v.name, rarity: bumpRarity(t.rarity, v.bump), color: v.color === 0x15151a ? 0x2a2a32 : v.color, dash: t.dash + (v.key === 'rd' ? 4 : 0) }, v.d));
 const baseOf = (id) => String(id).split('@')[0];
 const specOf = (bladeId) => SPECIALS[baseOf(bladeId)];
@@ -1058,6 +1224,16 @@ const SPECIALS = {
   phoenix:  { name: '赤鳳・浴火重生', kind: 'counter', fx: 'phoenix', color: 0xffa030, dur: 5.5, desc: '鳳凰之火回復少量轉速，並把受到的撞擊反彈給對手。' },
   tiger:    { name: '猛虎・雙牙反噬', kind: 'counter', fx: 'fire',    color: 0xffa020, dur: 5.5, desc: '咬住撲來的對手，把衝擊原封不動還回去。' },
   mantis:   { name: '螳螂・鐮刃迴旋', kind: 'counter', fx: 'wind',    color: 0xb8ff6a, dur: 5.0, desc: '雙鐮迴旋，在對手撞上來的瞬間反斬。' },
+  viper:    { name: '赤蛇・毒牙纏身', kind: 'rush',    fx: 'dark',    color: 0x8aff3a, dur: 4.2, desc: '如蛇般纏上對手，連續撕咬。' },
+  falcon:   { name: '隼翼・裂風俯衝', kind: 'rush',    fx: 'wind',    color: 0x8ad8ff, dur: 4.2, desc: '從高空俯衝，速度快到看不清。' },
+  bull:     { name: '狂牛・怒角衝鋒', kind: 'rush',    fx: 'fire',    color: 0xff6a2a, dur: 4.5, desc: '低頭狂奔，一路撞開所有阻礙。' },
+  golem:    { name: '岩魔・磐石不動', kind: 'guard',   fx: 'steel',   color: 0xffa040, dur: 6.5, desc: '化身岩石，紋風不動。' },
+  beetle:   { name: '甲蟲・重甲護身', kind: 'guard',   fx: 'steel',   color: 0x6affb0, dur: 6.5, desc: '收起甲殼，把衝擊全部擋下。' },
+  dragonfly:{ name: '蜻蜓・輕翼浮空', kind: 'regen',   fx: 'wind',    color: 0xb8fff0, dur: 6.0, desc: '輕盈浮空，轉速緩緩回升。' },
+  lotus:    { name: '青蓮・靜水流轉', kind: 'regen',   fx: 'water',   color: 0xd8a8ff, dur: 6.5, desc: '如蓮花在靜水上旋轉，幾乎不損失轉速。' },
+  kirin:    { name: '麒麟・天雷反擊', kind: 'counter', fx: 'thunder', color: 0xffe060, dur: 5.5, desc: '天雷護身，把撞擊反彈回去。' },
+  fox:      { name: '九尾・幻影迷蹤', kind: 'counter', fx: 'moon',    color: 0xffa060, dur: 5.5, desc: '九道幻影迷惑對手，趁機反擊。' },
+  raven:    { name: '黑鴉・夜羽急襲', kind: 'rush',    fx: 'dark',    color: 0xc06aff, dur: 4.2, desc: '在夜色中無聲急襲。' },
   darkstar: { name: '暗星・黑洞引力', kind: 'gravity', fx: 'dark',    color: 0xc04cff, dur: 4.5, desc: '製造引力場把對手拉近，並以反擊姿態迎擊。' },
 };
 const SPECIAL_KIND = { rush: '突擊強化', guard: '防禦強化', regen: '轉速回復', counter: '反擊', gravity: '引力反擊' };
@@ -1599,7 +1775,7 @@ const Assets = {
   async load(onProgress) {
     try {
       const j = await (await fetch('assets/parts.json')).json();
-      const groups = ['blade', 'ratchet', 'bit'];
+      const groups = j.groups || ['blade', 'ratchet', 'bit'];
       const prog = {};
       const one = async (g) => {
         const res = await fetch(`assets/parts_${g}.txt`);
@@ -1628,7 +1804,7 @@ const Assets = {
     const ck = key + '/' + name; if (this.cache[ck]) return this.cache[ck];
     const m = this.idx.parts[key].find((x) => x.name === name); if (!m) return null;
     const S = this.idx.scale / 32767;
-    const B = this.bufs[key.split('_')[0]];
+    const B = this.bufs[(this.idx.where && this.idx.where[key]) || key.split('_')[0]];
     const p16 = new Int16Array(B, m.p, m.n * 3), n8 = new Int8Array(B, m.q, m.n * 3);
     const pos = new Float32Array(m.n * 3), nrm = new Float32Array(m.n * 3);
     for (let i = 0; i < m.n * 3; i++) { pos[i] = p16[i] * S; nrm[i] = n8[i] / 127; }
@@ -1794,7 +1970,7 @@ function buildRatchet(rt) {
   g.userData.h = h;
   return g;
 }
-const BIT_LEN = { flat: 0.25, rush: 0.25, rubber: 0.25, taper: 0.26, point: 0.26, ball: 0.26, needle: 0.28, hneedle: 0.34, lowflat: 0.22, accel: 0.25, orb: 0.25, htaper: 0.32 };
+const BIT_LEN = { flat: 0.25, rush: 0.25, rubber: 0.25, taper: 0.26, point: 0.26, ball: 0.26, needle: 0.28, hneedle: 0.34, lowflat: 0.22, accel: 0.25, orb: 0.25, htaper: 0.32, cone: 0.27, dome: 0.25, ring: 0.25, wideflat: 0.23, spike: 0.3, cup: 0.26 };
 function bitProfile(tip, L) {
   const V = (x, y) => new THREE.Vector2(x, y);
   const p = [V(0.001, 0), V(0.19, 0), V(0.2, -0.01), V(0.2, -0.045), V(0.16, -0.06), V(0.145, -0.075), V(0.145, -0.13), V(0.135, -0.14)];
@@ -1811,6 +1987,12 @@ function bitProfile(tip, L) {
     case 'accel': p.push(V(0.125, -0.16), V(0.118, -0.19), V(0.128, -0.2), V(0.11, -L + 0.012), V(0.095, -L), V(0.001, -L)); break;
     case 'orb': p.push(V(0.12, -0.15)); for (let i = 0; i <= 10; i++) { const a = (i / 10) * Math.PI / 2; p.push(V(Math.cos(a) * 0.115 + 0.001, -L + 0.06 - Math.sin(a) * 0.06)); } break;
     case 'htaper': p.push(V(0.11, -0.16), V(0.08, -0.24), V(0.045, -L + 0.012), V(0.035, -L), V(0.001, -L)); break;
+    case 'cone': p.push(V(0.12, -0.16), V(0.07, -L + 0.03), V(0.02, -L + 0.004), V(0.001, -L)); break;
+    case 'dome': p.push(V(0.13, -0.15)); for (let i = 0; i <= 10; i++) { const a = (i / 10) * Math.PI / 2; p.push(V(Math.cos(a) * 0.1 + 0.001, -L + 0.1 - Math.sin(a) * 0.1)); } break;
+    case 'ring': p.push(V(0.125, -0.16), V(0.125, -L + 0.02), V(0.115, -L), V(0.07, -L), V(0.06, -L + 0.015), V(0.001, -L + 0.015)); break;
+    case 'wideflat': p.push(V(0.14, -0.15), V(0.14, -L + 0.01), V(0.13, -L), V(0.001, -L)); break;
+    case 'spike': p.push(V(0.1, -0.15), V(0.06, -0.2), V(0.012, -L + 0.01), V(0.003, -L)); break;
+    case 'cup': p.push(V(0.12, -0.16), V(0.1, -0.2), V(0.09, -L + 0.03), V(0.06, -L), V(0.001, -L)); break;
   }
   return p;
 }
@@ -2718,6 +2900,7 @@ const BEAST_OF = {
   silver: 'shield', turtle: 'turtle', fortress: 'castle', rhino: 'rhino', crab: 'crab',
   moon: 'rabbit', phantom: 'dragon', crane: 'crane', owl: 'owl', jelly: 'jelly',
   phoenix: 'phoenix', tiger: 'tiger', mantis: 'mantis', darkstar: 'star',
+  viper: 'dragon', falcon: 'bird', bull: 'rhino', golem: 'castle', beetle: 'turtle', dragonfly: 'crane', lotus: 'jelly', kirin: 'tiger', fox: 'wolf', raven: 'bird',
 };
 function beastSVG(bladeId, color) {
   const key = BEAST_OF[baseOf(bladeId)] || 'wolf', B = BEASTS[key];
@@ -3147,7 +3330,8 @@ const GL = {
   init() {
     const canvas = $('#gl');
     const r = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
-    r.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    this.mobile = Math.min(window.innerWidth, window.innerHeight) < 600 || /Mobi|Android/i.test(navigator.userAgent);
+    r.setPixelRatio(Math.min(window.devicePixelRatio || 1, this.mobile ? 1.5 : 2));
     r.outputEncoding = THREE.sRGBEncoding;
     r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = 1.1;
     r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -3168,7 +3352,7 @@ const GL = {
     if (!THREE.EffectComposer || !THREE.UnrealBloomPass) { this.composer = null; return; }
     const scene = this.mode === 'battle' ? this.battle : this.show;
     this.composer = new THREE.EffectComposer(this.renderer);
-    this.composer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    this.composer.setPixelRatio(Math.min(window.devicePixelRatio || 1, this.mobile ? 1 : 2));
     this.composer.setSize(this.w, this.h);
     this.composer.addPass(new THREE.RenderPass(scene.scene, scene.cam));
     this.bloom = new THREE.UnrealBloomPass(new THREE.Vector2(this.w, this.h), this.mode === 'battle' ? 0.85 : 0.55, 0.5, this.mode === 'battle' ? 0.8 : 0.9);
@@ -3225,7 +3409,7 @@ class Showcase {
   setOffset(fx) { this.offset = fx; this.applyOffset(); }
   applyOffset() {
     const w = GL.w, h = GL.h;
-    if (this.offset) this.cam.setViewOffset(w, h, -w * this.offset, 0, w, h); else this.cam.clearViewOffset();
+    if (this.offset && w > 820) this.cam.setViewOffset(w, h, -w * this.offset, 0, w, h); else this.cam.clearViewOffset();
   }
   clear() { if (this.obj) { this.holder.remove(this.obj); disposeTree(this.obj); this.obj = null; } this.drop = []; }
   showBey(cfg, animate = true) {
@@ -3284,7 +3468,7 @@ class Showcase {
     const p = this.dust.geometry.attributes.position;
     for (let i = 0; i < p.count; i++) { let y = p.getY(i) + dt * 0.08; if (y > 4) y = 0; p.setY(i, y); }
     p.needsUpdate = true;
-    const r = 3.3 / this.zoom;
+    const r = (GL.w < 820 ? (GL.w < GL.h ? 4.6 : 3.6) : 3.3) / this.zoom;
     this.cam.position.set(Math.sin(this.t * 0.15) * 0.4, 1.35 + Math.sin(this.t * 0.3) * 0.05, r);
     this.cam.lookAt(0, this.lookY, 0);
   }
@@ -3299,6 +3483,7 @@ class BattleScene {
     sc.fog = new THREE.Fog(0x05070c, 14, 30);
     this.cam = new THREE.PerspectiveCamera(42, 1, 0.1, 80);
     this.camBase = new THREE.Vector3(0, 9.8, 9.4);
+    this.camBase0 = this.camBase.clone();
     this.cam.position.copy(this.camBase); this.cam.lookAt(0, 0, 0.4);
     this.look = new THREE.Vector3(0, 0, 0.4);
     this.shake = 0; this.t = 0; this.zoomTo = null;
@@ -3319,12 +3504,20 @@ class BattleScene {
     this.arrow = this.makeArrow(); sc.add(this.arrow);
     this.ghost = null;
   }
+  layout() {
+    const a = GL.w / Math.max(1, GL.h);
+    const k = a < 1 ? Math.min(1.75, 0.82 / a) : a < 1.35 ? 1.12 : 1;   // portrait: step back so the bowl fits the width
+    this.camBase.copy(this.camBase0).multiplyScalar(k);
+    if (a < 1) this.camBase.y *= 1.15;
+    this.fogK = k;
+    if (this.scene.fog) { this.scene.fog.near = 14 * k; this.scene.fog.far = 30 * k; }
+  }
   setStadium(id) {
     applyStadium(id);
     if (this.stadium) { this.scene.remove(this.stadium); disposeTree(this.stadium); this.stadium.traverse((n) => n.geometry && n.geometry.dispose()); }
     const T = STADIUMS[AR.stadium].theme;
     this.scene.background = new THREE.Color(T.bg);
-    this.scene.fog = new THREE.Fog(T.bg, 14, 30);
+    this.scene.fog = new THREE.Fog(T.bg, 14 * (this.fogK || 1), 30 * (this.fogK || 1));
     this.spots[0].color.set(T.light[0]); this.spots[1].color.set(T.light[1]);
     this.buildStadium(T);
   }
@@ -4534,7 +4727,7 @@ function bindEvents() {
       UI._suppressClick = true; setTimeout(() => (UI._suppressClick = false), 0);
     };
     document.addEventListener('pointerup', end);
-    document.addEventListener('pointercancel', () => { drag = null; ghost.hidden = true; $$('.dslot').forEach((x) => x.classList.remove('over')); });
+    document.addEventListener('pointercancel', () => { if (drag && drag.on) document.body.style.cursor = ''; drag = null; ghost.hidden = true; $$('.dslot').forEach((x) => x.classList.remove('over')); });
   })();
   $('#pull1').addEventListener('click', () => UI.pull(1));
   $$('[data-vol]').forEach((el) => el.addEventListener('input', () => SFX.setVol(el.dataset.vol, el.value / 100)));

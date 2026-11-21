@@ -3,7 +3,8 @@ const fs = require('fs'), path = require('path');
 const dir = path.join(__dirname, '..', 'assets');
 const files = fs.readdirSync(dir).filter((f) => f.endsWith('.glb')).sort();
 const SCALE = 0.6; // max coordinate magnitude
-const index = {}; const groups = { blade: { chunks: [], offset: 0 }, ratchet: { chunks: [], offset: 0 }, bit: { chunks: [], offset: 0 } };
+const index = {}; const groups = { blade1: { chunks: [], offset: 0 }, blade2: { chunks: [], offset: 0 }, ratchet: { chunks: [], offset: 0 }, bit: { chunks: [], offset: 0 } }; const where = {};
+const bladeFiles = files.filter((f) => f.startsWith('blade_'));
 let chunks, offset;
 const push = (buf) => { const pad = (4 - (buf.length % 4)) % 4; const b = Buffer.concat([buf, Buffer.alloc(pad)]); chunks.push(b); const o = offset; offset += b.length; return o; };
 for (const f of files) {
@@ -12,7 +13,10 @@ for (const f of files) {
   const binStart = 20 + jsonLen + 8; const bin = g.slice(binStart);
   const acc = (i) => { const a = json.accessors[i], bv = json.bufferViews[a.bufferView]; return { a, start: (bv.byteOffset || 0) + (a.byteOffset || 0) }; };
   const key = f.replace('.glb', '');
-  const grp = groups[key.split('_')[0]]; chunks = grp.chunks; offset = grp.offset;
+  const kind = key.split('_')[0];
+  const gname = kind === 'blade' ? (bladeFiles.indexOf(f) < bladeFiles.length / 2 ? 'blade1' : 'blade2') : kind;
+  where[key] = gname;
+  const grp = groups[gname]; chunks = grp.chunks; offset = grp.offset;
   index[key] = [];
   for (const node of json.nodes) {
     if (node.mesh == null) continue;
@@ -39,5 +43,5 @@ for (const f of files) {
   }
 }
 for (const [g, v] of Object.entries(groups)) fs.writeFileSync(path.join(dir, `parts_${g}.txt`), Buffer.concat(v.chunks).toString('base64'));
-fs.writeFileSync(path.join(dir, 'parts.json'), JSON.stringify({ scale: SCALE, parts: index }));
+fs.writeFileSync(path.join(dir, 'parts.json'), JSON.stringify({ scale: SCALE, groups: Object.keys(groups), where, parts: index }));
 console.log('packed', files.length, 'files', Object.entries(groups).map(([g, v]) => g + ':' + v.offset).join(' '));

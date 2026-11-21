@@ -439,7 +439,7 @@ function bindEvents() {
       UI._suppressClick = true; setTimeout(() => (UI._suppressClick = false), 0);
     };
     document.addEventListener('pointerup', end);
-    document.addEventListener('pointercancel', () => { drag = null; ghost.hidden = true; $$('.dslot').forEach((x) => x.classList.remove('over')); });
+    document.addEventListener('pointercancel', () => { if (drag && drag.on) document.body.style.cursor = ''; drag = null; ghost.hidden = true; $$('.dslot').forEach((x) => x.classList.remove('over')); });
   })();
   $('#pull1').addEventListener('click', () => UI.pull(1));
   $$('[data-vol]').forEach((el) => el.addEventListener('input', () => SFX.setVol(el.dataset.vol, el.value / 100)));

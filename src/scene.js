@@ -5,7 +5,8 @@ const GL = {
   init() {
     const canvas = $('#gl');
     const r = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
-    r.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    this.mobile = Math.min(window.innerWidth, window.innerHeight) < 600 || /Mobi|Android/i.test(navigator.userAgent);
+    r.setPixelRatio(Math.min(window.devicePixelRatio || 1, this.mobile ? 1.5 : 2));
     r.outputEncoding = THREE.sRGBEncoding;
     r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = 1.1;
     r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -26,7 +27,7 @@ const GL = {
     if (!THREE.EffectComposer || !THREE.UnrealBloomPass) { this.composer = null; return; }
     const scene = this.mode === 'battle' ? this.battle : this.show;
     this.composer = new THREE.EffectComposer(this.renderer);
-    this.composer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    this.composer.setPixelRatio(Math.min(window.devicePixelRatio || 1, this.mobile ? 1 : 2));
     this.composer.setSize(this.w, this.h);
     this.composer.addPass(new THREE.RenderPass(scene.scene, scene.cam));
     this.bloom = new THREE.UnrealBloomPass(new THREE.Vector2(this.w, this.h), this.mode === 'battle' ? 0.85 : 0.55, 0.5, this.mode === 'battle' ? 0.8 : 0.9);
@@ -83,7 +84,7 @@ class Showcase {
   setOffset(fx) { this.offset = fx; this.applyOffset(); }
   applyOffset() {
     const w = GL.w, h = GL.h;
-    if (this.offset) this.cam.setViewOffset(w, h, -w * this.offset, 0, w, h); else this.cam.clearViewOffset();
+    if (this.offset && w > 820) this.cam.setViewOffset(w, h, -w * this.offset, 0, w, h); else this.cam.clearViewOffset();
   }
   clear() { if (this.obj) { this.holder.remove(this.obj); disposeTree(this.obj); this.obj = null; } this.drop = []; }
   showBey(cfg, animate = true) {
@@ -142,7 +143,7 @@ class Showcase {
     const p = this.dust.geometry.attributes.position;
     for (let i = 0; i < p.count; i++) { let y = p.getY(i) + dt * 0.08; if (y > 4) y = 0; p.setY(i, y); }
     p.needsUpdate = true;
-    const r = 3.3 / this.zoom;
+    const r = (GL.w < 820 ? (GL.w < GL.h ? 4.6 : 3.6) : 3.3) / this.zoom;
     this.cam.position.set(Math.sin(this.t * 0.15) * 0.4, 1.35 + Math.sin(this.t * 0.3) * 0.05, r);
     this.cam.lookAt(0, this.lookY, 0);
   }
@@ -157,6 +158,7 @@ class BattleScene {
     sc.fog = new THREE.Fog(0x05070c, 14, 30);
     this.cam = new THREE.PerspectiveCamera(42, 1, 0.1, 80);
     this.camBase = new THREE.Vector3(0, 9.8, 9.4);
+    this.camBase0 = this.camBase.clone();
     this.cam.position.copy(this.camBase); this.cam.lookAt(0, 0, 0.4);
     this.look = new THREE.Vector3(0, 0, 0.4);
     this.shake = 0; this.t = 0; this.zoomTo = null;
@@ -177,12 +179,20 @@ class BattleScene {
     this.arrow = this.makeArrow(); sc.add(this.arrow);
     this.ghost = null;
   }
+  layout() {
+    const a = GL.w / Math.max(1, GL.h);
+    const k = a < 1 ? Math.min(1.75, 0.82 / a) : a < 1.35 ? 1.12 : 1;   // portrait: step back so the bowl fits the width
+    this.camBase.copy(this.camBase0).multiplyScalar(k);
+    if (a < 1) this.camBase.y *= 1.15;
+    this.fogK = k;
+    if (this.scene.fog) { this.scene.fog.near = 14 * k; this.scene.fog.far = 30 * k; }
+  }
   setStadium(id) {
     applyStadium(id);
     if (this.stadium) { this.scene.remove(this.stadium); disposeTree(this.stadium); this.stadium.traverse((n) => n.geometry && n.geometry.dispose()); }
     const T = STADIUMS[AR.stadium].theme;
     this.scene.background = new THREE.Color(T.bg);
-    this.scene.fog = new THREE.Fog(T.bg, 14, 30);
+    this.scene.fog = new THREE.Fog(T.bg, 14 * (this.fogK || 1), 30 * (this.fogK || 1));
     this.spots[0].color.set(T.light[0]); this.spots[1].color.set(T.light[1]);
     this.buildStadium(T);
   }

@@ -137,7 +137,7 @@ const Assets = {
   async load(onProgress) {
     try {
       const j = await (await fetch('assets/parts.json')).json();
-      const groups = ['blade', 'ratchet', 'bit'];
+      const groups = j.groups || ['blade', 'ratchet', 'bit'];
       const prog = {};
       const one = async (g) => {
         const res = await fetch(`assets/parts_${g}.txt`);
@@ -166,7 +166,7 @@ const Assets = {
     const ck = key + '/' + name; if (this.cache[ck]) return this.cache[ck];
     const m = this.idx.parts[key].find((x) => x.name === name); if (!m) return null;
     const S = this.idx.scale / 32767;
-    const B = this.bufs[key.split('_')[0]];
+    const B = this.bufs[(this.idx.where && this.idx.where[key]) || key.split('_')[0]];
     const p16 = new Int16Array(B, m.p, m.n * 3), n8 = new Int8Array(B, m.q, m.n * 3);
     const pos = new Float32Array(m.n * 3), nrm = new Float32Array(m.n * 3);
     for (let i = 0; i < m.n * 3; i++) { pos[i] = p16[i] * S; nrm[i] = n8[i] / 127; }
@@ -332,7 +332,7 @@ function buildRatchet(rt) {
   g.userData.h = h;
   return g;
 }
-const BIT_LEN = { flat: 0.25, rush: 0.25, rubber: 0.25, taper: 0.26, point: 0.26, ball: 0.26, needle: 0.28, hneedle: 0.34, lowflat: 0.22, accel: 0.25, orb: 0.25, htaper: 0.32 };
+const BIT_LEN = { flat: 0.25, rush: 0.25, rubber: 0.25, taper: 0.26, point: 0.26, ball: 0.26, needle: 0.28, hneedle: 0.34, lowflat: 0.22, accel: 0.25, orb: 0.25, htaper: 0.32, cone: 0.27, dome: 0.25, ring: 0.25, wideflat: 0.23, spike: 0.3, cup: 0.26 };
 function bitProfile(tip, L) {
   const V = (x, y) => new THREE.Vector2(x, y);
   const p = [V(0.001, 0), V(0.19, 0), V(0.2, -0.01), V(0.2, -0.045), V(0.16, -0.06), V(0.145, -0.075), V(0.145, -0.13), V(0.135, -0.14)];
@@ -349,6 +349,12 @@ function bitProfile(tip, L) {
     case 'accel': p.push(V(0.125, -0.16), V(0.118, -0.19), V(0.128, -0.2), V(0.11, -L + 0.012), V(0.095, -L), V(0.001, -L)); break;
     case 'orb': p.push(V(0.12, -0.15)); for (let i = 0; i <= 10; i++) { const a = (i / 10) * Math.PI / 2; p.push(V(Math.cos(a) * 0.115 + 0.001, -L + 0.06 - Math.sin(a) * 0.06)); } break;
     case 'htaper': p.push(V(0.11, -0.16), V(0.08, -0.24), V(0.045, -L + 0.012), V(0.035, -L), V(0.001, -L)); break;
+    case 'cone': p.push(V(0.12, -0.16), V(0.07, -L + 0.03), V(0.02, -L + 0.004), V(0.001, -L)); break;
+    case 'dome': p.push(V(0.13, -0.15)); for (let i = 0; i <= 10; i++) { const a = (i / 10) * Math.PI / 2; p.push(V(Math.cos(a) * 0.1 + 0.001, -L + 0.1 - Math.sin(a) * 0.1)); } break;
+    case 'ring': p.push(V(0.125, -0.16), V(0.125, -L + 0.02), V(0.115, -L), V(0.07, -L), V(0.06, -L + 0.015), V(0.001, -L + 0.015)); break;
+    case 'wideflat': p.push(V(0.14, -0.15), V(0.14, -L + 0.01), V(0.13, -L), V(0.001, -L)); break;
+    case 'spike': p.push(V(0.1, -0.15), V(0.06, -0.2), V(0.012, -L + 0.01), V(0.003, -L)); break;
+    case 'cup': p.push(V(0.12, -0.16), V(0.1, -0.2), V(0.09, -L + 0.03), V(0.06, -L), V(0.001, -L)); break;
   }
   return p;
 }

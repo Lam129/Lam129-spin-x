@@ -153,7 +153,7 @@ def build_blade(b):
     sub = solid_ring('sub', sub_fn, 0.2, wedge(0.035, 0.3), z0=0.0, K=2, N=128)
     rotate_z(sub, math.pi / n); finish(sub, 0.003)
     # main blade with windows
-    main = solid_ring('metal', main_fn, 0.205, wedge(0.075, 0.62), z0=0.03, K=5, N=176)
+    main = solid_ring('metal', main_fn, 0.205, wedge(0.075, 0.62), z0=0.03, K=4, N=160)
     cutters = []
     rr = s['base'] - 0.04
     if rr > 0.27:
@@ -170,7 +170,7 @@ def build_blade(b):
     boolean_diff(main, cutters)
     finish(main, 0.005, 3)
     # polymer frame
-    frame = solid_ring('frame', frame_fn, 0.19, wedge(0.05, 0.5), z0=0.1, K=3, N=144)
+    frame = solid_ring('frame', frame_fn, 0.19, wedge(0.05, 0.5), z0=0.1, K=3, N=128)
     rotate_z(frame, -0.22); finish(frame, 0.006, 3)
     clear = solid_ring('clear', lambda th: frame_fn(th + 0.35) * 0.96, 0.19, wedge(0.02, 0.2), z0=0.155, K=2, N=128)
     finish(clear, 0.003)
@@ -221,7 +221,7 @@ def build_ratchet(r):
     export(os.path.join(OUT, f"ratchet_{r['id']}.glb"))
 
 # ------------------------------------------------------------------ bits
-BIT_LEN = {'flat': 0.25, 'rush': 0.25, 'rubber': 0.25, 'taper': 0.26, 'point': 0.26, 'ball': 0.26, 'needle': 0.28, 'hneedle': 0.34, 'lowflat': 0.22, 'accel': 0.25, 'orb': 0.25, 'htaper': 0.32}
+BIT_LEN = {'flat': 0.25, 'rush': 0.25, 'rubber': 0.25, 'taper': 0.26, 'point': 0.26, 'ball': 0.26, 'needle': 0.28, 'hneedle': 0.34, 'lowflat': 0.22, 'accel': 0.25, 'orb': 0.25, 'htaper': 0.32, 'cone': 0.27, 'dome': 0.25, 'ring': 0.25, 'wideflat': 0.23, 'spike': 0.3, 'cup': 0.26}
 def bit_profile(tip, L):
     p = [(0.001, 0), (0.19, 0), (0.2, -0.01), (0.2, -0.045), (0.16, -0.06), (0.145, -0.075), (0.145, -0.13), (0.135, -0.14)]
     if tip == 'flat': p += [(0.12, -0.16), (0.115, -L + 0.012), (0.105, -L), (0.001, -L)]
@@ -238,6 +238,13 @@ def bit_profile(tip, L):
     elif tip == 'orb':
         p += [(0.12, -0.15)] + [(math.cos(i / 10 * math.pi / 2) * 0.115 + 0.001, -L + 0.06 - math.sin(i / 10 * math.pi / 2) * 0.06) for i in range(11)]
     elif tip == 'htaper': p += [(0.11, -0.16), (0.08, -0.24), (0.045, -L + 0.012), (0.035, -L), (0.001, -L)]
+    elif tip == 'cone': p += [(0.12, -0.16), (0.07, -L + 0.03), (0.02, -L + 0.004), (0.001, -L)]
+    elif tip == 'dome':
+        p += [(0.13, -0.15)] + [(math.cos(i / 10 * math.pi / 2) * 0.1 + 0.001, -L + 0.1 - math.sin(i / 10 * math.pi / 2) * 0.1) for i in range(11)]
+    elif tip == 'ring': p += [(0.125, -0.16), (0.125, -L + 0.02), (0.115, -L), (0.07, -L), (0.06, -L + 0.015), (0.001, -L + 0.015)]
+    elif tip == 'wideflat': p += [(0.14, -0.15), (0.14, -L + 0.01), (0.13, -L), (0.001, -L)]
+    elif tip == 'spike': p += [(0.1, -0.15), (0.06, -0.2), (0.012, -L + 0.01), (0.003, -L)]
+    elif tip == 'cup': p += [(0.12, -0.16), (0.1, -0.2), (0.09, -L + 0.03), (0.06, -L), (0.001, -L)]
     return p
 
 def lathe(name, prof, segs=96, z_off=0.0):
