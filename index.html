@@ -1,4 +1,4 @@
-<title>旋鋒對決</title>
+<title>陀螺對決</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@900&display=swap">
 <style>
@@ -82,7 +82,48 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .acct{font-size:13px;color:var(--dim);display:flex;align-items:center;gap:8px}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--sta);box-shadow:0 0 8px var(--sta)}
 .dot.off{background:var(--bal);box-shadow:0 0 8px var(--bal)}
-/* ===== Hub ===== */
+/* ===== Lobby ===== */
+#s-hub .brand{visibility:hidden}
+.lb-rays{position:absolute;left:42%;top:50%;width:2400px;height:2400px;translate:-50% -50%;background:repeating-conic-gradient(from 0deg,rgba(255,140,60,.08) 0 1.5deg,transparent 1.5deg 7deg);mask:radial-gradient(circle,transparent 0 120px,#000 260px,transparent 900px);-webkit-mask:radial-gradient(circle,transparent 0 120px,#000 260px,transparent 900px);animation:lbRays 60s linear infinite}
+@keyframes lbRays{to{rotate:360deg}}
+.lb-logo{position:absolute;left:32px;top:18px;font:900 clamp(34px,3.6vw,52px) var(--f-body);font-style:italic;letter-spacing:.03em;text-shadow:5px 5px 0 #ff5a10,0 0 30px rgba(255,90,20,.5);line-height:1.1}
+.lb-logo span{display:block;font:700 13px var(--f-disp);letter-spacing:.7em;color:var(--ice);text-shadow:none;font-style:normal}
+.lb-player{position:absolute;left:32px;top:118px;width:min(330px,30vw);padding:14px 16px;display:grid;gap:8px}
+.lb-player .nm{font:900 22px var(--f-body)}
+.lb-player .rk{display:inline-block;padding:1px 8px;font:700 12px var(--f-body);letter-spacing:.08em;background:linear-gradient(90deg,#ffcf4a,#ff8a1f);color:#1a0900}
+.lb-player .kv{display:flex;gap:16px;font-size:12px;color:var(--dim)}.lb-player .kv b{display:block;font:700 22px var(--f-disp);color:var(--fg)}.lb-player .kv b.hot{color:var(--hot)}
+.lb-bey{position:absolute;left:42%;bottom:96px;translate:-50% 0;text-align:center;pointer-events:auto}
+.lb-bey small{display:block;font:700 12px var(--f-disp);letter-spacing:.25em;color:var(--hot2)}
+.lb-bey b{font:900 34px var(--f-body);letter-spacing:.06em;text-shadow:0 4px 18px #000}
+.lb-deck{display:flex;gap:8px;justify-content:center;margin-top:6px}
+.lbdk{width:52px;height:52px;padding:2px;border:1px solid var(--line2);background:#0a0e18}.lbdk img{width:100%;height:100%}
+.lbdk.on{border-color:var(--hot);box-shadow:0 0 12px rgba(255,122,42,.6)}
+.lb-menu{position:absolute;right:0;top:96px;width:min(560px,44vw);display:grid;gap:12px}
+.mi{position:relative;margin-left:auto;display:flex;align-items:center;gap:18px;padding:0 34px 0 46px;height:92px;clip-path:polygon(34px 0,100% 0,100% 100%,0 100%);color:#fff;text-align:left;transition:transform .15s,filter .15s}
+.mi:hover{transform:translateX(-10px);filter:brightness(1.12)}
+.mi .k{font:700 38px var(--f-disp);font-style:italic;opacity:.35;width:58px}
+.mi h4{margin:0;font:900 32px var(--f-body);font-style:italic;letter-spacing:.04em;line-height:1}
+.mi p{margin:6px 0 0;font-size:13px;opacity:.9}
+.mi .tag{margin-left:auto;font:700 12px var(--f-disp);padding:4px 10px;background:rgba(0,0,0,.35);letter-spacing:.08em}
+.m1{width:100%;height:124px;background:linear-gradient(100deg,#ff3e0a,#ff8a1f 70%,#ffbe4a);box-shadow:0 0 60px rgba(255,90,20,.45)}
+.m1 h4{font-size:46px;color:#1c0700}.m1 p,.m1 .k{color:#2c0e00}
+.m2{width:93%;background:linear-gradient(100deg,#0a5a96,#2bc4f4)}.m2 .tag{color:#9be9ff}
+.m3{width:89%;background:linear-gradient(100deg,#4a1580,#b148f2)}
+.lb-board{position:absolute;right:28px;bottom:24px;width:min(460px,36vw);padding:12px 16px;display:grid;gap:6px}
+.lb-board h3{display:flex;justify-content:space-between;align-items:baseline;font:900 17px var(--f-body);margin-bottom:2px}
+.lr{display:grid;grid-template-columns:40px 1fr auto;align-items:center;gap:10px;padding:2px 10px;background:#0a0e18;border:1px solid #1d2640;min-height:40px}
+.lr .ln{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lr .s{font:700 21px var(--f-disp);color:var(--hot)}.lr .s small{font:400 12px var(--f-body);color:var(--dim);margin-left:4px}
+.lr .rn{font:700 19px var(--f-disp);color:var(--mute);text-align:center}
+.lr.me{border-color:var(--ice);background:#0b1626}
+.lr.g{border-color:rgba(255,207,74,.55);background:linear-gradient(90deg,rgba(255,200,60,.16),#0a0e18 60%)}
+.lr.s2{border-color:rgba(210,220,235,.4);background:linear-gradient(90deg,rgba(210,220,235,.12),#0a0e18 60%)}
+.lr.b3{border-color:rgba(214,138,80,.45);background:linear-gradient(90deg,rgba(214,138,80,.14),#0a0e18 60%)}
+.lb-dock{position:absolute;left:32px;bottom:24px;display:flex;gap:10px}
+.lb-dock .lbk{display:flex;align-items:center;gap:10px;padding:12px 16px;font-weight:900;font-size:15px}
+.lb-dock .lbk:hover{border-color:var(--hot)}
+.lb-dock .lbk i{font:700 19px var(--f-disp);color:var(--hot);font-style:normal}
+/* ===== Hub (legacy) ===== */
 .hub-menu{position:absolute;left:max(22px,4vw);top:50%;transform:translateY(-50%);display:grid;gap:10px;width:min(380px,40vw)}
 .menu-item{display:grid;grid-template-columns:52px 1fr auto;align-items:center;gap:14px;padding:14px 18px;text-align:left;background:var(--panel);border:1px solid var(--line);transition:transform .15s,border-color .15s,background .15s}
 .menu-item:hover{transform:translateX(6px);border-color:var(--hot);background:var(--panel2)}
@@ -117,13 +158,23 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .stat{display:grid;grid-template-columns:72px 1fr 34px;align-items:center;gap:10px;font-size:13px}
 .bar{height:8px;background:#0b0f1a;border:1px solid var(--line);position:relative;overflow:hidden}
 .bar i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,var(--hot),var(--hot2));transition:width .35s}
-.deck{display:grid;gap:8px;margin-top:12px}
+.deck{display:grid;gap:6px;margin-top:6px}
 .slot{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:center;padding:10px 12px;background:var(--panel);border:1px solid var(--line);text-align:left}
 .slot[aria-pressed="true"]{border-color:var(--ice);box-shadow:inset 0 0 0 1px var(--ice)}
 .slot .n{font-family:var(--f-disp);font-size:22px;font-weight:700;color:var(--ice);text-align:center}
 .slot .sn{font-weight:700;font-size:14px}
 .slot .sc{font-family:var(--f-disp);font-size:12px;color:var(--dim)}
 .warn{font-size:12px;color:var(--bal);min-height:1.3em}
+.blist{flex:1;min-height:80px;overflow:auto;display:grid;gap:6px;align-content:start;margin-top:6px}
+.bcard{position:relative;display:grid;grid-template-columns:44px 1fr auto;gap:10px;align-items:center;padding:6px 10px;background:var(--panel);border:1px solid var(--line);text-align:left}
+.bcard img{width:44px;height:44px}
+.bcard .bi b{display:block;font-size:14px}.bcard .bi small{font-family:var(--f-disp);font-size:11px;color:var(--dim)}
+.bcard[aria-pressed="true"]{border-color:var(--hot);box-shadow:inset 0 0 0 1px var(--hot)}
+.bslot{font:700 11px var(--f-disp);color:#001a24;background:var(--ice);padding:1px 6px}
+.bactbox{display:grid;gap:6px;margin-top:8px}
+.setslots,.bacts{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.setslots .btn,.bacts .btn{padding:8px 4px;font-size:13px}
+.setslots .btn.on{border-color:var(--ice);color:var(--ice)}
 .desc{font-size:13px;color:var(--dim);line-height:1.6}
 /* ===== Battle select ===== */
 .sel{position:absolute;inset:70px 22px 22px;display:grid;grid-template-columns:1fr minmax(300px,380px);gap:18px}
@@ -319,6 +370,64 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .pull-item{display:grid;grid-template-columns:44px 1fr auto;gap:10px;align-items:center;padding:6px 8px;background:#0b0f1a;border:1px solid var(--line);animation:slideIn .35s ease-out both}
 .pull-item img{width:44px;height:44px}
 .pull-item .new{font-size:10px;font-weight:900;color:#160700;background:var(--hot2);padding:0 5px}
+.pull-item .own{font-size:10px;font-weight:700;color:var(--dim);border:1px solid var(--line2);padding:0 4px}
+.pull-list{max-height:34vh}
+.pool{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;overflow:auto;min-height:0}
+.pool-r{grid-column:1/-1;font-size:11px;font-weight:700;margin-top:4px}
+.pool-it{display:grid;justify-items:center;padding:3px;background:#0b0f1a;border:1px solid var(--line)}
+.pool-it img{width:100%;aspect-ratio:1;max-width:100%}
+.pool-it span{font:700 10px var(--f-disp);color:var(--hot2)}
+.pool-it.miss img{filter:brightness(0) opacity(.5)}.pool-it.miss span{color:var(--mute);font-family:var(--f-body)}
+.dome-wrap{position:relative}
+.crank{position:absolute;right:-6px;bottom:18%;width:44px;height:44px;border-radius:50%;background:radial-gradient(circle,#3a4868,#151b2c);border:2px solid var(--line2)}
+.crank i{position:absolute;left:50%;top:50%;width:6px;height:30px;margin:-28px 0 0 -3px;background:var(--hot);border-radius:3px;transform-origin:50% 28px;box-shadow:0 0 8px var(--hot)}
+.crank.turn i{animation:crank .75s cubic-bezier(.5,0,.3,1)}
+@keyframes crank{to{transform:rotate(720deg)}}
+.chute{position:absolute;left:50%;bottom:-8px;width:60px;height:16px;translate:-50% 0;background:#0b0f1a;border:2px solid var(--line2);border-top:0;border-radius:0 0 10px 10px}
+.gc-ov{position:fixed;inset:0;z-index:6;display:grid;place-items:center;background:radial-gradient(circle at 50% 45%,rgba(6,8,14,.55),rgba(6,8,14,.92));pointer-events:auto}
+.gc-beams{position:absolute;left:50%;top:42%;width:150vmax;height:150vmax;translate:-50% -50%;background:repeating-conic-gradient(from 0deg,rgba(255,255,255,.0) 0 6deg,var(--gcc,rgba(160,170,200,.18)) 6deg 9deg);opacity:0;transition:opacity .4s;mask:radial-gradient(circle,#000 0 20%,transparent 60%);-webkit-mask:radial-gradient(circle,#000 0 20%,transparent 60%)}
+.gc-ov.charge .gc-beams{opacity:1;animation:gcSpin 4s linear infinite}
+.gc-ov.r-rare{--gcc:rgba(54,211,255,.35)}.gc-ov.r-sr{--gcc:rgba(255,190,70,.5)}
+@keyframes gcSpin{to{rotate:360deg}}
+.gc-row{position:absolute;top:30%;display:flex;gap:14px;flex-wrap:wrap;justify-content:center;max-width:90vw}
+.gc-cap{position:relative;width:76px;height:76px;animation:gcDrop .55s cubic-bezier(.3,1.6,.5,1) var(--d) both}
+.gc-row:has(.gc-cap:only-child) .gc-cap{width:150px;height:150px}
+.gc-cap i{position:absolute;left:0;right:0;height:50%;border:2px solid rgba(255,255,255,.6);transition:transform .35s cubic-bezier(.3,1.4,.5,1),opacity .35s}
+.gc-cap .t{top:0;border-radius:999px 999px 0 0;background:linear-gradient(180deg,#e8ecf6,#9aa6c2)}
+.gc-cap .b{bottom:0;border-radius:0 0 999px 999px;background:linear-gradient(180deg,#d8dde8,#7a8698)}
+.gc-ov.charge .gc-cap{animation:gcShake .12s steps(2) infinite}
+.gc-ov.charge.r-rare .gc-cap.c-rare .t,.gc-ov.charge.r-sr .gc-cap.c-rare .t{background:linear-gradient(180deg,#9be9ff,#1a8ad8)}
+.gc-ov.charge.r-sr .gc-cap.c-sr .t{background:linear-gradient(180deg,#fff2a8,#ff9a1a);box-shadow:0 0 30px #ffb347}
+.gc-ov.charge .gc-cap{filter:drop-shadow(0 0 16px var(--gcc,rgba(255,255,255,.4)))}
+.gc-cap.open{animation:none}
+.gc-cap.open .t{transform:translateY(-70%) rotate(-24deg);opacity:0}
+.gc-cap.open .b{transform:translateY(70%) rotate(18deg);opacity:0}
+.gc-cap img{position:absolute;inset:0;width:100%;height:100%;animation:gcPop .3s ease-out}
+@keyframes gcDrop{from{transform:translateY(-60vh) rotate(-200deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes gcShake{from{transform:translate(-3px,1px) rotate(-6deg)}to{transform:translate(3px,-1px) rotate(6deg)}}
+@keyframes gcPop{from{transform:scale(.2);opacity:0}to{transform:none;opacity:1}}
+.gc-ov.flash-rare::after,.gc-ov.flash-sr::after,.gc-ov.flash-common::after{content:"";position:absolute;inset:0;background:#fff;animation:gcFlash .35s ease-out forwards;pointer-events:none}
+.gc-ov.flash-sr::after{background:radial-gradient(circle,#fff,#ffd27a);animation-duration:.7s}
+@keyframes gcFlash{from{opacity:.9}to{opacity:0}}
+.gc-card{position:absolute;bottom:12%;min-width:min(420px,90vw);padding:16px 26px;text-align:center;background:rgba(12,16,28,.92);border:2px solid var(--line2);opacity:0;transform:translateY(20px)}
+.gc-card.in{animation:gcCard .45s cubic-bezier(.2,1.4,.4,1) forwards}
+@keyframes gcCard{to{opacity:1;transform:none}}
+.gc-card.r-rare{border-color:var(--c-rare);box-shadow:0 0 30px rgba(54,211,255,.4)}.gc-card.r-sr{border-color:var(--c-sr);box-shadow:0 0 40px rgba(255,179,71,.6)}
+.gc-stars{font-size:26px;letter-spacing:.2em;color:var(--c-sr)}
+.gc-card.r-common .gc-stars{color:var(--c-common)}.gc-card.r-rare .gc-stars{color:var(--c-rare)}
+.gc-kind{font-size:13px;color:var(--dim)}
+.gc-name{font-size:32px;font-weight:900;margin:2px 0 6px}
+.gc-new{display:inline-block;padding:3px 14px;font-weight:900;color:#160700;background:linear-gradient(90deg,#ffcf4a,#ff8a1f);transform:skewX(-12deg)}
+.gc-dup{font-size:14px;color:var(--dim)}
+.gc-sum{position:absolute;bottom:10%;width:min(760px,92vw);padding:16px}
+.gc-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.gc-it{display:grid;justify-items:center;gap:2px;padding:6px;background:#0b0f1a;border:1px solid var(--line);text-align:center;font-size:12px}
+.gc-it img{width:64px;height:64px}
+.gc-it small{font:700 11px var(--f-disp);color:var(--dim)}
+.gc-it.isnew small{color:#160700;background:var(--hot2);padding:0 5px}
+.gc-it.r-rare{border-color:var(--c-rare)}.gc-it.r-sr{border-color:var(--c-sr);box-shadow:0 0 12px rgba(255,179,71,.4)}
+.gc-close{position:absolute;bottom:4%}
+.gc-skip{position:absolute;right:22px;bottom:16px;font-size:12px;color:rgba(255,255,255,.5)}
 @keyframes slideIn{from{opacity:0;transform:translateX(20px)}}
 .reveal{align-self:end;justify-self:center;text-align:center;padding-bottom:20px;pointer-events:none}
 .reveal .nm{font-size:30px;font-weight:900;text-shadow:0 2px 14px #000}
@@ -364,7 +473,7 @@ h1,h2,h3{margin:0;text-wrap:balance}
     <form class="auth-card panel cut" id="authForm">
       <div>
         <div class="eyebrow">Player Registration · 旋鬥士登錄</div>
-        <div class="auth-logo">旋鋒對決<span class="auth-sub">SPIN DUEL</span></div>
+        <div class="auth-logo">陀螺對決<span class="auth-sub">SPIN DUEL</span></div>
       </div>
       <div class="acct" id="acctLine"><span class="dot"></span><span>正在連線帳號…</span></div>
       <div style="display:grid;gap:6px">
@@ -383,17 +492,28 @@ h1,h2,h3{margin:0;text-wrap:balance}
 
   <!-- HUB -->
   <section class="screen" id="s-hub" hidden>
+    <div class="lb-rays pe-none"></div>
     <div class="topbar" data-topbar></div>
-    <nav class="hub-menu">
-      <div class="eyebrow" style="margin-bottom:4px" id="hubGreet">歡迎回來</div>
-      <button class="menu-item cut" data-go="select"><span class="ic">VS</span><span><h3>對戰</h3><p>挑戰之路・8 位對手・3 對 3 牌組戰</p></span><span class="arrow">›</span></button>
-      <button class="menu-item cut" data-go="assembly"><span class="ic">⚙</span><span><h3>組裝工坊</h3><p>鋒輪 × 鎖芯 × 旋尖，自由組裝與編輯牌組</p></span><span class="arrow">›</span></button>
-      <button class="menu-item cut" data-go="gacha"><span class="ic">◎</span><span><h3>扭蛋機</h3><p>用對戰贏來的金幣抽取新零件</p></span><span class="arrow">›</span></button>
+    <div class="lb-logo pe-none">陀螺對決<span>SPIN DUEL</span></div>
+    <div class="lb-player panel cut pe-none">
+      <div><div class="nm" id="lbName"></div><span class="rk" id="lbRank"></span></div>
+      <div class="kv" id="lbStats"></div>
+    </div>
+    <div class="lb-bey"><small id="lbBeySlot"></small><b id="lbBeyName"></b><div class="lb-deck" id="lbDeck"></div></div>
+    <nav class="lb-menu">
+      <button class="mi m1" data-go="select"><span class="k">01</span><span><h4>挑戰之路</h4><p id="lbStory"></p></span><span class="tag">STORY</span></button>
+      <button class="mi m2" data-go="online"><span class="k">02</span><span><h4>線上對戰</h4><p>邀請玩家・贏走對方下注的金幣</p></span><span class="tag">SOON</span></button>
+      <button class="mi m3" data-go="survival"><span class="k">03</span><span><h4>生存模式</h4><p id="lbSurv"></p></span><span class="tag">SURVIVAL</span></button>
     </nav>
-    <div class="hub-bey panel cut pe-none">
-      <div class="eyebrow">牌組 1 號機</div>
-      <div class="nm" id="hubBeyName"></div>
-      <div id="hubBeyTags" style="display:flex;gap:6px"></div>
+    <div class="lb-board panel cut">
+      <h3>生存模式・最高連勝榜 <span class="eyebrow" id="lbBoardNote">ALL TIME</span></h3>
+      <div id="lbBoard"></div>
+    </div>
+    <div class="lb-dock">
+      <button class="lbk panel cut" data-go="assembly"><i>⚙</i>組裝工坊</button>
+      <button class="lbk panel cut" data-go="gacha"><i>◎</i>扭蛋機</button>
+      <button class="lbk panel cut" data-go="collection"><i>▤</i>圖鑑</button>
+      <button class="lbk panel cut" data-go="rules"><i>?</i>規則</button>
     </div>
   </section>
 
@@ -420,8 +540,12 @@ h1,h2,h3{margin:0;text-wrap:balance}
           <div id="asmStats"></div>
           <div class="desc" id="asmDesc"></div>
         </div>
+        <div class="eyebrow" style="margin-top:12px">預設牌組（3 對 3 時依序上場）</div>
         <div class="deck" id="deckSlots"></div>
         <div class="warn" id="deckWarn"></div>
+        <div class="eyebrow" style="margin-top:4px">我的陀螺</div>
+        <div class="blist" id="buildList"></div>
+        <div class="bactbox" id="buildActs"></div>
       </div>
     </div>
   </section>
@@ -508,7 +632,7 @@ h1,h2,h3{margin:0;text-wrap:balance}
     <div class="gacha">
       <div class="machine panel cut">
         <div><div class="eyebrow">Parts Capsule</div><h2 style="font-size:24px;font-weight:900">零件扭蛋機</h2></div>
-        <div class="dome" id="dome"></div>
+        <div class="dome-wrap"><div class="dome" id="dome"></div><div class="crank" id="crank"><i></i></div><div class="chute"></div></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
           <button class="btn primary cut" id="pull1"><span class="coin"></span><span class="num">100</span>抽 1 次</button>
           <button class="btn cut" id="pull10"><span class="coin"></span><span class="num">900</span>10 連抽</button>
@@ -516,7 +640,14 @@ h1,h2,h3{margin:0;text-wrap:balance}
         <div class="odds">機率：普通 62%・稀有 29%・超稀有 9%<br>10 連抽保證至少 1 個稀有以上<br>重複的零件會自動轉換為 30 金幣</div>
       </div>
       <div class="reveal" id="reveal"><div class="eyebrow" id="revEye"></div><div class="nm" id="revName"></div></div>
-      <div class="pull-res panel cut"><div class="eyebrow">抽取結果</div><div class="pull-list" id="pullList"><div class="desc">還沒抽過。按下左邊的按鈕試試看！</div></div></div>
+      <div class="pull-res panel cut"><div class="eyebrow">抽取結果</div><div class="pull-list" id="pullList"><div class="desc">還沒抽過。按下左邊的按鈕試試看！</div></div>
+        <div class="eyebrow" id="poolHead" style="margin-top:6px">獎池一覽</div><div class="pool" id="poolGrid"></div></div>
+      <div class="gc-ov" id="gcOverlay" hidden>
+        <div class="gc-beams"></div><div class="gc-row" id="gcRow"></div>
+        <div class="gc-card cut" id="gcCard" hidden></div><div class="gc-sum panel cut" id="gcSum" hidden></div>
+        <button class="btn primary cut gc-close" id="gcClose" hidden>確定</button>
+        <div class="gc-skip">點擊畫面快轉</div>
+      </div>
     </div>
   </section>
 

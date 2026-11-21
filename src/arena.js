@@ -19,6 +19,11 @@ const AR = {
 function surfH(r) { return r < AR.RB ? AR.K * r * r : AR.K * AR.RB * AR.RB + (r - AR.RB) * 0.12; }
 function surfSlope(r) { return r < AR.RB ? 2 * AR.K * r : 0.12; }
 function angDiff(a, b) { let d = (a - b) % TAU; if (d > Math.PI) d -= TAU; if (d < -Math.PI) d += TAU; return d; }
+/* boss aura applied to the AI bey's physics (negative = handicap for early opponents) */
+function applyBoss(c, boss) {
+  c.atk *= 1 + boss * 0.5; c.def = Math.min(0.95, c.def * (1 + boss * 0.4)); c.drain *= 1 - boss * 0.4;
+  c.burstRes *= 1 + boss * 0.8; c.m *= 1 + boss * 0.15; c.spinBonus = boss * 0.08;
+}
 /* load a stadium's physics into AR */
 function applyStadium(id) {
   const S = STADIUMS[id] || STADIUMS.training;
@@ -54,7 +59,7 @@ class Arena {
   }
   launch(side, power, aim) {
     const b = this.beys[side], L = launchVector(side, power, aim);
-    Object.assign(b, { x: L.x, z: L.z, vx: L.vx, vz: L.vz, s: L.s, state: 'spin', launched: true, power });
+    Object.assign(b, { x: L.x, z: L.z, vx: L.vx, vz: L.vz, s: L.s * (1 + (b.c.spinBonus || 0)), state: 'spin', launched: true, power });
   }
   step(dt) {
     this.t += dt;
@@ -183,7 +188,7 @@ class Arena {
     }
     b.x = x; b.z = z; b.vx = vx; b.vz = vz;
     const late = this.t > 75 ? 1 + (this.t - 75) * 0.15 : 1;
-    if (!b.usedSpecial) b.charge = Math.min(1, (b.charge || 0) + dt / 11 + b.dash * dt * 0.25);
+    if (!b.usedSpecial) b.charge = Math.min(1, (b.charge || 0) + (dt / 11 + b.dash * dt * 0.25) * (b.chargeRate || 1));
     const regen = bf ? (bf.kind === 'regen' ? 0.8 : bf.kind === 'guard' ? 0.65 : 1) : 1;
     b.s -= (dt * AR.DRAIN * c.drain * (1.25 - 0.55 * c.sta) * late + dt * sp * 0.0012 * (1 - c.stab)) * regen;
     b.tilt = s < 0.22 ? (0.22 - s) * 2.2 : lerp(b.tilt, Math.min(sp * 0.02, 0.08), dt * 5);

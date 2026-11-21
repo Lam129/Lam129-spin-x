@@ -1,6 +1,6 @@
 /* ============================== UI ============================== */
 const UI = {
-  cur: null, asmTab: 'blade', asmSlot: 0, collTab: 'blade', collSel: null, oppSel: 0, mode: '3v3', starter: 'atk',
+  cur: null, asmTab: 'blade', asmBuild: null, collTab: 'blade', collSel: null, oppSel: 0, mode: '3v3', starter: 'atk',
   show(name) {
     $$('#ui .screen').forEach((s) => (s.hidden = s.id !== 's-' + name));
     this.cur = name;
@@ -13,29 +13,57 @@ const UI = {
     $$('[data-topbar]').forEach((el) => (el.innerHTML = this.topbar(name)));
     const sh = GL.show;
     sh.spinSpeed = 0.6;
-    if (name === 'hub') {
-      sh.setOffset(0.18); sh.showBey(P.decks[0]);
-      const d = P.decks[0], st = beyStats(d);
-      $('#hubGreet').textContent = `歡迎回來，${P.name}`;
-      $('#hubBeyName').textContent = `${beyName(d)} ${beyCode(d)}`;
-      $('#hubBeyTags').innerHTML = `<span class="tag t-${st.type}">${TYPES[st.type].name}</span><span class="tag" style="color:var(--dim)">${st.weight} g</span><span class="tag" style="color:var(--dim)">${P.stats.w} 勝 ${P.stats.l} 敗</span>`;
-    }
+    if (name === 'hub') { sh.setOffset(-0.08); this.renderHub(); }
     if (name === 'assembly') { sh.setOffset(0); this.renderAssembly(true); }
     if (name === 'select') { sh.setOffset(-0.22); this.renderSelect(); }
     if (name === 'gacha') { sh.setOffset(0); sh.clear(); $('#revName').textContent = ''; $('#revEye').textContent = ''; this.renderDome(); }
     if (name === 'collection') { sh.setOffset(0.31); this.renderCollection(); }
     if (name === 'rules') { sh.setOffset(0); sh.clear(); }
   },
+  renderHub() {
+    const P = Store.profile;
+    const w = P.stats.w | 0;
+    const rank = w >= 60 ? '傳說旋鬥士' : w >= 30 ? '黃金旋鬥士' : w >= 12 ? '白銀旋鬥士' : w >= 3 ? '青銅旋鬥士' : '新手旋鬥士';
+    $('#lbName').textContent = P.name;
+    $('#lbRank').textContent = rank;
+    $('#lbStats').innerHTML = `<span><b>${w}</b>勝場</span><span><b class="hot">${P.stats.best | 0}</b>最高連勝</span><span><b>${this.ownedCount()}/${BLADES.length + RATCHETS.length + BITS.length}</b>圖鑑</span>`;
+    const o = OPPONENTS[Math.min(P.ladder, OPPONENTS.length - 1)];
+    $('#lbStory').textContent = P.ladder >= OPPONENTS.length ? '已全部擊敗・可重新挑戰' : `第 ${P.ladder + 1} 關・${STADIUMS[o.stadium].name}・${o.name}`;
+    $('#lbSurv').textContent = `每位挑戰者先取 ${SURV_WIN_POINTS} 分・最高 ${P.stats.best | 0} 連勝`;
+    this.hubBey = this.hubBey || 0;
+    this.renderHubBey();
+    this.renderBoard();
+  },
+  renderHubBey() {
+    const P = Store.profile, d = P.decks[this.hubBey];
+    GL.show.showBey(d);
+    $('#lbBeyName').textContent = beyName(d);
+    $('#lbBeySlot').textContent = `出戰陀螺 · ${this.hubBey + 1} 號機 · ${beyCode(d)}`;
+    $('#lbDeck').innerHTML = P.decks.map((dd, k) => `<button class="lbdk ${k === this.hubBey ? 'on' : ''}" data-showbey="${k}" aria-label="${esc(beyName(dd))}"><img src="${Thumbs.get('blade', dd.b)}" alt=""></button>`).join('');
+  },
+  medal(n) {
+    const c = [['#ffd54a', '#b8860b'], ['#e6ebf3', '#8a94a6'], ['#e09a5a', '#8a4a1e']][n - 1];
+    return `<svg width="36" height="40" viewBox="0 0 40 44" aria-label="第 ${n} 名"><path d="M10 0 L18 16 L13 18 L4 2Z" fill="#c8302a"/><path d="M30 0 L22 16 L27 18 L36 2Z" fill="#2a5ac8"/><circle cx="20" cy="27" r="15" fill="${c[1]}"/><circle cx="20" cy="27" r="12" fill="${c[0]}" stroke="${c[1]}" stroke-width="2"/>${n === 1 ? '<path d="M12 22 L15 30 L25 30 L28 22 L23.5 26 L20 20 L16.5 26Z" fill="#7a4a00"/>' : `<text x="20" y="32" text-anchor="middle" font-family="Chakra Petch,sans-serif" font-weight="700" font-size="14" fill="#2a1a0a">${n}</text>`}</svg>`;
+  },
+  async renderBoard() {
+    const box = $('#lbBoard');
+    box.innerHTML = '<div class="desc">讀取中…</div>';
+    const rows = await Board.top(5);
+    const me = Board.myId();
+    $('#lbBoardNote').textContent = Board.backend === 'artifact' ? 'ALL TIME' : '本機紀錄';
+    box.innerHTML = rows.length ? rows.map((r, i) => `<div class="lr ${i === 0 ? 'g' : i === 1 ? 's2' : i === 2 ? 'b3' : ''} ${r.id === me ? 'me' : ''}">${i < 3 ? this.medal(i + 1) : `<span class="rn">${i + 1}</span>`}<span class="ln">${esc(r.name || '旋鬥士')}${r.id === me ? '（你）' : ''}</span><span class="s">${r.best | 0}<small>連勝</small></span></div>`).join('')
+      : '<div class="desc" style="padding:10px 4px">還沒有紀錄。挑戰生存模式，成為第一名！</div>';
+  },
   topbar(name) {
     const P = Store.profile; if (!P) return '';
     const titles = { assembly: '組裝工坊', select: '對戰', gacha: '扭蛋機', collection: '收藏圖鑑', rules: '比賽規則' };
-    const back = name !== 'hub' ? `<button class="btn cut" data-go="hub" style="padding:8px 14px">‹ 大廳</button>` : '';
-    return `${back}<div class="brand">旋鋒對決<small style="font-family:var(--f-disp);color:var(--hot);margin-left:6px;letter-spacing:.2em">SPIN DUEL</small>${titles[name] ? `<small>／ ${titles[name]}</small>` : ''}</div><div class="spacer"></div>
+    const back = name !== 'hub' ? `<button class="btn cut" data-go="hub" style="padding:8px 14px" aria-label="返回">‹ 返回</button>` : '';
+    return `${back}<div class="brand">陀螺對決<small style="font-family:var(--f-disp);color:var(--hot);margin-left:6px;letter-spacing:.2em">SPIN DUEL</small>${titles[name] ? `<small>／ ${titles[name]}</small>` : ''}</div><div class="spacer"></div>
       <div class="chip"><span class="dot ${Store.mode === 'cloud' ? '' : 'off'}"></span><span>${esc(P.name)}</span><span style="color:var(--mute);font-size:12px">${Store.mode === 'cloud' ? '雲端存檔' : '本機存檔'}</span></div>
       <div class="chip"><span class="coin"></span><b class="num" id="coinNum">${P.coins.toLocaleString('en-US')}</b></div>
-      <div class="corner">
+      <div class="corner">${name === 'hub' ? '' : `
         <button class="ibtn" data-go="collection" title="收藏圖鑑" aria-label="收藏圖鑑"><svg viewBox="0 0 24 24"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg><span>圖鑑 ${this.ownedCount()}/${BLADES.length + RATCHETS.length + BITS.length}</span></button>
-        <button class="ibtn" data-go="rules" title="比賽規則" aria-label="比賽規則"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6zM9 10h7M9 14h7M9 18h5"/></svg><span>規則</span></button>
+        <button class="ibtn" data-go="rules" title="比賽規則" aria-label="比賽規則"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6zM9 10h7M9 14h7M9 18h5"/></svg><span>規則</span></button>`}
         <button class="ibtn" data-settings title="設定" aria-label="設定"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg><span>設定</span></button>
       </div>`;
   },
@@ -67,31 +95,47 @@ const UI = {
   },
 
   /* ---------- ASSEMBLY ---------- */
+  curBuild() {
+    const P = Store.profile;
+    if (!P.builds.find((x) => x.id === this.asmBuild)) this.asmBuild = P.deckIds[0];
+    return P.builds.find((x) => x.id === this.asmBuild);
+  },
   renderAssembly(fresh) {
-    const P = Store.profile, d = P.decks[this.asmSlot];
+    const P = Store.profile, d = this.curBuild();
     const K = KINDS[this.asmTab];
     $$('[data-ptab]').forEach((b) => b.setAttribute('aria-selected', b.dataset.ptab === this.asmTab));
-    const usedBy = {};
-    P.decks.forEach((dd, i) => { if (i !== this.asmSlot) usedBy[dd[K.key]] = i + 1; });
     const items = K.list.filter((p) => owns(this.asmTab, p.id));
     $('#plist').innerHTML = items.map((p) => {
       const sel = d[K.key] === p.id;
       const meta = this.asmTab === 'blade' ? `<span class="t-${p.type}">${TYPES[p.type].name}</span><span>${p.wt}g</span>` : this.asmTab === 'ratchet' ? `<span>抗解體 ${Math.round(p.burst * 52)}</span><span>${p.wt}g</span>` : `<span class="t-${p.type}">${TYPES[p.type].name}</span><span>衝刺 ${p.dash}</span>`;
-      return `<button class="pcard cut ${usedBy[p.id] ? 'used' : ''}" data-part="${p.id}" aria-pressed="${sel}">
-        ${usedBy[p.id] ? `<span class="usedby">${usedBy[p.id]} 號機使用中</span>` : ''}<span class="cnt">×${P.inv[this.asmTab][p.id]}</span>
+      return `<button class="pcard cut" data-part="${p.id}" aria-pressed="${sel}">
+        <span class="cnt">×${P.inv[this.asmTab][p.id]}</span>
         <img src="${Thumbs.get(this.asmTab, p.id)}" alt="">
         <span class="pn">${esc(partName(this.asmTab, p))}</span>
         <span class="pm"><span class="r-${p.rarity}">${RARITY[p.rarity].name}</span>${meta}</span></button>`;
     }).join('') || '<div class="desc">還沒有這類零件，去扭蛋機抽抽看吧。</div>';
     this.renderAsmInfo();
-    $('#deckSlots').innerHTML = P.decks.map((dd, i) => `<button class="slot cut" data-slot="${i}" aria-pressed="${i === this.asmSlot}"><span class="n">${i + 1}</span><span><div class="sn">${esc(beyName(dd))}</div><div class="sc">${beyCode(dd)}・${TYPES[beyStats(dd).type].name}</div></span></button>`).join('');
+    // build library
+    const slotOf = (id) => P.deckIds.indexOf(id);
+    $('#buildList').innerHTML = P.builds.map((b) => {
+      const sl = slotOf(b.id);
+      return `<button class="bcard cut" data-build="${b.id}" aria-pressed="${b.id === d.id}">
+        <img src="${Thumbs.get('blade', b.b)}" alt=""><span class="bi"><b>${esc(beyName(b))}</b><small>${beyCode(b)}・${TYPES[beyStats(b).type].name}</small></span>
+        ${sl >= 0 ? `<span class="bslot">${sl + 1} 號機</span>` : ''}</button>`;
+    }).join('');
+    const sl = slotOf(d.id);
+    $('#buildActs').innerHTML = `
+      <div class="eyebrow">把目前這顆設為預設</div>
+      <div class="setslots">${[0, 1, 2].map((k) => `<button class="btn cut ${P.deckIds[k] === d.id ? 'on' : ''}" data-setslot="${k}">${k + 1} 號機</button>`).join('')}</div>
+      <div class="bacts"><button class="btn cut" data-bact="new">＋ 新組裝</button><button class="btn cut" data-bact="copy">複製</button><button class="btn cut" data-bact="del" ${sl >= 0 || P.builds.length <= 3 ? 'disabled' : ''}>刪除</button></div>`;
+    $('#deckSlots').innerHTML = P.deckIds.map((id, k) => { const b = P.builds.find((x) => x.id === id); return `<button class="slot cut" data-build="${id}" aria-pressed="${id === d.id}"><span class="n">${k + 1}</span><span><div class="sn">${esc(beyName(b))}</div><div class="sc">${beyCode(b)}・${TYPES[beyStats(b).type].name}</div></span></button>`; }).join('');
     const dup = this.deckDupes();
-    $('#deckWarn').textContent = dup ? `牌組內有重複零件（${dup}）。3 對 3 牌組戰中同名零件只能使用一次。` : '';
+    $('#deckWarn').textContent = dup ? `預設牌組內有重複零件（${dup}）。3 對 3 牌組戰中同名零件只能使用一次。` : '';
     if (fresh) GL.show.showBey(d);
   },
   renderAsmInfo() {
-    const d = Store.profile.decks[this.asmSlot], st = beyStats(d);
-    $('#asmSlotLbl').textContent = `牌組 ${this.asmSlot + 1} 號機`;
+    const P = Store.profile, d = this.curBuild(), st = beyStats(d), sl = P.deckIds.indexOf(d.id);
+    $('#asmSlotLbl').textContent = sl >= 0 ? `預設牌組 ${sl + 1} 號機` : `我的陀螺（未放入牌組）`;
     $('#asmName').textContent = beyName(d);
     $('#asmCode').textContent = beyCode(d);
     $('#asmType').innerHTML = `<span class="tag t-${st.type}">${TYPES[st.type].name}</span>`;
@@ -109,15 +153,34 @@ const UI = {
     return [...new Set(out)].join('、');
   },
   pickPart(id) {
-    const P = Store.profile, d = P.decks[this.asmSlot], K = KINDS[this.asmTab];
+    const P = Store.profile, d = this.curBuild(), K = KINDS[this.asmTab];
     if (d[K.key] === id) return;
-    // swap with another slot if that slot uses it (keeps deck legal)
-    const other = P.decks.findIndex((dd, i) => i !== this.asmSlot && dd[K.key] === id);
-    if (other >= 0 && (P.inv[this.asmTab][id] | 0) < 2) P.decks[other][K.key] = d[K.key];
     d[K.key] = id;
-    Store.save();
+    syncDecks(P); Store.save();
     GL.show.swapPart(d, this.asmTab);
     this.renderAssembly(false);
+  },
+  buildAction(act) {
+    const P = Store.profile, d = this.curBuild();
+    if (act === 'new' || act === 'copy') {
+      const src = act === 'copy' ? d : { b: BLADES.find((x) => owns('blade', x.id)).id, r: RATCHETS.find((x) => owns('ratchet', x.id)).id, t: BITS.find((x) => owns('bit', x.id)).id };
+      const id = 'b' + Date.now().toString(36);
+      P.builds.push({ id, b: src.b, r: src.r, t: src.t });
+      this.asmBuild = id;
+    } else if (act === 'del') {
+      if (P.deckIds.includes(d.id) || P.builds.length <= 3) return;
+      P.builds = P.builds.filter((x) => x.id !== d.id);
+      this.asmBuild = P.deckIds[0];
+    }
+    syncDecks(P); Store.save(); this.renderAssembly(true);
+  },
+  setSlot(k) {
+    const P = Store.profile, d = this.curBuild();
+    const other = P.deckIds.indexOf(d.id);
+    if (other >= 0 && other !== k) P.deckIds[other] = P.deckIds[k]; // swap positions
+    P.deckIds[k] = d.id;
+    syncDecks(P); Store.save(); this.renderAssembly(false);
+    this.toast(`已設為預設牌組 ${k + 1} 號機`);
   },
 
   /* ---------- SELECT ---------- */
@@ -150,15 +213,6 @@ const UI = {
   },
 
   /* ---------- GACHA ---------- */
-  renderDome() {
-    const cols = ['#ff4141', '#3d8bff', '#2fd27a', '#f6c632', '#ff7a1a', '#c66bff', '#36d3ff'];
-    let h = '';
-    for (let i = 0; i < 16; i++) {
-      const x = 8 + (i % 4) * 21 + (Math.floor(i / 4) % 2) * 9, y = 30 + Math.floor(i / 4) * 16 + rand(-3, 3);
-      h += `<span class="cap" style="left:${x}%;top:${y}%;background:linear-gradient(180deg,${cols[i % cols.length]} 50%,#e8ecf6 50%);animation-delay:${(i * 0.05).toFixed(2)}s"></span>`;
-    }
-    $('#dome').innerHTML = h;
-  },
   rollOne(guaranteeRare) {
     let r = Math.random() * 100;
     let rarity = r < RARITY.sr.w ? 'sr' : r < RARITY.sr.w + RARITY.rare.w ? 'rare' : 'common';
@@ -168,47 +222,112 @@ const UI = {
     const [kind, part] = pick(pool);
     return { kind, part, rarity };
   },
+  /* ---------- gacha ceremony ---------- */
   async pull(n) {
     const P = Store.profile, cost = n === 10 ? 900 : 100;
     if (this._pulling) return;
     if (P.coins < cost) { this.toast(`金幣不足，還差 ${cost - P.coins} 金幣。去對戰賺金幣吧！`); return; }
     SFX.ensure();
-    this._pulling = true;
+    this._pulling = true; this._skip = false;
     P.coins -= cost; this.refreshCoins();
     const res = [];
     for (let i = 0; i < n; i++) res.push(this.rollOne(false));
     if (n === 10 && !res.some((r) => r.rarity !== 'common')) res[9] = this.rollOne(true);
     let refund = 0;
     for (const r of res) {
-      const had = (P.inv[r.kind][r.part.id] | 0) > 0;
-      r.isNew = !had;
-      if (had) { refund += 30; r.dup = true; }
-      P.inv[r.kind][r.part.id] = (P.inv[r.kind][r.part.id] | 0) + 1;
+      r.had = P.inv[r.kind][r.part.id] | 0;
+      r.isNew = !r.had;
+      if (r.had) { refund += 30; r.dup = true; }
+      P.inv[r.kind][r.part.id] = r.had + 1;
     }
     P.coins += refund; P.stats.pulls += n;
     Store.save();
-    $('#dome').classList.add('shake');
-    for (let i = 0; i < 6; i++) SFX.tone(400 + i * 80, 0.06, 0.05, 'square', i * 0.09);
-    await wait(700);
-    $('#dome').classList.remove('shake');
-    const list = $('#pullList'); list.innerHTML = '';
-    const best = res.slice().sort((a, b) => ['common', 'rare', 'sr'].indexOf(b.rarity) - ['common', 'rare', 'sr'].indexOf(a.rarity))[0];
-    for (let i = 0; i < res.length; i++) {
-      const r = res[i];
-      const nm = partName(r.kind, r.part);
-      const el = document.createElement('div'); el.className = 'pull-item'; el.style.animationDelay = `${i * 0.06}s`;
-      el.innerHTML = `<img src="${Thumbs.get(r.kind, r.part.id)}" alt=""><div><div style="font-weight:700">${esc(nm)} ${r.isNew ? '<span class="new">NEW</span>' : ''}</div><div style="font-size:12px;color:var(--dim)">${KINDS[r.kind].name}${r.dup ? '・重複 → +30 金幣' : ''}</div></div><span class="r-${r.rarity}" style="font-weight:700;font-size:12px">${RARITY[r.rarity].name}</span>`;
-      list.appendChild(el);
+    const rank = (r) => ['common', 'rare', 'sr'].indexOf(r.rarity);
+    const best = res.reduce((a, b) => (rank(b) > rank(a) ? b : a));
+    // 1) crank + capsule drop
+    const dome = $('#dome'), crank = $('#crank');
+    dome.classList.add('shake'); crank.classList.add('turn');
+    for (let i = 0; i < 8; i++) SFX.tone(320 + i * 60, 0.05, 0.05, 'square', i * 0.08);
+    await wait(this._skip ? 0 : 750);
+    dome.classList.remove('shake'); crank.classList.remove('turn');
+    const ov = $('#gcOverlay'); ov.hidden = false; ov.className = 'gc-ov r-' + best.rarity;
+    $('#gcRow').innerHTML = res.map((r, k) => `<div class="gc-cap c-${r.rarity}" style="--d:${(k * 0.05).toFixed(2)}s" data-k="${k}"><i class="t"></i><i class="b"></i></div>`).join('');
+    $('#gcCard').hidden = true; $('#gcSum').hidden = true;
+    SFX.tone(160, 0.3, 0.2, 'sine', 0, 90);
+    await wait(this._skip ? 0 : 600);
+    // 2) build-up: the capsule glows in the colour of the best rarity it holds
+    ov.classList.add('charge');
+    SFX.gachaCharge(best.rarity);
+    await wait(this._skip ? 0 : (best.rarity === 'sr' ? 1500 : best.rarity === 'rare' ? 1100 : 750));
+    // 3) open each capsule in turn
+    for (let k = 0; k < res.length; k++) {
+      const r = res[k], cap = $(`#gcRow [data-k="${k}"]`);
+      cap.classList.add('open'); ov.classList.add('flash-' + r.rarity);
+      SFX.rareJingle(r.rarity); SFX.tone(1200, 0.08, 0.06, 'square');
+      if (n === 1 || r.rarity === 'sr' || (k === res.length - 1 && n === 10)) {
+        this.showCard(r); cap.innerHTML += `<img src="${Thumbs.get(r.kind, r.part.id)}" alt="">`;
+        GL.show.showPart(r.kind, r.part.id); GL.show.spinSpeed = 1.4; GL.show.flash = r.rarity === 'sr' ? 2.2 : 1.2;
+        await wait(this._skip ? 120 : (r.rarity === 'sr' ? 1700 : 1100));
+      } else {
+        cap.innerHTML += `<img src="${Thumbs.get(r.kind, r.part.id)}" alt="">`;
+        await wait(this._skip ? 30 : 260);
+      }
+      ov.classList.remove('flash-' + r.rarity);
     }
-    const show = n === 1 ? res[0] : best;
-    GL.show.showPart(show.kind, show.part.id);
-    GL.show.spinSpeed = 1.2;
-    $('#revEye').innerHTML = `<span class="r-${show.rarity}">${RARITY[show.rarity].name}</span>・${KINDS[show.kind].name}`;
-    $('#revName').textContent = partName(show.kind, show.part);
-    SFX.rareJingle(show.rarity);
-    const sc = GL.show; sc.flash = show.rarity === 'sr' ? 2 : 1;
+    // 4) summary
+    if (n === 10) this.showSummary(res); else $('#gcClose').hidden = false;
+    this.renderPullList(res); this.renderPool();
+    $('#revEye').innerHTML = `<span class="r-${best.rarity}">${RARITY[best.rarity].name}</span>・${KINDS[best.kind].name}`;
+    $('#revName').textContent = partName(best.kind, best.part);
     this.refreshCoins();
     this._pulling = false;
+  },
+  showCard(r) {
+    const c = $('#gcCard'); c.hidden = false; c.className = 'gc-card cut r-' + r.rarity;
+    const stars = r.rarity === 'sr' ? 3 : r.rarity === 'rare' ? 2 : 1;
+    c.innerHTML = `<div class="gc-stars">${'★'.repeat(stars)}${'☆'.repeat(3 - stars)}</div>
+      <div class="gc-kind">${RARITY[r.rarity].name}・${KINDS[r.kind].name}</div>
+      <div class="gc-name">${esc(partName(r.kind, r.part))}</div>
+      ${r.isNew ? '<div class="gc-new">NEW！ 首次取得</div>' : `<div class="gc-dup">已擁有 ×${r.had} → 轉換為 <span class="coin"></span> 30</div>`}`;
+    void c.offsetWidth; c.classList.add('in');
+  },
+  showSummary(res) {
+    const s = $('#gcSum'); s.hidden = false; $('#gcCard').hidden = true;
+    s.innerHTML = `<div class="eyebrow" style="margin-bottom:8px">10 連抽結果</div><div class="gc-grid">${res.map((r) => `<div class="gc-it r-${r.rarity} ${r.isNew ? 'isnew' : ''}"><img src="${Thumbs.get(r.kind, r.part.id)}" alt=""><b>${esc(partName(r.kind, r.part))}</b><small>${r.isNew ? 'NEW' : `已擁有 ×${r.had}`}</small></div>`).join('')}</div>
+      <div class="desc" style="margin-top:8px">新零件 ${res.filter((r) => r.isNew).length} 個・重複 ${res.filter((r) => r.dup).length} 個（共退還 ${res.filter((r) => r.dup).length * 30} 金幣）</div>`;
+    $('#gcClose').hidden = false;
+  },
+  closeGacha() { $('#gcOverlay').hidden = true; $('#gcClose').hidden = true; },
+  renderPullList(res) {
+    const list = $('#pullList'); list.innerHTML = '';
+    res.forEach((r, i) => {
+      const el = document.createElement('div'); el.className = 'pull-item'; el.style.animationDelay = `${i * 0.04}s`;
+      el.innerHTML = `<img src="${Thumbs.get(r.kind, r.part.id)}" alt=""><div><div style="font-weight:700">${esc(partName(r.kind, r.part))} ${r.isNew ? '<span class="new">NEW</span>' : '<span class="own">已擁有</span>'}</div><div style="font-size:12px;color:var(--dim)">${KINDS[r.kind].name}${r.dup ? '・重複 → +30 金幣' : ''}</div></div><span class="r-${r.rarity}" style="font-weight:700;font-size:12px">${RARITY[r.rarity].name}</span>`;
+      list.appendChild(el);
+    });
+  },
+  /* prize pool: every part, owned ones lit with count, missing ones dimmed */
+  renderPool() {
+    const P = Store.profile, inv = P.inv;
+    const all = [];
+    for (const [k, K] of Object.entries(KINDS)) for (const p of K.list) all.push([k, p]);
+    const owned = all.filter(([k, p]) => (inv[k][p.id] | 0) > 0).length;
+    $('#poolHead').innerHTML = `獎池一覽 <span class="num" style="color:var(--hot)">${owned}</span><span style="color:var(--dim)"> / ${all.length} 已擁有</span>`;
+    const order = ['sr', 'rare', 'common'];
+    $('#poolGrid').innerHTML = order.map((rr) => `<div class="pool-r r-${rr}">${RARITY[rr].name}</div>` + all.filter(([, p]) => p.rarity === rr).map(([k, p]) => {
+      const c = inv[k][p.id] | 0;
+      return `<div class="pool-it ${c ? 'have' : 'miss'}" title="${esc(partName(k, p))}"><img src="${Thumbs.get(k, p.id)}" alt=""><span>${c ? '×' + c : '未擁有'}</span></div>`;
+    }).join('')).join('');
+  },
+  renderDome() {
+    const cols = ['#ff4141', '#3d8bff', '#2fd27a', '#f6c632', '#ff7a1a', '#c66bff', '#36d3ff'];
+    let h = '';
+    for (let i = 0; i < 16; i++) {
+      const x = 8 + (i % 4) * 21 + (Math.floor(i / 4) % 2) * 9, y = 30 + Math.floor(i / 4) * 16 + rand(-3, 3);
+      h += `<span class="cap" style="left:${x}%;top:${y}%;background:linear-gradient(180deg,${cols[i % cols.length]} 50%,#e8ecf6 50%);animation-delay:${(i * 0.05).toFixed(2)}s"></span>`;
+    }
+    $('#dome').innerHTML = h;
+    this.renderPool();
   },
 
   /* ---------- COLLECTION ---------- */
@@ -244,6 +363,9 @@ function bindEvents() {
   document.addEventListener('click', (e) => {
     const t = e.target.closest('button'); if (!t) return;
     SFX.ensure();
+    if (t.dataset.go === 'survival') { SFX.click(); return Battle.startSurvival(); }
+    if (t.dataset.go === 'online') { SFX.click(); return UI.toast('線上對戰開發中，敬請期待！'); }
+    if (t.dataset.showbey) { SFX.click(); UI.hubBey = +t.dataset.showbey; return UI.renderHubBey(); }
     if (t.dataset.go) return UI.go(t.dataset.go);
     if (t.hasAttribute('data-settings')) return UI.toggleSettings();
     if (t.id === 'setClose') return UI.toggleSettings(false);
@@ -251,7 +373,9 @@ function bindEvents() {
     if (t.dataset.starter) { UI.starter = t.dataset.starter; SFX.click(); return UI.renderAuth(); }
     if (t.dataset.ptab) { UI.asmTab = t.dataset.ptab; SFX.click(); return UI.renderAssembly(false); }
     if (t.dataset.part) { SFX.click(); return UI.pickPart(t.dataset.part); }
-    if (t.dataset.slot) { UI.asmSlot = +t.dataset.slot; SFX.click(); return UI.renderAssembly(true); }
+    if (t.dataset.build) { UI.asmBuild = t.dataset.build; SFX.click(); return UI.renderAssembly(true); }
+    if (t.dataset.setslot) { SFX.click(); return UI.setSlot(+t.dataset.setslot); }
+    if (t.dataset.bact) { SFX.click(); return UI.buildAction(t.dataset.bact); }
     if (t.dataset.opp) { UI.oppSel = +t.dataset.opp; SFX.click(); return UI.renderSelect(); }
     if (t.dataset.mode) { UI.mode = t.dataset.mode; SFX.click(); return UI.renderSelect(); }
     if (t.dataset.ctab) { UI.collTab = t.dataset.ctab; UI.collSel = null; SFX.click(); return UI.renderCollection(); }
@@ -271,11 +395,13 @@ function bindEvents() {
   $('#spBtn').addEventListener('click', () => Battle.useSpecial(0));
   window.addEventListener('keydown', (e) => { if (!Battle.active) return; if (Battle.cine) { e.preventDefault(); return Battle.skipCine(); } if (e.code === 'Space') { e.preventDefault(); Battle.useSpecial(0); } });
   $('#cine').addEventListener('pointerdown', () => Battle.skipCine());
-  $('#resAgain').addEventListener('click', () => Battle.start(Battle.opp, Battle.mode));
+  $('#resAgain').addEventListener('click', () => Battle.again());
   $('#resHome').addEventListener('click', () => UI.go('hub'));
   $('#pull1').addEventListener('click', () => UI.pull(1));
   $$('[data-vol]').forEach((el) => el.addEventListener('input', () => SFX.setVol(el.dataset.vol, el.value / 100)));
   $('#pull10').addEventListener('click', () => UI.pull(10));
+  $('#gcClose').addEventListener('click', () => UI.closeGacha());
+  $('#gcOverlay').addEventListener('pointerdown', () => { if (UI._pulling) UI._skip = true; });
   Launcher.init();
 }
 let lastT = performance.now();

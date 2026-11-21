@@ -157,7 +157,7 @@ const STADIUMS = {
     theme: { floor: ['#2e1b40', '#1e1030', '#120a1e'], line: 'rgba(210,150,255,0.2)', rim: 0xd08aff, accent: 0xff4fd8, bg: 0x08050c, wall: 0xd8b0ff, light: [0xff4fd8, 0x8a7aff], pattern: 'star' } },
   ice: { name: '冰晶盤', desc: '盤面極滑，陀螺滑動距離變長。', K: 0.058, grav: 1, rail: 0.85, drag: 0.6,
     pockets: [{ kind: 'rift', phi: Math.PI, half: 0.42 }, { kind: 'out', phi: 0.38 * Math.PI, half: 0.3 }, { kind: 'out', phi: -0.38 * Math.PI, half: 0.3 }],
-    theme: { floor: ['#cfe8f6', '#7fb0d0', '#3a6a8a'], line: 'rgba(255,255,255,0.35)', rim: 0xe0f6ff, accent: 0x7ad8ff, bg: 0x081420, wall: 0xe0f6ff, light: [0x9ae0ff, 0xffffff], pattern: 'crystal' } },
+    theme: { floor: ['#3e6a88', '#24465e', '#132838'], line: 'rgba(200,240,255,0.32)', rim: 0xb8eaff, accent: 0x7ad8ff, bg: 0x061018, wall: 0xa8d8f0, light: [0x7ad0ff, 0xc8e8ff], pattern: 'crystal' } },
   lava: { name: '熔岩裂谷盤', desc: '裂界區特別寬，軌道驅衝更猛烈。', K: 0.062, grav: 1, rail: 1.2, drag: 1,
     pockets: [{ kind: 'rift', phi: Math.PI, half: 0.55 }, { kind: 'out', phi: 0.38 * Math.PI, half: 0.28 }, { kind: 'out', phi: -0.38 * Math.PI, half: 0.28 }],
     theme: { floor: ['#3a1408', '#220a04', '#120402'], line: 'rgba(255,120,40,0.35)', rim: 0xff5a1a, accent: 0xffb020, bg: 0x0a0302, wall: 0xff9a6a, light: [0xff4a1a, 0xffb020], pattern: 'crack' } },
@@ -168,23 +168,59 @@ const STADIUMS = {
 
 /* Opponents: original characters. av = avatar recipe. */
 const OPPONENTS = [
-  { id: 'o1', name: '阿哲', title: '見習旋鬥士', type: 'bal', stadium: 'training', deck: [['phoenix', '4-60', 'T'], ['moon', '5-60', 'B'], ['wolf', '3-60', 'F']], pow: [0.45, 0.7], smart: 0.25, reward: 120,
+  { id: 'o1', name: '阿哲', title: '見習旋鬥士', type: 'bal', stadium: 'training', deck: [['phoenix', '4-60', 'T'], ['moon', '5-60', 'B'], ['wolf', '3-60', 'F']], pow: [0.5, 0.72], smart: 0.35, boss: -0.24, reward: 120,
     av: { hair: 'spiky', hairC: '#6a3a1e', skin: '#f6d2b4', eye: '#3a7aff', eyes: 'round', brow: 'firm', mouth: 'grin', acc: 'band', accC: '#ff6a1a', bg: '#f6b432', pose: 'fist' } },
-  { id: 'o2', name: '小晴', title: '月下舞者', type: 'sta', stadium: 'lake', deck: [['moon', '6-60', 'B'], ['crane', '4-60', 'O'], ['mantis', '3-60', 'T']], pow: [0.5, 0.75], smart: 0.4, reward: 150,
+  { id: 'o2', name: '小晴', title: '月下舞者', type: 'sta', stadium: 'lake', deck: [['moon', '6-60', 'B'], ['crane', '4-60', 'O'], ['mantis', '3-60', 'T']], pow: [0.58, 0.8], smart: 0.5, boss: -0.14, reward: 150,
     av: { hair: 'long', hairC: '#7a5ad8', skin: '#fbe0cc', eye: '#a07aff', eyes: 'round', brow: 'soft', mouth: 'smile', acc: 'flower', accC: '#ffd84a', bg: '#3ad28a', pose: 'wave' } },
-  { id: 'o3', name: '鐵拳・剛', title: '不動要塞', type: 'def', stadium: 'fortress', deck: [['turtle', '5-60', 'N'], ['rhino', '4-70', 'P'], ['silver', '6-60', 'B']], pow: [0.55, 0.8], smart: 0.5, reward: 180,
+  { id: 'o3', name: '鐵拳・剛', title: '不動要塞', type: 'def', stadium: 'fortress', deck: [['turtle', '5-60', 'N'], ['rhino', '4-70', 'P'], ['silver', '6-60', 'B']], pow: [0.66, 0.86], smart: 0.62, boss: 0.16, reward: 180,
     av: { hair: 'buzz', hairC: '#26262c', skin: '#d8a070', eye: '#5a3a24', eyes: 'narrow', brow: 'angry', mouth: 'calm', acc: 'scar', accC: '#a04a3a', bg: '#3d7bdf', pose: 'punch' } },
-  { id: 'o4', name: '疾風・凜', title: '疾風迅雷', type: 'atk', stadium: 'gale', deck: [['thunder', '3-60', 'R'], ['hawk', '4-60', 'LF'], ['phoenix', '5-60', 'T']], pow: [0.6, 0.86], smart: 0.6, reward: 220,
+  { id: 'o4', name: '疾風・凜', title: '疾風迅雷', type: 'atk', stadium: 'gale', deck: [['thunder', '3-60', 'R'], ['hawk', '4-60', 'LF'], ['phoenix', '5-60', 'T']], pow: [0.74, 0.92], smart: 0.72, boss: 0.38, reward: 220,
     av: { hair: 'pony', hairC: '#1a7a5a', skin: '#f6d2b4', eye: '#2affb0', eyes: 'sharp', brow: 'cocky', mouth: 'smirk', acc: 'scarf', accC: '#e8ff7a', bg: '#e83a3a', pose: 'point' } },
-  { id: 'o5', name: '星羅', title: '雙子星', type: 'bal', stadium: 'twin', deck: [['darkstar', '5-70', 'P'], ['phantom', '4-60', 'GB'], ['tiger', '3-80', 'F']], pow: [0.66, 0.9], smart: 0.7, reward: 260,
+  { id: 'o5', name: '星羅', title: '雙子星', type: 'bal', stadium: 'twin', deck: [['darkstar', '5-70', 'P'], ['phantom', '4-60', 'GB'], ['tiger', '3-80', 'F']], pow: [0.8, 0.95], smart: 0.8, boss: -0.16, reward: 260,
     av: { hair: 'twin', hairC: '#f0a8ff', skin: '#fde4d4', eye: '#ff4fd8', eyes: 'round', brow: 'soft', mouth: 'grin', acc: 'star', accC: '#ffd84a', bg: '#8a5ae8', pose: 'bey' } },
-  { id: 'o6', name: '雪乃', title: '冰之女王', type: 'sta', stadium: 'ice', deck: [['jelly', '9-60', 'B'], ['crab', '5-60', 'HN'], ['owl', '6-70', 'O']], pow: [0.72, 0.93], smart: 0.8, reward: 300,
+  { id: 'o6', name: '雪乃', title: '冰之女王', type: 'sta', stadium: 'ice', deck: [['jelly', '9-60', 'B'], ['crab', '5-60', 'HN'], ['owl', '6-70', 'O']], pow: [0.86, 0.98], smart: 0.88, boss: -0.34, reward: 300,
     av: { hair: 'bob', hairC: '#dcecfa', skin: '#fdeee6', eye: '#36c8ff', eyes: 'narrow', brow: 'soft', mouth: 'calm', acc: 'crown', accC: '#9ae0ff', bg: '#4ab0d8', pose: 'chest' } },
-  { id: 'o7', name: '獅堂', title: '狂嵐之王', type: 'atk', stadium: 'lava', deck: [['flame', '1-60', 'RF'], ['scorpion', '3-80', 'A'], ['fortress', '9-60', 'N']], pow: [0.78, 0.96], smart: 0.88, reward: 360,
+  { id: 'o7', name: '獅堂', title: '狂嵐之王', type: 'atk', stadium: 'lava', deck: [['flame', '1-60', 'RF'], ['scorpion', '3-80', 'A'], ['fortress', '9-60', 'N']], pow: [0.9, 1.0], smart: 0.94, boss: 0.0, reward: 360,
     av: { hair: 'mane', hairC: '#e05a1a', skin: '#e8b080', eye: '#ffb020', eyes: 'sharp', brow: 'angry', mouth: 'shout', acc: 'earring', accC: '#ffd27a', bg: '#d83a1a', pose: 'fist' } },
-  { id: 'o8', name: '黑曜', title: '旋鋒王者', type: 'bal', stadium: 'throne', deck: [['darkstar', '7-60', 'P'], ['scorpion', '1-60', 'RF'], ['jelly', '5-70', 'GN']], pow: [0.85, 1.0], smart: 0.95, reward: 500,
+  { id: 'o8', name: '黑曜', title: '陀螺王者', type: 'bal', stadium: 'throne', deck: [['darkstar', '7-60', 'P'], ['scorpion', '1-60', 'RF'], ['jelly', '5-70', 'GN']], pow: [0.95, 1.0], smart: 1.0, boss: 0.05, reward: 500,
     av: { hair: 'slick', hairC: '#1c1628', skin: '#f0d0b8', eye: '#c04cff', eyes: 'sharp', brow: 'cocky', mouth: 'smirk', acc: 'mask', accC: '#2a2236', bg: '#b08a2a', pose: 'temple' } },
 ];
+
+/* Survival mode: endless original challengers that scale with the streak */
+const SURV_NAMES = ['迅雷・翔', '白狐', '鐵壁・豪', '流星', '赤炎・烈', '冰刃', '暴風・颯', '月牙', '鋼牙', '星塵', '雷鳴', '幻刃', '焰舞', '霜狼', '天翔', '黑鴉', '碧濤', '金剛', '紫電', '朧月'];
+const SURV_HAIR = ['spiky', 'short', 'long', 'bob', 'pony', 'twin', 'mane', 'slick', 'buzz'];
+const SURV_POSE = ['fist', 'point', 'wave', 'punch', 'bey', 'chest', 'temple'];
+function makeChallenger(n) {
+  const rnd = (a) => a[Math.floor(Math.random() * a.length)];
+  const hue = Math.random();
+  const col = (h, s, l) => '#' + new THREE.Color().setHSL(h, s, l).getHexString();
+  const types = ['atk', 'def', 'sta', 'bal'];
+  // rarer parts appear as the streak grows
+  const pickParts = (list, k) => {
+    const w = (p) => (p.rarity === 'sr' ? Math.min(1, 0.05 + n * 0.08) : p.rarity === 'rare' ? Math.min(1, 0.3 + n * 0.07) : 1);
+    const pool = list.slice(), out = [];
+    while (out.length < k && pool.length) {
+      const tot = pool.reduce((a, p) => a + w(p), 0); let r = Math.random() * tot;
+      const idx = pool.findIndex((p) => (r -= w(p)) <= 0); out.push(pool.splice(Math.max(0, idx), 1)[0]);
+    }
+    return out;
+  };
+  const bl = pickParts(BLADES, 3), ra = pickParts(RATCHETS, 3), bi = pickParts(BITS, 3);
+  const keys = Object.keys(STADIUMS);
+  const type = bl[0].type;
+  return {
+    id: 'surv' + n, survival: true, name: rnd(SURV_NAMES), title: `生存挑戰者 第 ${n} 位`, type,
+    stadium: keys[(n - 1) % keys.length],
+    deck: [0, 1, 2].map((k) => [bl[k].id, ra[k].id, bi[k].id]),
+    pow: [Math.min(0.95, 0.5 + n * 0.03), Math.min(1, 0.72 + n * 0.02)], smart: Math.min(1, 0.35 + n * 0.05),
+    boss: Math.min(0.4, -0.25 + n * 0.035), reward: 0,
+    av: { hair: rnd(SURV_HAIR), hairC: col(hue, 0.55, 0.35 + Math.random() * 0.3), skin: rnd(['#f6d2b4', '#fbe0cc', '#e8b080', '#d8a070', '#f0d0b8']),
+          eye: col(Math.random(), 0.8, 0.55), eyes: rnd(['sharp', 'round', 'narrow']), brow: rnd(['firm', 'angry', 'soft', 'cocky']),
+          mouth: rnd(['grin', 'smile', 'smirk', 'shout', 'calm']), acc: rnd(['none', 'band', 'goggles', 'scar', 'scarf', 'earring', 'star']),
+          accC: col(Math.random(), 0.8, 0.6), bg: col(hue + 0.5, 0.5, 0.45), pose: rnd(SURV_POSE) },
+  };
+}
+const SURV_WIN_POINTS = 3;
 
 const FINISH = {
   spin: { name: '旋轉終結', en: 'SPIN FINISH', pts: 1 },

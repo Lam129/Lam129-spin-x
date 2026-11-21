@@ -212,7 +212,7 @@ class BattleScene {
     }
     const acc = '#' + new THREE.Color(T.accent).getHexString();
     x.strokeStyle = acc; x.globalAlpha = 0.6; ring(60, 6); x.globalAlpha = 0.25;
-    x.fillStyle = acc; x.font = '900 70px "Noto Sans TC",sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('旋', C, C + 4); x.globalAlpha = 1;
+    x.fillStyle = acc; x.font = '900 70px "Noto Sans TC",sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('決', C, C + 4); x.globalAlpha = 1;
   }
   buildStadium(T) {
     const sc = this.scene, g = new THREE.Group(); this.stadium = g; sc.add(g);
@@ -239,7 +239,7 @@ class BattleScene {
     bg.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
     bg.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
     bg.setIndex(idx); bg.computeVertexNormals();
-    const bowl = new THREE.Mesh(bg, new THREE.MeshStandardMaterial({ map: tex, metalness: 0.2, roughness: T.pattern === 'crystal' ? 0.15 : T.pattern === 'ripple' ? 0.25 : 0.55, emissive: T.pattern === 'crack' ? 0xffffff : 0x000000, emissiveMap: T.pattern === 'crack' ? tex : null, emissiveIntensity: T.pattern === 'crack' ? 0.35 : 0 }));
+    const bowl = new THREE.Mesh(bg, new THREE.MeshStandardMaterial({ map: tex, metalness: 0.2, roughness: T.pattern === 'crystal' ? 0.5 : T.pattern === 'ripple' ? 0.4 : 0.55, emissive: T.pattern === 'crack' ? 0xffffff : 0x000000, emissiveMap: T.pattern === 'crack' ? tex : null, emissiveIntensity: T.pattern === 'crack' ? 0.35 : 0 }));
     bowl.receiveShadow = true; g.add(bowl);
     // Xtreme rail: toothed ring
     const teeth = 160, tg = new THREE.BoxGeometry(0.07, 0.07, 0.12);

@@ -8,6 +8,8 @@ const Battle = {
   start(opp, mode) {
     const P = Store.profile;
     this.opp = opp; this.mode = mode;
+    this.survival = !!opp.survival;
+    this.winPts = this.survival ? SURV_WIN_POINTS : WIN_POINTS;
     this.pDeck = mode === '3v3' ? P.decks.map((d) => ({ ...d })) : [{ ...P.decks[0] }];
     this.oDeck = opp.deck.map(([b, r, t]) => ({ b, r, t }));
     if (mode === '1v1') this.oDeck = [this.oDeck[Math.min(OPPONENTS.indexOf(opp) % 3, 2)]];
@@ -35,6 +37,12 @@ const Battle = {
     scene.setBeys(a, b);
     scene.zoomTo = null; scene.follow = null;
     this.arena = new Arena(a, b, this.hooks());
+    // boss aura: later opponents hit harder, resist more and keep spinning longer
+    const boss = (this.opp && this.opp.boss) || 0;
+    if (boss) {
+      const c = this.arena.beys[1].c;
+      applyBoss(c, boss); this.arena.beys[1].chargeRate = 1 + Math.max(0, boss) * 3;
+    }
     this.renderRatchet(); this.renderDecks();
     scene.placeForLaunch(0); scene.placeForLaunch(1);
     this.playerLaunched = false; this.aiLaunched = false; this.ripStarted = false; this.aiSpecialAt = rand(0.5, 3);
@@ -144,7 +152,7 @@ const Battle = {
         this.errors[side] = 0;
         this.score[1 - side] += 1; this.renderPips();
         this.finishes.push({ round: this.round, winner: 1 - side, type: 'error' });
-        if (this.score[1 - side] >= WIN_POINTS) return this.endMatch();
+        if (this.score[1 - side] >= this.winPts) return this.endMatch();
       }
       this.nextRound(true);
     }, 1600);
@@ -316,7 +324,7 @@ const Battle = {
     }, 250);
     setTimeout(() => {
       if (!this.active) return;
-      if (this.score[0] >= WIN_POINTS || this.score[1] >= WIN_POINTS) this.endMatch();
+      if (this.score[0] >= this.winPts || this.score[1] >= this.winPts) this.endMatch();
       else this.nextRound();
     }, 3200);
   },
@@ -334,7 +342,7 @@ const Battle = {
   },
   renderPips() {
     for (const [i, id] of [[0, '#p1pips'], [1, '#p2pips']]) {
-      $(id).innerHTML = Array.from({ length: WIN_POINTS }, (_, k) => `<span class="pip ${k < this.score[i] ? 'on' : ''}"></span>`).join('');
+      $(id).innerHTML = Array.from({ length: this.winPts }, (_, k) => `<span class="pip ${k < this.score[i] ? 'on' : ''}"></span>`).join('');
     }
   },
   renderGauges() {
@@ -350,10 +358,49 @@ const Battle = {
       $(i ? '#g2rat' : '#g1rat').innerHTML = `<span>鎖芯</span>` + Array.from({ length: n }, (_, k) => `<i class="${k < filled ? 'on' : ''}"></i>`).join('');
     });
   },
+  /* survival run state: streak survives across matches until the first loss */
+  startSurvival() {
+    this.run = { streak: 0, coins: 0 };
+    Store.profile.stats.runs = (Store.profile.stats.runs | 0) + 1;
+    this.start(makeChallenger(1), '3v3');
+  },
+  again() {
+    if (this.survival) {
+      if (this.lastWon) return this.start(makeChallenger(this.run.streak + 1), '3v3');
+      return this.startSurvival();
+    }
+    this.start(this.opp, this.mode);
+  },
+  endSurvival(won) {
+    const P = Store.profile, opp = this.opp, r = this.run;
+    this.lastWon = won;
+    let coins = 0;
+    if (won) { r.streak++; coins = 40 + Math.floor(r.streak / 5) * 60; r.coins += coins; P.coins += coins; P.stats.w++; }
+    else P.stats.l++;
+    for (const f of this.finishes) if (f.winner === 0 && FINISH[f.type]) P.stats[f.type] = (P.stats[f.type] | 0) + 1;
+    const newBest = r.streak > (P.stats.best | 0);
+    if (newBest) P.stats.best = r.streak;
+    Store.save();
+    if (!won || newBest) Board.submit(P.stats.best | 0);
+    $('#resTitle').textContent = won ? `${r.streak} 連勝` : 'RUN OVER';
+    $('#resTitle').style.color = won ? 'var(--hot2)' : 'var(--dim)';
+    $('#resEye').textContent = `生存模式・${opp.title}・${opp.name}`;
+    $('#resAv').innerHTML = `${playerAvatar(64)}<span class="vs">VS</span>${oppAvatar(opp, 64)}`;
+    $('#resScore').innerHTML = `<span style="color:var(--hot)">${this.score[0]}</span> : <span style="color:var(--ice)">${this.score[1]}</span>`;
+    const rows = [];
+    if (won) rows.push(['連勝獎金', `+${coins} 金幣`]);
+    rows.push(['本次連勝', `${r.streak}`], ['最高紀錄', `${P.stats.best | 0}${newBest ? '（新紀錄！）' : ''}`], ['本次累計獎金', `${r.coins} 金幣`]);
+    $('#resList').innerHTML = rows.map(([k, v]) => `<span style="color:var(--hot2)">${k}</span><span style="color:var(--hot2)">${v}</span>`).join('');
+    $('#resAgain').textContent = won ? '下一位挑戰者' : '再挑戰一次';
+    $('#resHome').textContent = won ? '結束挑戰' : '回到大廳';
+    setTimeout(() => { UI.show('result'); SFX.coin(); }, 400);
+  },
   endMatch() {
     this.active = false; this._cd = null; this.cine = null; GL.battle.cine = null;
     SFX.stopGrind();
     const won = this.score[0] > this.score[1];
+    if (this.survival) return this.endSurvival(won);
+    $('#resAgain').textContent = '再戰一次'; $('#resHome').textContent = '回到大廳';
     const P = Store.profile, opp = this.opp, idx = OPPONENTS.indexOf(opp);
     const firstClear = won && idx >= P.ladder;
     let coins = won ? opp.reward : Math.round(opp.reward * 0.3);
@@ -379,6 +426,7 @@ const Battle = {
   quit() {
     this.active = false; this._cd = null; SFX.stopGrind();
     $('#count').textContent = '';
+    if (this.survival) { this.score = [0, 1]; return this.endSurvival(false); }
     UI.go('select');
   },
 };

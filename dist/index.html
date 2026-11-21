@@ -1,4 +1,4 @@
-<title>旋鋒對決</title>
+<title>陀螺對決</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@900&display=swap">
 <style>
@@ -82,7 +82,48 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .acct{font-size:13px;color:var(--dim);display:flex;align-items:center;gap:8px}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--sta);box-shadow:0 0 8px var(--sta)}
 .dot.off{background:var(--bal);box-shadow:0 0 8px var(--bal)}
-/* ===== Hub ===== */
+/* ===== Lobby ===== */
+#s-hub .brand{visibility:hidden}
+.lb-rays{position:absolute;left:42%;top:50%;width:2400px;height:2400px;translate:-50% -50%;background:repeating-conic-gradient(from 0deg,rgba(255,140,60,.08) 0 1.5deg,transparent 1.5deg 7deg);mask:radial-gradient(circle,transparent 0 120px,#000 260px,transparent 900px);-webkit-mask:radial-gradient(circle,transparent 0 120px,#000 260px,transparent 900px);animation:lbRays 60s linear infinite}
+@keyframes lbRays{to{rotate:360deg}}
+.lb-logo{position:absolute;left:32px;top:18px;font:900 clamp(34px,3.6vw,52px) var(--f-body);font-style:italic;letter-spacing:.03em;text-shadow:5px 5px 0 #ff5a10,0 0 30px rgba(255,90,20,.5);line-height:1.1}
+.lb-logo span{display:block;font:700 13px var(--f-disp);letter-spacing:.7em;color:var(--ice);text-shadow:none;font-style:normal}
+.lb-player{position:absolute;left:32px;top:118px;width:min(330px,30vw);padding:14px 16px;display:grid;gap:8px}
+.lb-player .nm{font:900 22px var(--f-body)}
+.lb-player .rk{display:inline-block;padding:1px 8px;font:700 12px var(--f-body);letter-spacing:.08em;background:linear-gradient(90deg,#ffcf4a,#ff8a1f);color:#1a0900}
+.lb-player .kv{display:flex;gap:16px;font-size:12px;color:var(--dim)}.lb-player .kv b{display:block;font:700 22px var(--f-disp);color:var(--fg)}.lb-player .kv b.hot{color:var(--hot)}
+.lb-bey{position:absolute;left:42%;bottom:96px;translate:-50% 0;text-align:center;pointer-events:auto}
+.lb-bey small{display:block;font:700 12px var(--f-disp);letter-spacing:.25em;color:var(--hot2)}
+.lb-bey b{font:900 34px var(--f-body);letter-spacing:.06em;text-shadow:0 4px 18px #000}
+.lb-deck{display:flex;gap:8px;justify-content:center;margin-top:6px}
+.lbdk{width:52px;height:52px;padding:2px;border:1px solid var(--line2);background:#0a0e18}.lbdk img{width:100%;height:100%}
+.lbdk.on{border-color:var(--hot);box-shadow:0 0 12px rgba(255,122,42,.6)}
+.lb-menu{position:absolute;right:0;top:96px;width:min(560px,44vw);display:grid;gap:12px}
+.mi{position:relative;margin-left:auto;display:flex;align-items:center;gap:18px;padding:0 34px 0 46px;height:92px;clip-path:polygon(34px 0,100% 0,100% 100%,0 100%);color:#fff;text-align:left;transition:transform .15s,filter .15s}
+.mi:hover{transform:translateX(-10px);filter:brightness(1.12)}
+.mi .k{font:700 38px var(--f-disp);font-style:italic;opacity:.35;width:58px}
+.mi h4{margin:0;font:900 32px var(--f-body);font-style:italic;letter-spacing:.04em;line-height:1}
+.mi p{margin:6px 0 0;font-size:13px;opacity:.9}
+.mi .tag{margin-left:auto;font:700 12px var(--f-disp);padding:4px 10px;background:rgba(0,0,0,.35);letter-spacing:.08em}
+.m1{width:100%;height:124px;background:linear-gradient(100deg,#ff3e0a,#ff8a1f 70%,#ffbe4a);box-shadow:0 0 60px rgba(255,90,20,.45)}
+.m1 h4{font-size:46px;color:#1c0700}.m1 p,.m1 .k{color:#2c0e00}
+.m2{width:93%;background:linear-gradient(100deg,#0a5a96,#2bc4f4)}.m2 .tag{color:#9be9ff}
+.m3{width:89%;background:linear-gradient(100deg,#4a1580,#b148f2)}
+.lb-board{position:absolute;right:28px;bottom:24px;width:min(460px,36vw);padding:12px 16px;display:grid;gap:6px}
+.lb-board h3{display:flex;justify-content:space-between;align-items:baseline;font:900 17px var(--f-body);margin-bottom:2px}
+.lr{display:grid;grid-template-columns:40px 1fr auto;align-items:center;gap:10px;padding:2px 10px;background:#0a0e18;border:1px solid #1d2640;min-height:40px}
+.lr .ln{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lr .s{font:700 21px var(--f-disp);color:var(--hot)}.lr .s small{font:400 12px var(--f-body);color:var(--dim);margin-left:4px}
+.lr .rn{font:700 19px var(--f-disp);color:var(--mute);text-align:center}
+.lr.me{border-color:var(--ice);background:#0b1626}
+.lr.g{border-color:rgba(255,207,74,.55);background:linear-gradient(90deg,rgba(255,200,60,.16),#0a0e18 60%)}
+.lr.s2{border-color:rgba(210,220,235,.4);background:linear-gradient(90deg,rgba(210,220,235,.12),#0a0e18 60%)}
+.lr.b3{border-color:rgba(214,138,80,.45);background:linear-gradient(90deg,rgba(214,138,80,.14),#0a0e18 60%)}
+.lb-dock{position:absolute;left:32px;bottom:24px;display:flex;gap:10px}
+.lb-dock .lbk{display:flex;align-items:center;gap:10px;padding:12px 16px;font-weight:900;font-size:15px}
+.lb-dock .lbk:hover{border-color:var(--hot)}
+.lb-dock .lbk i{font:700 19px var(--f-disp);color:var(--hot);font-style:normal}
+/* ===== Hub (legacy) ===== */
 .hub-menu{position:absolute;left:max(22px,4vw);top:50%;transform:translateY(-50%);display:grid;gap:10px;width:min(380px,40vw)}
 .menu-item{display:grid;grid-template-columns:52px 1fr auto;align-items:center;gap:14px;padding:14px 18px;text-align:left;background:var(--panel);border:1px solid var(--line);transition:transform .15s,border-color .15s,background .15s}
 .menu-item:hover{transform:translateX(6px);border-color:var(--hot);background:var(--panel2)}
@@ -117,13 +158,23 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .stat{display:grid;grid-template-columns:72px 1fr 34px;align-items:center;gap:10px;font-size:13px}
 .bar{height:8px;background:#0b0f1a;border:1px solid var(--line);position:relative;overflow:hidden}
 .bar i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,var(--hot),var(--hot2));transition:width .35s}
-.deck{display:grid;gap:8px;margin-top:12px}
+.deck{display:grid;gap:6px;margin-top:6px}
 .slot{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:center;padding:10px 12px;background:var(--panel);border:1px solid var(--line);text-align:left}
 .slot[aria-pressed="true"]{border-color:var(--ice);box-shadow:inset 0 0 0 1px var(--ice)}
 .slot .n{font-family:var(--f-disp);font-size:22px;font-weight:700;color:var(--ice);text-align:center}
 .slot .sn{font-weight:700;font-size:14px}
 .slot .sc{font-family:var(--f-disp);font-size:12px;color:var(--dim)}
 .warn{font-size:12px;color:var(--bal);min-height:1.3em}
+.blist{flex:1;min-height:80px;overflow:auto;display:grid;gap:6px;align-content:start;margin-top:6px}
+.bcard{position:relative;display:grid;grid-template-columns:44px 1fr auto;gap:10px;align-items:center;padding:6px 10px;background:var(--panel);border:1px solid var(--line);text-align:left}
+.bcard img{width:44px;height:44px}
+.bcard .bi b{display:block;font-size:14px}.bcard .bi small{font-family:var(--f-disp);font-size:11px;color:var(--dim)}
+.bcard[aria-pressed="true"]{border-color:var(--hot);box-shadow:inset 0 0 0 1px var(--hot)}
+.bslot{font:700 11px var(--f-disp);color:#001a24;background:var(--ice);padding:1px 6px}
+.bactbox{display:grid;gap:6px;margin-top:8px}
+.setslots,.bacts{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.setslots .btn,.bacts .btn{padding:8px 4px;font-size:13px}
+.setslots .btn.on{border-color:var(--ice);color:var(--ice)}
 .desc{font-size:13px;color:var(--dim);line-height:1.6}
 /* ===== Battle select ===== */
 .sel{position:absolute;inset:70px 22px 22px;display:grid;grid-template-columns:1fr minmax(300px,380px);gap:18px}
@@ -319,6 +370,64 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .pull-item{display:grid;grid-template-columns:44px 1fr auto;gap:10px;align-items:center;padding:6px 8px;background:#0b0f1a;border:1px solid var(--line);animation:slideIn .35s ease-out both}
 .pull-item img{width:44px;height:44px}
 .pull-item .new{font-size:10px;font-weight:900;color:#160700;background:var(--hot2);padding:0 5px}
+.pull-item .own{font-size:10px;font-weight:700;color:var(--dim);border:1px solid var(--line2);padding:0 4px}
+.pull-list{max-height:34vh}
+.pool{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;overflow:auto;min-height:0}
+.pool-r{grid-column:1/-1;font-size:11px;font-weight:700;margin-top:4px}
+.pool-it{display:grid;justify-items:center;padding:3px;background:#0b0f1a;border:1px solid var(--line)}
+.pool-it img{width:100%;aspect-ratio:1;max-width:100%}
+.pool-it span{font:700 10px var(--f-disp);color:var(--hot2)}
+.pool-it.miss img{filter:brightness(0) opacity(.5)}.pool-it.miss span{color:var(--mute);font-family:var(--f-body)}
+.dome-wrap{position:relative}
+.crank{position:absolute;right:-6px;bottom:18%;width:44px;height:44px;border-radius:50%;background:radial-gradient(circle,#3a4868,#151b2c);border:2px solid var(--line2)}
+.crank i{position:absolute;left:50%;top:50%;width:6px;height:30px;margin:-28px 0 0 -3px;background:var(--hot);border-radius:3px;transform-origin:50% 28px;box-shadow:0 0 8px var(--hot)}
+.crank.turn i{animation:crank .75s cubic-bezier(.5,0,.3,1)}
+@keyframes crank{to{transform:rotate(720deg)}}
+.chute{position:absolute;left:50%;bottom:-8px;width:60px;height:16px;translate:-50% 0;background:#0b0f1a;border:2px solid var(--line2);border-top:0;border-radius:0 0 10px 10px}
+.gc-ov{position:fixed;inset:0;z-index:6;display:grid;place-items:center;background:radial-gradient(circle at 50% 45%,rgba(6,8,14,.55),rgba(6,8,14,.92));pointer-events:auto}
+.gc-beams{position:absolute;left:50%;top:42%;width:150vmax;height:150vmax;translate:-50% -50%;background:repeating-conic-gradient(from 0deg,rgba(255,255,255,.0) 0 6deg,var(--gcc,rgba(160,170,200,.18)) 6deg 9deg);opacity:0;transition:opacity .4s;mask:radial-gradient(circle,#000 0 20%,transparent 60%);-webkit-mask:radial-gradient(circle,#000 0 20%,transparent 60%)}
+.gc-ov.charge .gc-beams{opacity:1;animation:gcSpin 4s linear infinite}
+.gc-ov.r-rare{--gcc:rgba(54,211,255,.35)}.gc-ov.r-sr{--gcc:rgba(255,190,70,.5)}
+@keyframes gcSpin{to{rotate:360deg}}
+.gc-row{position:absolute;top:30%;display:flex;gap:14px;flex-wrap:wrap;justify-content:center;max-width:90vw}
+.gc-cap{position:relative;width:76px;height:76px;animation:gcDrop .55s cubic-bezier(.3,1.6,.5,1) var(--d) both}
+.gc-row:has(.gc-cap:only-child) .gc-cap{width:150px;height:150px}
+.gc-cap i{position:absolute;left:0;right:0;height:50%;border:2px solid rgba(255,255,255,.6);transition:transform .35s cubic-bezier(.3,1.4,.5,1),opacity .35s}
+.gc-cap .t{top:0;border-radius:999px 999px 0 0;background:linear-gradient(180deg,#e8ecf6,#9aa6c2)}
+.gc-cap .b{bottom:0;border-radius:0 0 999px 999px;background:linear-gradient(180deg,#d8dde8,#7a8698)}
+.gc-ov.charge .gc-cap{animation:gcShake .12s steps(2) infinite}
+.gc-ov.charge.r-rare .gc-cap.c-rare .t,.gc-ov.charge.r-sr .gc-cap.c-rare .t{background:linear-gradient(180deg,#9be9ff,#1a8ad8)}
+.gc-ov.charge.r-sr .gc-cap.c-sr .t{background:linear-gradient(180deg,#fff2a8,#ff9a1a);box-shadow:0 0 30px #ffb347}
+.gc-ov.charge .gc-cap{filter:drop-shadow(0 0 16px var(--gcc,rgba(255,255,255,.4)))}
+.gc-cap.open{animation:none}
+.gc-cap.open .t{transform:translateY(-70%) rotate(-24deg);opacity:0}
+.gc-cap.open .b{transform:translateY(70%) rotate(18deg);opacity:0}
+.gc-cap img{position:absolute;inset:0;width:100%;height:100%;animation:gcPop .3s ease-out}
+@keyframes gcDrop{from{transform:translateY(-60vh) rotate(-200deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes gcShake{from{transform:translate(-3px,1px) rotate(-6deg)}to{transform:translate(3px,-1px) rotate(6deg)}}
+@keyframes gcPop{from{transform:scale(.2);opacity:0}to{transform:none;opacity:1}}
+.gc-ov.flash-rare::after,.gc-ov.flash-sr::after,.gc-ov.flash-common::after{content:"";position:absolute;inset:0;background:#fff;animation:gcFlash .35s ease-out forwards;pointer-events:none}
+.gc-ov.flash-sr::after{background:radial-gradient(circle,#fff,#ffd27a);animation-duration:.7s}
+@keyframes gcFlash{from{opacity:.9}to{opacity:0}}
+.gc-card{position:absolute;bottom:12%;min-width:min(420px,90vw);padding:16px 26px;text-align:center;background:rgba(12,16,28,.92);border:2px solid var(--line2);opacity:0;transform:translateY(20px)}
+.gc-card.in{animation:gcCard .45s cubic-bezier(.2,1.4,.4,1) forwards}
+@keyframes gcCard{to{opacity:1;transform:none}}
+.gc-card.r-rare{border-color:var(--c-rare);box-shadow:0 0 30px rgba(54,211,255,.4)}.gc-card.r-sr{border-color:var(--c-sr);box-shadow:0 0 40px rgba(255,179,71,.6)}
+.gc-stars{font-size:26px;letter-spacing:.2em;color:var(--c-sr)}
+.gc-card.r-common .gc-stars{color:var(--c-common)}.gc-card.r-rare .gc-stars{color:var(--c-rare)}
+.gc-kind{font-size:13px;color:var(--dim)}
+.gc-name{font-size:32px;font-weight:900;margin:2px 0 6px}
+.gc-new{display:inline-block;padding:3px 14px;font-weight:900;color:#160700;background:linear-gradient(90deg,#ffcf4a,#ff8a1f);transform:skewX(-12deg)}
+.gc-dup{font-size:14px;color:var(--dim)}
+.gc-sum{position:absolute;bottom:10%;width:min(760px,92vw);padding:16px}
+.gc-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.gc-it{display:grid;justify-items:center;gap:2px;padding:6px;background:#0b0f1a;border:1px solid var(--line);text-align:center;font-size:12px}
+.gc-it img{width:64px;height:64px}
+.gc-it small{font:700 11px var(--f-disp);color:var(--dim)}
+.gc-it.isnew small{color:#160700;background:var(--hot2);padding:0 5px}
+.gc-it.r-rare{border-color:var(--c-rare)}.gc-it.r-sr{border-color:var(--c-sr);box-shadow:0 0 12px rgba(255,179,71,.4)}
+.gc-close{position:absolute;bottom:4%}
+.gc-skip{position:absolute;right:22px;bottom:16px;font-size:12px;color:rgba(255,255,255,.5)}
 @keyframes slideIn{from{opacity:0;transform:translateX(20px)}}
 .reveal{align-self:end;justify-self:center;text-align:center;padding-bottom:20px;pointer-events:none}
 .reveal .nm{font-size:30px;font-weight:900;text-shadow:0 2px 14px #000}
@@ -364,7 +473,7 @@ h1,h2,h3{margin:0;text-wrap:balance}
     <form class="auth-card panel cut" id="authForm">
       <div>
         <div class="eyebrow">Player Registration · 旋鬥士登錄</div>
-        <div class="auth-logo">旋鋒對決<span class="auth-sub">SPIN DUEL</span></div>
+        <div class="auth-logo">陀螺對決<span class="auth-sub">SPIN DUEL</span></div>
       </div>
       <div class="acct" id="acctLine"><span class="dot"></span><span>正在連線帳號…</span></div>
       <div style="display:grid;gap:6px">
@@ -383,17 +492,28 @@ h1,h2,h3{margin:0;text-wrap:balance}
 
   <!-- HUB -->
   <section class="screen" id="s-hub" hidden>
+    <div class="lb-rays pe-none"></div>
     <div class="topbar" data-topbar></div>
-    <nav class="hub-menu">
-      <div class="eyebrow" style="margin-bottom:4px" id="hubGreet">歡迎回來</div>
-      <button class="menu-item cut" data-go="select"><span class="ic">VS</span><span><h3>對戰</h3><p>挑戰之路・8 位對手・3 對 3 牌組戰</p></span><span class="arrow">›</span></button>
-      <button class="menu-item cut" data-go="assembly"><span class="ic">⚙</span><span><h3>組裝工坊</h3><p>鋒輪 × 鎖芯 × 旋尖，自由組裝與編輯牌組</p></span><span class="arrow">›</span></button>
-      <button class="menu-item cut" data-go="gacha"><span class="ic">◎</span><span><h3>扭蛋機</h3><p>用對戰贏來的金幣抽取新零件</p></span><span class="arrow">›</span></button>
+    <div class="lb-logo pe-none">陀螺對決<span>SPIN DUEL</span></div>
+    <div class="lb-player panel cut pe-none">
+      <div><div class="nm" id="lbName"></div><span class="rk" id="lbRank"></span></div>
+      <div class="kv" id="lbStats"></div>
+    </div>
+    <div class="lb-bey"><small id="lbBeySlot"></small><b id="lbBeyName"></b><div class="lb-deck" id="lbDeck"></div></div>
+    <nav class="lb-menu">
+      <button class="mi m1" data-go="select"><span class="k">01</span><span><h4>挑戰之路</h4><p id="lbStory"></p></span><span class="tag">STORY</span></button>
+      <button class="mi m2" data-go="online"><span class="k">02</span><span><h4>線上對戰</h4><p>邀請玩家・贏走對方下注的金幣</p></span><span class="tag">SOON</span></button>
+      <button class="mi m3" data-go="survival"><span class="k">03</span><span><h4>生存模式</h4><p id="lbSurv"></p></span><span class="tag">SURVIVAL</span></button>
     </nav>
-    <div class="hub-bey panel cut pe-none">
-      <div class="eyebrow">牌組 1 號機</div>
-      <div class="nm" id="hubBeyName"></div>
-      <div id="hubBeyTags" style="display:flex;gap:6px"></div>
+    <div class="lb-board panel cut">
+      <h3>生存模式・最高連勝榜 <span class="eyebrow" id="lbBoardNote">ALL TIME</span></h3>
+      <div id="lbBoard"></div>
+    </div>
+    <div class="lb-dock">
+      <button class="lbk panel cut" data-go="assembly"><i>⚙</i>組裝工坊</button>
+      <button class="lbk panel cut" data-go="gacha"><i>◎</i>扭蛋機</button>
+      <button class="lbk panel cut" data-go="collection"><i>▤</i>圖鑑</button>
+      <button class="lbk panel cut" data-go="rules"><i>?</i>規則</button>
     </div>
   </section>
 
@@ -420,8 +540,12 @@ h1,h2,h3{margin:0;text-wrap:balance}
           <div id="asmStats"></div>
           <div class="desc" id="asmDesc"></div>
         </div>
+        <div class="eyebrow" style="margin-top:12px">預設牌組（3 對 3 時依序上場）</div>
         <div class="deck" id="deckSlots"></div>
         <div class="warn" id="deckWarn"></div>
+        <div class="eyebrow" style="margin-top:4px">我的陀螺</div>
+        <div class="blist" id="buildList"></div>
+        <div class="bactbox" id="buildActs"></div>
       </div>
     </div>
   </section>
@@ -508,7 +632,7 @@ h1,h2,h3{margin:0;text-wrap:balance}
     <div class="gacha">
       <div class="machine panel cut">
         <div><div class="eyebrow">Parts Capsule</div><h2 style="font-size:24px;font-weight:900">零件扭蛋機</h2></div>
-        <div class="dome" id="dome"></div>
+        <div class="dome-wrap"><div class="dome" id="dome"></div><div class="crank" id="crank"><i></i></div><div class="chute"></div></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
           <button class="btn primary cut" id="pull1"><span class="coin"></span><span class="num">100</span>抽 1 次</button>
           <button class="btn cut" id="pull10"><span class="coin"></span><span class="num">900</span>10 連抽</button>
@@ -516,7 +640,14 @@ h1,h2,h3{margin:0;text-wrap:balance}
         <div class="odds">機率：普通 62%・稀有 29%・超稀有 9%<br>10 連抽保證至少 1 個稀有以上<br>重複的零件會自動轉換為 30 金幣</div>
       </div>
       <div class="reveal" id="reveal"><div class="eyebrow" id="revEye"></div><div class="nm" id="revName"></div></div>
-      <div class="pull-res panel cut"><div class="eyebrow">抽取結果</div><div class="pull-list" id="pullList"><div class="desc">還沒抽過。按下左邊的按鈕試試看！</div></div></div>
+      <div class="pull-res panel cut"><div class="eyebrow">抽取結果</div><div class="pull-list" id="pullList"><div class="desc">還沒抽過。按下左邊的按鈕試試看！</div></div>
+        <div class="eyebrow" id="poolHead" style="margin-top:6px">獎池一覽</div><div class="pool" id="poolGrid"></div></div>
+      <div class="gc-ov" id="gcOverlay" hidden>
+        <div class="gc-beams"></div><div class="gc-row" id="gcRow"></div>
+        <div class="gc-card cut" id="gcCard" hidden></div><div class="gc-sum panel cut" id="gcSum" hidden></div>
+        <button class="btn primary cut gc-close" id="gcClose" hidden>確定</button>
+        <div class="gc-skip">點擊畫面快轉</div>
+      </div>
     </div>
   </section>
 
@@ -753,7 +884,7 @@ const STADIUMS = {
     theme: { floor: ['#2e1b40', '#1e1030', '#120a1e'], line: 'rgba(210,150,255,0.2)', rim: 0xd08aff, accent: 0xff4fd8, bg: 0x08050c, wall: 0xd8b0ff, light: [0xff4fd8, 0x8a7aff], pattern: 'star' } },
   ice: { name: '冰晶盤', desc: '盤面極滑，陀螺滑動距離變長。', K: 0.058, grav: 1, rail: 0.85, drag: 0.6,
     pockets: [{ kind: 'rift', phi: Math.PI, half: 0.42 }, { kind: 'out', phi: 0.38 * Math.PI, half: 0.3 }, { kind: 'out', phi: -0.38 * Math.PI, half: 0.3 }],
-    theme: { floor: ['#cfe8f6', '#7fb0d0', '#3a6a8a'], line: 'rgba(255,255,255,0.35)', rim: 0xe0f6ff, accent: 0x7ad8ff, bg: 0x081420, wall: 0xe0f6ff, light: [0x9ae0ff, 0xffffff], pattern: 'crystal' } },
+    theme: { floor: ['#3e6a88', '#24465e', '#132838'], line: 'rgba(200,240,255,0.32)', rim: 0xb8eaff, accent: 0x7ad8ff, bg: 0x061018, wall: 0xa8d8f0, light: [0x7ad0ff, 0xc8e8ff], pattern: 'crystal' } },
   lava: { name: '熔岩裂谷盤', desc: '裂界區特別寬，軌道驅衝更猛烈。', K: 0.062, grav: 1, rail: 1.2, drag: 1,
     pockets: [{ kind: 'rift', phi: Math.PI, half: 0.55 }, { kind: 'out', phi: 0.38 * Math.PI, half: 0.28 }, { kind: 'out', phi: -0.38 * Math.PI, half: 0.28 }],
     theme: { floor: ['#3a1408', '#220a04', '#120402'], line: 'rgba(255,120,40,0.35)', rim: 0xff5a1a, accent: 0xffb020, bg: 0x0a0302, wall: 0xff9a6a, light: [0xff4a1a, 0xffb020], pattern: 'crack' } },
@@ -764,23 +895,59 @@ const STADIUMS = {
 
 /* Opponents: original characters. av = avatar recipe. */
 const OPPONENTS = [
-  { id: 'o1', name: '阿哲', title: '見習旋鬥士', type: 'bal', stadium: 'training', deck: [['phoenix', '4-60', 'T'], ['moon', '5-60', 'B'], ['wolf', '3-60', 'F']], pow: [0.45, 0.7], smart: 0.25, reward: 120,
+  { id: 'o1', name: '阿哲', title: '見習旋鬥士', type: 'bal', stadium: 'training', deck: [['phoenix', '4-60', 'T'], ['moon', '5-60', 'B'], ['wolf', '3-60', 'F']], pow: [0.5, 0.72], smart: 0.35, boss: -0.24, reward: 120,
     av: { hair: 'spiky', hairC: '#6a3a1e', skin: '#f6d2b4', eye: '#3a7aff', eyes: 'round', brow: 'firm', mouth: 'grin', acc: 'band', accC: '#ff6a1a', bg: '#f6b432', pose: 'fist' } },
-  { id: 'o2', name: '小晴', title: '月下舞者', type: 'sta', stadium: 'lake', deck: [['moon', '6-60', 'B'], ['crane', '4-60', 'O'], ['mantis', '3-60', 'T']], pow: [0.5, 0.75], smart: 0.4, reward: 150,
+  { id: 'o2', name: '小晴', title: '月下舞者', type: 'sta', stadium: 'lake', deck: [['moon', '6-60', 'B'], ['crane', '4-60', 'O'], ['mantis', '3-60', 'T']], pow: [0.58, 0.8], smart: 0.5, boss: -0.14, reward: 150,
     av: { hair: 'long', hairC: '#7a5ad8', skin: '#fbe0cc', eye: '#a07aff', eyes: 'round', brow: 'soft', mouth: 'smile', acc: 'flower', accC: '#ffd84a', bg: '#3ad28a', pose: 'wave' } },
-  { id: 'o3', name: '鐵拳・剛', title: '不動要塞', type: 'def', stadium: 'fortress', deck: [['turtle', '5-60', 'N'], ['rhino', '4-70', 'P'], ['silver', '6-60', 'B']], pow: [0.55, 0.8], smart: 0.5, reward: 180,
+  { id: 'o3', name: '鐵拳・剛', title: '不動要塞', type: 'def', stadium: 'fortress', deck: [['turtle', '5-60', 'N'], ['rhino', '4-70', 'P'], ['silver', '6-60', 'B']], pow: [0.66, 0.86], smart: 0.62, boss: 0.16, reward: 180,
     av: { hair: 'buzz', hairC: '#26262c', skin: '#d8a070', eye: '#5a3a24', eyes: 'narrow', brow: 'angry', mouth: 'calm', acc: 'scar', accC: '#a04a3a', bg: '#3d7bdf', pose: 'punch' } },
-  { id: 'o4', name: '疾風・凜', title: '疾風迅雷', type: 'atk', stadium: 'gale', deck: [['thunder', '3-60', 'R'], ['hawk', '4-60', 'LF'], ['phoenix', '5-60', 'T']], pow: [0.6, 0.86], smart: 0.6, reward: 220,
+  { id: 'o4', name: '疾風・凜', title: '疾風迅雷', type: 'atk', stadium: 'gale', deck: [['thunder', '3-60', 'R'], ['hawk', '4-60', 'LF'], ['phoenix', '5-60', 'T']], pow: [0.74, 0.92], smart: 0.72, boss: 0.38, reward: 220,
     av: { hair: 'pony', hairC: '#1a7a5a', skin: '#f6d2b4', eye: '#2affb0', eyes: 'sharp', brow: 'cocky', mouth: 'smirk', acc: 'scarf', accC: '#e8ff7a', bg: '#e83a3a', pose: 'point' } },
-  { id: 'o5', name: '星羅', title: '雙子星', type: 'bal', stadium: 'twin', deck: [['darkstar', '5-70', 'P'], ['phantom', '4-60', 'GB'], ['tiger', '3-80', 'F']], pow: [0.66, 0.9], smart: 0.7, reward: 260,
+  { id: 'o5', name: '星羅', title: '雙子星', type: 'bal', stadium: 'twin', deck: [['darkstar', '5-70', 'P'], ['phantom', '4-60', 'GB'], ['tiger', '3-80', 'F']], pow: [0.8, 0.95], smart: 0.8, boss: -0.16, reward: 260,
     av: { hair: 'twin', hairC: '#f0a8ff', skin: '#fde4d4', eye: '#ff4fd8', eyes: 'round', brow: 'soft', mouth: 'grin', acc: 'star', accC: '#ffd84a', bg: '#8a5ae8', pose: 'bey' } },
-  { id: 'o6', name: '雪乃', title: '冰之女王', type: 'sta', stadium: 'ice', deck: [['jelly', '9-60', 'B'], ['crab', '5-60', 'HN'], ['owl', '6-70', 'O']], pow: [0.72, 0.93], smart: 0.8, reward: 300,
+  { id: 'o6', name: '雪乃', title: '冰之女王', type: 'sta', stadium: 'ice', deck: [['jelly', '9-60', 'B'], ['crab', '5-60', 'HN'], ['owl', '6-70', 'O']], pow: [0.86, 0.98], smart: 0.88, boss: -0.34, reward: 300,
     av: { hair: 'bob', hairC: '#dcecfa', skin: '#fdeee6', eye: '#36c8ff', eyes: 'narrow', brow: 'soft', mouth: 'calm', acc: 'crown', accC: '#9ae0ff', bg: '#4ab0d8', pose: 'chest' } },
-  { id: 'o7', name: '獅堂', title: '狂嵐之王', type: 'atk', stadium: 'lava', deck: [['flame', '1-60', 'RF'], ['scorpion', '3-80', 'A'], ['fortress', '9-60', 'N']], pow: [0.78, 0.96], smart: 0.88, reward: 360,
+  { id: 'o7', name: '獅堂', title: '狂嵐之王', type: 'atk', stadium: 'lava', deck: [['flame', '1-60', 'RF'], ['scorpion', '3-80', 'A'], ['fortress', '9-60', 'N']], pow: [0.9, 1.0], smart: 0.94, boss: 0.0, reward: 360,
     av: { hair: 'mane', hairC: '#e05a1a', skin: '#e8b080', eye: '#ffb020', eyes: 'sharp', brow: 'angry', mouth: 'shout', acc: 'earring', accC: '#ffd27a', bg: '#d83a1a', pose: 'fist' } },
-  { id: 'o8', name: '黑曜', title: '旋鋒王者', type: 'bal', stadium: 'throne', deck: [['darkstar', '7-60', 'P'], ['scorpion', '1-60', 'RF'], ['jelly', '5-70', 'GN']], pow: [0.85, 1.0], smart: 0.95, reward: 500,
+  { id: 'o8', name: '黑曜', title: '陀螺王者', type: 'bal', stadium: 'throne', deck: [['darkstar', '7-60', 'P'], ['scorpion', '1-60', 'RF'], ['jelly', '5-70', 'GN']], pow: [0.95, 1.0], smart: 1.0, boss: 0.05, reward: 500,
     av: { hair: 'slick', hairC: '#1c1628', skin: '#f0d0b8', eye: '#c04cff', eyes: 'sharp', brow: 'cocky', mouth: 'smirk', acc: 'mask', accC: '#2a2236', bg: '#b08a2a', pose: 'temple' } },
 ];
+
+/* Survival mode: endless original challengers that scale with the streak */
+const SURV_NAMES = ['迅雷・翔', '白狐', '鐵壁・豪', '流星', '赤炎・烈', '冰刃', '暴風・颯', '月牙', '鋼牙', '星塵', '雷鳴', '幻刃', '焰舞', '霜狼', '天翔', '黑鴉', '碧濤', '金剛', '紫電', '朧月'];
+const SURV_HAIR = ['spiky', 'short', 'long', 'bob', 'pony', 'twin', 'mane', 'slick', 'buzz'];
+const SURV_POSE = ['fist', 'point', 'wave', 'punch', 'bey', 'chest', 'temple'];
+function makeChallenger(n) {
+  const rnd = (a) => a[Math.floor(Math.random() * a.length)];
+  const hue = Math.random();
+  const col = (h, s, l) => '#' + new THREE.Color().setHSL(h, s, l).getHexString();
+  const types = ['atk', 'def', 'sta', 'bal'];
+  // rarer parts appear as the streak grows
+  const pickParts = (list, k) => {
+    const w = (p) => (p.rarity === 'sr' ? Math.min(1, 0.05 + n * 0.08) : p.rarity === 'rare' ? Math.min(1, 0.3 + n * 0.07) : 1);
+    const pool = list.slice(), out = [];
+    while (out.length < k && pool.length) {
+      const tot = pool.reduce((a, p) => a + w(p), 0); let r = Math.random() * tot;
+      const idx = pool.findIndex((p) => (r -= w(p)) <= 0); out.push(pool.splice(Math.max(0, idx), 1)[0]);
+    }
+    return out;
+  };
+  const bl = pickParts(BLADES, 3), ra = pickParts(RATCHETS, 3), bi = pickParts(BITS, 3);
+  const keys = Object.keys(STADIUMS);
+  const type = bl[0].type;
+  return {
+    id: 'surv' + n, survival: true, name: rnd(SURV_NAMES), title: `生存挑戰者 第 ${n} 位`, type,
+    stadium: keys[(n - 1) % keys.length],
+    deck: [0, 1, 2].map((k) => [bl[k].id, ra[k].id, bi[k].id]),
+    pow: [Math.min(0.95, 0.5 + n * 0.03), Math.min(1, 0.72 + n * 0.02)], smart: Math.min(1, 0.35 + n * 0.05),
+    boss: Math.min(0.4, -0.25 + n * 0.035), reward: 0,
+    av: { hair: rnd(SURV_HAIR), hairC: col(hue, 0.55, 0.35 + Math.random() * 0.3), skin: rnd(['#f6d2b4', '#fbe0cc', '#e8b080', '#d8a070', '#f0d0b8']),
+          eye: col(Math.random(), 0.8, 0.55), eyes: rnd(['sharp', 'round', 'narrow']), brow: rnd(['firm', 'angry', 'soft', 'cocky']),
+          mouth: rnd(['grin', 'smile', 'smirk', 'shout', 'calm']), acc: rnd(['none', 'band', 'goggles', 'scar', 'scarf', 'earring', 'star']),
+          accC: col(Math.random(), 0.8, 0.6), bg: col(hue + 0.5, 0.5, 0.45), pose: rnd(SURV_POSE) },
+  };
+}
+const SURV_WIN_POINTS = 3;
 
 const FINISH = {
   spin: { name: '旋轉終結', en: 'SPIN FINISH', pts: 1 },
@@ -905,17 +1072,59 @@ function newProfile(name, starter) {
     { b: otherBlades[0], r: rs[0], t: ts[0] },
     { b: otherBlades[1], r: rs[1], t: ts[1] },
   ];
-  return { v: 1, name, starter, coins: 300, inv, decks, ladder: 0, stats: { w: 0, l: 0, spin: 0, out: 0, burst: 0, rift: 0, pulls: 0 }, createdAt: Date.now(), updatedAt: Date.now() };
+  return { v: 2, name, starter, coins: 300, inv, decks, builds: decks.map((d, i) => ({ id: 'b' + (i + 1), ...d })), deckIds: ['b1', 'b2', 'b3'], ladder: 0, stats: { w: 0, l: 0, spin: 0, out: 0, burst: 0, rift: 0, pulls: 0 }, createdAt: Date.now(), updatedAt: Date.now() };
 }
 function migrate(p) {
   if (!p || typeof p !== 'object' || !p.inv || !Array.isArray(p.decks)) return null;
-  p.stats = Object.assign({ w: 0, l: 0, spin: 0, out: 0, burst: 0, rift: 0, pulls: 0 }, p.stats || {});
+  p.stats = Object.assign({ w: 0, l: 0, spin: 0, out: 0, burst: 0, rift: 0, pulls: 0, best: 0, runs: 0 }, p.stats || {});
   p.coins = Math.max(0, p.coins | 0);
   p.ladder = p.ladder | 0;
   for (const k of ['blade', 'ratchet', 'bit']) p.inv[k] = p.inv[k] || {};
   p.decks = p.decks.slice(0, 3).map((d) => ({ b: BLADE[d.b] ? d.b : 'wolf', r: RATCHET[d.r] ? d.r : '3-60', t: BIT[d.t] ? d.t : 'F' }));
+  // build library: every saved combination; the 3 default deck slots point at builds by id
+  if (!Array.isArray(p.builds) || !p.builds.length) {
+    p.builds = p.decks.map((d, i) => ({ id: 'b' + (i + 1), ...d }));
+    p.deckIds = ['b1', 'b2', 'b3'];
+  }
+  p.builds = p.builds.filter((x) => x && x.id).map((x) => ({ id: x.id, b: BLADE[x.b] ? x.b : 'wolf', r: RATCHET[x.r] ? x.r : '3-60', t: BIT[x.t] ? x.t : 'F' }));
+  p.deckIds = (p.deckIds || []).slice(0, 3);
+  while (p.deckIds.length < 3) p.deckIds.push(p.builds[p.deckIds.length % p.builds.length].id);
+  syncDecks(p);
   return p;
 }
+function syncDecks(p) {
+  p.decks = p.deckIds.map((id, i) => { const b = p.builds.find((x) => x.id === id); return b ? { b: b.b, r: b.r, t: b.t } : p.decks[i]; });
+}
+/* Leaderboard backend. Today: the artifact's shared db (each player writes only their own row).
+   To move to a public server later, implement the same three methods against your own API. */
+const Board = {
+  get backend() { return Store.mode === 'cloud' && Store.db ? 'artifact' : 'local'; },
+  LKEY: 'spinx-board',
+  async top(n = 5) {
+    if (this.backend === 'artifact') {
+      try {
+        const snap = await Promise.race([Store.db.collection('leaderboard').orderBy('best', 'desc').limit(n).get(), new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 8000))]);
+        return snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) })).filter((r) => r.best > 0);
+      } catch (e) { return this.localTop(n); }
+    }
+    return this.localTop(n);
+  },
+  localTop(n) {
+    const P = Store.profile; const best = (P && P.stats.best) | 0;
+    return best > 0 ? [{ id: 'me', name: P.name, best }] : [];
+  },
+  myId() { return this.backend === 'artifact' ? Store.uid : 'me'; },
+  async submit(best) {
+    const P = Store.profile;
+    if (this.backend !== 'artifact' || !best) return;
+    try {
+      const ref = Store.db.doc('leaderboard/' + Store.uid);
+      const cur = await ref.get();
+      if (cur.exists && (cur.data().best | 0) >= best) { if (cur.data().name !== P.name) await ref.update({ name: P.name }); return; }
+      await ref.set({ name: P.name, best, at: Date.now() });
+    } catch (e) { /* read-only viewers cannot post */ }
+  },
+};
 const owns = (kind, id) => ((Store.profile.inv[kind] || {})[id] | 0) > 0;
 /* ============================== AUDIO (synthesized) ============================== */
 const SFX = {
@@ -1039,6 +1248,12 @@ const SFX = {
   beep(hi) { this.tone(hi ? 1320 : 880, hi ? 0.45 : 0.18, 0.18, 'square'); if (hi) this.tone(1980, 0.4, 0.08, 'square', 0.02); },
   finish() { [523, 659, 784, 1046].forEach((f, i) => this.tone(f, 0.35, 0.12, 'square', i * 0.07)); },
   coin() { this.tone(1320, 0.08, 0.1, 'square'); this.tone(1760, 0.18, 0.1, 'square', 0.07); },
+  gachaCharge(r) {
+    const n = this.noise(r === 'sr' ? 1.5 : 1.0, 300, 0.8, 0.25, 'bandpass'); if (n) n.f.frequency.exponentialRampToValueAtTime(r === 'sr' ? 7000 : 4000, this.ctx.currentTime + (r === 'sr' ? 1.4 : 0.9));
+    const steps = r === 'sr' ? 10 : r === 'rare' ? 7 : 4;
+    for (let i = 0; i < steps; i++) this.tone(392 * Math.pow(1.09, i), 0.12, 0.06, 'triangle', i * (r === 'sr' ? 0.14 : 0.13));
+    if (r === 'sr') this.tone(80, 1.5, 0.25, 'sawtooth', 0, 220);
+  },
   rareJingle(r) {
     const seq = r === 'sr' ? [784, 988, 1175, 1568, 1976] : r === 'rare' ? [659, 880, 1175] : [880];
     seq.forEach((f, i) => this.tone(f, 0.3, 0.1, 'triangle', i * 0.08));
@@ -1631,6 +1846,11 @@ const AR = {
 function surfH(r) { return r < AR.RB ? AR.K * r * r : AR.K * AR.RB * AR.RB + (r - AR.RB) * 0.12; }
 function surfSlope(r) { return r < AR.RB ? 2 * AR.K * r : 0.12; }
 function angDiff(a, b) { let d = (a - b) % TAU; if (d > Math.PI) d -= TAU; if (d < -Math.PI) d += TAU; return d; }
+/* boss aura applied to the AI bey's physics (negative = handicap for early opponents) */
+function applyBoss(c, boss) {
+  c.atk *= 1 + boss * 0.5; c.def = Math.min(0.95, c.def * (1 + boss * 0.4)); c.drain *= 1 - boss * 0.4;
+  c.burstRes *= 1 + boss * 0.8; c.m *= 1 + boss * 0.15; c.spinBonus = boss * 0.08;
+}
 /* load a stadium's physics into AR */
 function applyStadium(id) {
   const S = STADIUMS[id] || STADIUMS.training;
@@ -1666,7 +1886,7 @@ class Arena {
   }
   launch(side, power, aim) {
     const b = this.beys[side], L = launchVector(side, power, aim);
-    Object.assign(b, { x: L.x, z: L.z, vx: L.vx, vz: L.vz, s: L.s, state: 'spin', launched: true, power });
+    Object.assign(b, { x: L.x, z: L.z, vx: L.vx, vz: L.vz, s: L.s * (1 + (b.c.spinBonus || 0)), state: 'spin', launched: true, power });
   }
   step(dt) {
     this.t += dt;
@@ -1795,7 +2015,7 @@ class Arena {
     }
     b.x = x; b.z = z; b.vx = vx; b.vz = vz;
     const late = this.t > 75 ? 1 + (this.t - 75) * 0.15 : 1;
-    if (!b.usedSpecial) b.charge = Math.min(1, (b.charge || 0) + dt / 11 + b.dash * dt * 0.25);
+    if (!b.usedSpecial) b.charge = Math.min(1, (b.charge || 0) + (dt / 11 + b.dash * dt * 0.25) * (b.chargeRate || 1));
     const regen = bf ? (bf.kind === 'regen' ? 0.8 : bf.kind === 'guard' ? 0.65 : 1) : 1;
     b.s -= (dt * AR.DRAIN * c.drain * (1.25 - 0.55 * c.sta) * late + dt * sp * 0.0012 * (1 - c.stab)) * regen;
     b.tilt = s < 0.22 ? (0.22 - s) * 2.2 : lerp(b.tilt, Math.min(sp * 0.02, 0.08), dt * 5);
@@ -2981,7 +3201,7 @@ class BattleScene {
     }
     const acc = '#' + new THREE.Color(T.accent).getHexString();
     x.strokeStyle = acc; x.globalAlpha = 0.6; ring(60, 6); x.globalAlpha = 0.25;
-    x.fillStyle = acc; x.font = '900 70px "Noto Sans TC",sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('旋', C, C + 4); x.globalAlpha = 1;
+    x.fillStyle = acc; x.font = '900 70px "Noto Sans TC",sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('決', C, C + 4); x.globalAlpha = 1;
   }
   buildStadium(T) {
     const sc = this.scene, g = new THREE.Group(); this.stadium = g; sc.add(g);
@@ -3008,7 +3228,7 @@ class BattleScene {
     bg.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
     bg.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
     bg.setIndex(idx); bg.computeVertexNormals();
-    const bowl = new THREE.Mesh(bg, new THREE.MeshStandardMaterial({ map: tex, metalness: 0.2, roughness: T.pattern === 'crystal' ? 0.15 : T.pattern === 'ripple' ? 0.25 : 0.55, emissive: T.pattern === 'crack' ? 0xffffff : 0x000000, emissiveMap: T.pattern === 'crack' ? tex : null, emissiveIntensity: T.pattern === 'crack' ? 0.35 : 0 }));
+    const bowl = new THREE.Mesh(bg, new THREE.MeshStandardMaterial({ map: tex, metalness: 0.2, roughness: T.pattern === 'crystal' ? 0.5 : T.pattern === 'ripple' ? 0.4 : 0.55, emissive: T.pattern === 'crack' ? 0xffffff : 0x000000, emissiveMap: T.pattern === 'crack' ? tex : null, emissiveIntensity: T.pattern === 'crack' ? 0.35 : 0 }));
     bowl.receiveShadow = true; g.add(bowl);
     // Xtreme rail: toothed ring
     const teeth = 160, tg = new THREE.BoxGeometry(0.07, 0.07, 0.12);
@@ -3231,6 +3451,8 @@ const Battle = {
   start(opp, mode) {
     const P = Store.profile;
     this.opp = opp; this.mode = mode;
+    this.survival = !!opp.survival;
+    this.winPts = this.survival ? SURV_WIN_POINTS : WIN_POINTS;
     this.pDeck = mode === '3v3' ? P.decks.map((d) => ({ ...d })) : [{ ...P.decks[0] }];
     this.oDeck = opp.deck.map(([b, r, t]) => ({ b, r, t }));
     if (mode === '1v1') this.oDeck = [this.oDeck[Math.min(OPPONENTS.indexOf(opp) % 3, 2)]];
@@ -3258,6 +3480,12 @@ const Battle = {
     scene.setBeys(a, b);
     scene.zoomTo = null; scene.follow = null;
     this.arena = new Arena(a, b, this.hooks());
+    // boss aura: later opponents hit harder, resist more and keep spinning longer
+    const boss = (this.opp && this.opp.boss) || 0;
+    if (boss) {
+      const c = this.arena.beys[1].c;
+      applyBoss(c, boss); this.arena.beys[1].chargeRate = 1 + Math.max(0, boss) * 3;
+    }
     this.renderRatchet(); this.renderDecks();
     scene.placeForLaunch(0); scene.placeForLaunch(1);
     this.playerLaunched = false; this.aiLaunched = false; this.ripStarted = false; this.aiSpecialAt = rand(0.5, 3);
@@ -3367,7 +3595,7 @@ const Battle = {
         this.errors[side] = 0;
         this.score[1 - side] += 1; this.renderPips();
         this.finishes.push({ round: this.round, winner: 1 - side, type: 'error' });
-        if (this.score[1 - side] >= WIN_POINTS) return this.endMatch();
+        if (this.score[1 - side] >= this.winPts) return this.endMatch();
       }
       this.nextRound(true);
     }, 1600);
@@ -3539,7 +3767,7 @@ const Battle = {
     }, 250);
     setTimeout(() => {
       if (!this.active) return;
-      if (this.score[0] >= WIN_POINTS || this.score[1] >= WIN_POINTS) this.endMatch();
+      if (this.score[0] >= this.winPts || this.score[1] >= this.winPts) this.endMatch();
       else this.nextRound();
     }, 3200);
   },
@@ -3557,7 +3785,7 @@ const Battle = {
   },
   renderPips() {
     for (const [i, id] of [[0, '#p1pips'], [1, '#p2pips']]) {
-      $(id).innerHTML = Array.from({ length: WIN_POINTS }, (_, k) => `<span class="pip ${k < this.score[i] ? 'on' : ''}"></span>`).join('');
+      $(id).innerHTML = Array.from({ length: this.winPts }, (_, k) => `<span class="pip ${k < this.score[i] ? 'on' : ''}"></span>`).join('');
     }
   },
   renderGauges() {
@@ -3573,10 +3801,49 @@ const Battle = {
       $(i ? '#g2rat' : '#g1rat').innerHTML = `<span>鎖芯</span>` + Array.from({ length: n }, (_, k) => `<i class="${k < filled ? 'on' : ''}"></i>`).join('');
     });
   },
+  /* survival run state: streak survives across matches until the first loss */
+  startSurvival() {
+    this.run = { streak: 0, coins: 0 };
+    Store.profile.stats.runs = (Store.profile.stats.runs | 0) + 1;
+    this.start(makeChallenger(1), '3v3');
+  },
+  again() {
+    if (this.survival) {
+      if (this.lastWon) return this.start(makeChallenger(this.run.streak + 1), '3v3');
+      return this.startSurvival();
+    }
+    this.start(this.opp, this.mode);
+  },
+  endSurvival(won) {
+    const P = Store.profile, opp = this.opp, r = this.run;
+    this.lastWon = won;
+    let coins = 0;
+    if (won) { r.streak++; coins = 40 + Math.floor(r.streak / 5) * 60; r.coins += coins; P.coins += coins; P.stats.w++; }
+    else P.stats.l++;
+    for (const f of this.finishes) if (f.winner === 0 && FINISH[f.type]) P.stats[f.type] = (P.stats[f.type] | 0) + 1;
+    const newBest = r.streak > (P.stats.best | 0);
+    if (newBest) P.stats.best = r.streak;
+    Store.save();
+    if (!won || newBest) Board.submit(P.stats.best | 0);
+    $('#resTitle').textContent = won ? `${r.streak} 連勝` : 'RUN OVER';
+    $('#resTitle').style.color = won ? 'var(--hot2)' : 'var(--dim)';
+    $('#resEye').textContent = `生存模式・${opp.title}・${opp.name}`;
+    $('#resAv').innerHTML = `${playerAvatar(64)}<span class="vs">VS</span>${oppAvatar(opp, 64)}`;
+    $('#resScore').innerHTML = `<span style="color:var(--hot)">${this.score[0]}</span> : <span style="color:var(--ice)">${this.score[1]}</span>`;
+    const rows = [];
+    if (won) rows.push(['連勝獎金', `+${coins} 金幣`]);
+    rows.push(['本次連勝', `${r.streak}`], ['最高紀錄', `${P.stats.best | 0}${newBest ? '（新紀錄！）' : ''}`], ['本次累計獎金', `${r.coins} 金幣`]);
+    $('#resList').innerHTML = rows.map(([k, v]) => `<span style="color:var(--hot2)">${k}</span><span style="color:var(--hot2)">${v}</span>`).join('');
+    $('#resAgain').textContent = won ? '下一位挑戰者' : '再挑戰一次';
+    $('#resHome').textContent = won ? '結束挑戰' : '回到大廳';
+    setTimeout(() => { UI.show('result'); SFX.coin(); }, 400);
+  },
   endMatch() {
     this.active = false; this._cd = null; this.cine = null; GL.battle.cine = null;
     SFX.stopGrind();
     const won = this.score[0] > this.score[1];
+    if (this.survival) return this.endSurvival(won);
+    $('#resAgain').textContent = '再戰一次'; $('#resHome').textContent = '回到大廳';
     const P = Store.profile, opp = this.opp, idx = OPPONENTS.indexOf(opp);
     const firstClear = won && idx >= P.ladder;
     let coins = won ? opp.reward : Math.round(opp.reward * 0.3);
@@ -3602,6 +3869,7 @@ const Battle = {
   quit() {
     this.active = false; this._cd = null; SFX.stopGrind();
     $('#count').textContent = '';
+    if (this.survival) { this.score = [0, 1]; return this.endSurvival(false); }
     UI.go('select');
   },
 };
@@ -3673,7 +3941,7 @@ const Launcher = {
 };
 /* ============================== UI ============================== */
 const UI = {
-  cur: null, asmTab: 'blade', asmSlot: 0, collTab: 'blade', collSel: null, oppSel: 0, mode: '3v3', starter: 'atk',
+  cur: null, asmTab: 'blade', asmBuild: null, collTab: 'blade', collSel: null, oppSel: 0, mode: '3v3', starter: 'atk',
   show(name) {
     $$('#ui .screen').forEach((s) => (s.hidden = s.id !== 's-' + name));
     this.cur = name;
@@ -3686,29 +3954,57 @@ const UI = {
     $$('[data-topbar]').forEach((el) => (el.innerHTML = this.topbar(name)));
     const sh = GL.show;
     sh.spinSpeed = 0.6;
-    if (name === 'hub') {
-      sh.setOffset(0.18); sh.showBey(P.decks[0]);
-      const d = P.decks[0], st = beyStats(d);
-      $('#hubGreet').textContent = `歡迎回來，${P.name}`;
-      $('#hubBeyName').textContent = `${beyName(d)} ${beyCode(d)}`;
-      $('#hubBeyTags').innerHTML = `<span class="tag t-${st.type}">${TYPES[st.type].name}</span><span class="tag" style="color:var(--dim)">${st.weight} g</span><span class="tag" style="color:var(--dim)">${P.stats.w} 勝 ${P.stats.l} 敗</span>`;
-    }
+    if (name === 'hub') { sh.setOffset(-0.08); this.renderHub(); }
     if (name === 'assembly') { sh.setOffset(0); this.renderAssembly(true); }
     if (name === 'select') { sh.setOffset(-0.22); this.renderSelect(); }
     if (name === 'gacha') { sh.setOffset(0); sh.clear(); $('#revName').textContent = ''; $('#revEye').textContent = ''; this.renderDome(); }
     if (name === 'collection') { sh.setOffset(0.31); this.renderCollection(); }
     if (name === 'rules') { sh.setOffset(0); sh.clear(); }
   },
+  renderHub() {
+    const P = Store.profile;
+    const w = P.stats.w | 0;
+    const rank = w >= 60 ? '傳說旋鬥士' : w >= 30 ? '黃金旋鬥士' : w >= 12 ? '白銀旋鬥士' : w >= 3 ? '青銅旋鬥士' : '新手旋鬥士';
+    $('#lbName').textContent = P.name;
+    $('#lbRank').textContent = rank;
+    $('#lbStats').innerHTML = `<span><b>${w}</b>勝場</span><span><b class="hot">${P.stats.best | 0}</b>最高連勝</span><span><b>${this.ownedCount()}/${BLADES.length + RATCHETS.length + BITS.length}</b>圖鑑</span>`;
+    const o = OPPONENTS[Math.min(P.ladder, OPPONENTS.length - 1)];
+    $('#lbStory').textContent = P.ladder >= OPPONENTS.length ? '已全部擊敗・可重新挑戰' : `第 ${P.ladder + 1} 關・${STADIUMS[o.stadium].name}・${o.name}`;
+    $('#lbSurv').textContent = `每位挑戰者先取 ${SURV_WIN_POINTS} 分・最高 ${P.stats.best | 0} 連勝`;
+    this.hubBey = this.hubBey || 0;
+    this.renderHubBey();
+    this.renderBoard();
+  },
+  renderHubBey() {
+    const P = Store.profile, d = P.decks[this.hubBey];
+    GL.show.showBey(d);
+    $('#lbBeyName').textContent = beyName(d);
+    $('#lbBeySlot').textContent = `出戰陀螺 · ${this.hubBey + 1} 號機 · ${beyCode(d)}`;
+    $('#lbDeck').innerHTML = P.decks.map((dd, k) => `<button class="lbdk ${k === this.hubBey ? 'on' : ''}" data-showbey="${k}" aria-label="${esc(beyName(dd))}"><img src="${Thumbs.get('blade', dd.b)}" alt=""></button>`).join('');
+  },
+  medal(n) {
+    const c = [['#ffd54a', '#b8860b'], ['#e6ebf3', '#8a94a6'], ['#e09a5a', '#8a4a1e']][n - 1];
+    return `<svg width="36" height="40" viewBox="0 0 40 44" aria-label="第 ${n} 名"><path d="M10 0 L18 16 L13 18 L4 2Z" fill="#c8302a"/><path d="M30 0 L22 16 L27 18 L36 2Z" fill="#2a5ac8"/><circle cx="20" cy="27" r="15" fill="${c[1]}"/><circle cx="20" cy="27" r="12" fill="${c[0]}" stroke="${c[1]}" stroke-width="2"/>${n === 1 ? '<path d="M12 22 L15 30 L25 30 L28 22 L23.5 26 L20 20 L16.5 26Z" fill="#7a4a00"/>' : `<text x="20" y="32" text-anchor="middle" font-family="Chakra Petch,sans-serif" font-weight="700" font-size="14" fill="#2a1a0a">${n}</text>`}</svg>`;
+  },
+  async renderBoard() {
+    const box = $('#lbBoard');
+    box.innerHTML = '<div class="desc">讀取中…</div>';
+    const rows = await Board.top(5);
+    const me = Board.myId();
+    $('#lbBoardNote').textContent = Board.backend === 'artifact' ? 'ALL TIME' : '本機紀錄';
+    box.innerHTML = rows.length ? rows.map((r, i) => `<div class="lr ${i === 0 ? 'g' : i === 1 ? 's2' : i === 2 ? 'b3' : ''} ${r.id === me ? 'me' : ''}">${i < 3 ? this.medal(i + 1) : `<span class="rn">${i + 1}</span>`}<span class="ln">${esc(r.name || '旋鬥士')}${r.id === me ? '（你）' : ''}</span><span class="s">${r.best | 0}<small>連勝</small></span></div>`).join('')
+      : '<div class="desc" style="padding:10px 4px">還沒有紀錄。挑戰生存模式，成為第一名！</div>';
+  },
   topbar(name) {
     const P = Store.profile; if (!P) return '';
     const titles = { assembly: '組裝工坊', select: '對戰', gacha: '扭蛋機', collection: '收藏圖鑑', rules: '比賽規則' };
-    const back = name !== 'hub' ? `<button class="btn cut" data-go="hub" style="padding:8px 14px">‹ 大廳</button>` : '';
-    return `${back}<div class="brand">旋鋒對決<small style="font-family:var(--f-disp);color:var(--hot);margin-left:6px;letter-spacing:.2em">SPIN DUEL</small>${titles[name] ? `<small>／ ${titles[name]}</small>` : ''}</div><div class="spacer"></div>
+    const back = name !== 'hub' ? `<button class="btn cut" data-go="hub" style="padding:8px 14px" aria-label="返回">‹ 返回</button>` : '';
+    return `${back}<div class="brand">陀螺對決<small style="font-family:var(--f-disp);color:var(--hot);margin-left:6px;letter-spacing:.2em">SPIN DUEL</small>${titles[name] ? `<small>／ ${titles[name]}</small>` : ''}</div><div class="spacer"></div>
       <div class="chip"><span class="dot ${Store.mode === 'cloud' ? '' : 'off'}"></span><span>${esc(P.name)}</span><span style="color:var(--mute);font-size:12px">${Store.mode === 'cloud' ? '雲端存檔' : '本機存檔'}</span></div>
       <div class="chip"><span class="coin"></span><b class="num" id="coinNum">${P.coins.toLocaleString('en-US')}</b></div>
-      <div class="corner">
+      <div class="corner">${name === 'hub' ? '' : `
         <button class="ibtn" data-go="collection" title="收藏圖鑑" aria-label="收藏圖鑑"><svg viewBox="0 0 24 24"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg><span>圖鑑 ${this.ownedCount()}/${BLADES.length + RATCHETS.length + BITS.length}</span></button>
-        <button class="ibtn" data-go="rules" title="比賽規則" aria-label="比賽規則"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6zM9 10h7M9 14h7M9 18h5"/></svg><span>規則</span></button>
+        <button class="ibtn" data-go="rules" title="比賽規則" aria-label="比賽規則"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6zM9 10h7M9 14h7M9 18h5"/></svg><span>規則</span></button>`}
         <button class="ibtn" data-settings title="設定" aria-label="設定"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg><span>設定</span></button>
       </div>`;
   },
@@ -3740,31 +4036,47 @@ const UI = {
   },
 
   /* ---------- ASSEMBLY ---------- */
+  curBuild() {
+    const P = Store.profile;
+    if (!P.builds.find((x) => x.id === this.asmBuild)) this.asmBuild = P.deckIds[0];
+    return P.builds.find((x) => x.id === this.asmBuild);
+  },
   renderAssembly(fresh) {
-    const P = Store.profile, d = P.decks[this.asmSlot];
+    const P = Store.profile, d = this.curBuild();
     const K = KINDS[this.asmTab];
     $$('[data-ptab]').forEach((b) => b.setAttribute('aria-selected', b.dataset.ptab === this.asmTab));
-    const usedBy = {};
-    P.decks.forEach((dd, i) => { if (i !== this.asmSlot) usedBy[dd[K.key]] = i + 1; });
     const items = K.list.filter((p) => owns(this.asmTab, p.id));
     $('#plist').innerHTML = items.map((p) => {
       const sel = d[K.key] === p.id;
       const meta = this.asmTab === 'blade' ? `<span class="t-${p.type}">${TYPES[p.type].name}</span><span>${p.wt}g</span>` : this.asmTab === 'ratchet' ? `<span>抗解體 ${Math.round(p.burst * 52)}</span><span>${p.wt}g</span>` : `<span class="t-${p.type}">${TYPES[p.type].name}</span><span>衝刺 ${p.dash}</span>`;
-      return `<button class="pcard cut ${usedBy[p.id] ? 'used' : ''}" data-part="${p.id}" aria-pressed="${sel}">
-        ${usedBy[p.id] ? `<span class="usedby">${usedBy[p.id]} 號機使用中</span>` : ''}<span class="cnt">×${P.inv[this.asmTab][p.id]}</span>
+      return `<button class="pcard cut" data-part="${p.id}" aria-pressed="${sel}">
+        <span class="cnt">×${P.inv[this.asmTab][p.id]}</span>
         <img src="${Thumbs.get(this.asmTab, p.id)}" alt="">
         <span class="pn">${esc(partName(this.asmTab, p))}</span>
         <span class="pm"><span class="r-${p.rarity}">${RARITY[p.rarity].name}</span>${meta}</span></button>`;
     }).join('') || '<div class="desc">還沒有這類零件，去扭蛋機抽抽看吧。</div>';
     this.renderAsmInfo();
-    $('#deckSlots').innerHTML = P.decks.map((dd, i) => `<button class="slot cut" data-slot="${i}" aria-pressed="${i === this.asmSlot}"><span class="n">${i + 1}</span><span><div class="sn">${esc(beyName(dd))}</div><div class="sc">${beyCode(dd)}・${TYPES[beyStats(dd).type].name}</div></span></button>`).join('');
+    // build library
+    const slotOf = (id) => P.deckIds.indexOf(id);
+    $('#buildList').innerHTML = P.builds.map((b) => {
+      const sl = slotOf(b.id);
+      return `<button class="bcard cut" data-build="${b.id}" aria-pressed="${b.id === d.id}">
+        <img src="${Thumbs.get('blade', b.b)}" alt=""><span class="bi"><b>${esc(beyName(b))}</b><small>${beyCode(b)}・${TYPES[beyStats(b).type].name}</small></span>
+        ${sl >= 0 ? `<span class="bslot">${sl + 1} 號機</span>` : ''}</button>`;
+    }).join('');
+    const sl = slotOf(d.id);
+    $('#buildActs').innerHTML = `
+      <div class="eyebrow">把目前這顆設為預設</div>
+      <div class="setslots">${[0, 1, 2].map((k) => `<button class="btn cut ${P.deckIds[k] === d.id ? 'on' : ''}" data-setslot="${k}">${k + 1} 號機</button>`).join('')}</div>
+      <div class="bacts"><button class="btn cut" data-bact="new">＋ 新組裝</button><button class="btn cut" data-bact="copy">複製</button><button class="btn cut" data-bact="del" ${sl >= 0 || P.builds.length <= 3 ? 'disabled' : ''}>刪除</button></div>`;
+    $('#deckSlots').innerHTML = P.deckIds.map((id, k) => { const b = P.builds.find((x) => x.id === id); return `<button class="slot cut" data-build="${id}" aria-pressed="${id === d.id}"><span class="n">${k + 1}</span><span><div class="sn">${esc(beyName(b))}</div><div class="sc">${beyCode(b)}・${TYPES[beyStats(b).type].name}</div></span></button>`; }).join('');
     const dup = this.deckDupes();
-    $('#deckWarn').textContent = dup ? `牌組內有重複零件（${dup}）。3 對 3 牌組戰中同名零件只能使用一次。` : '';
+    $('#deckWarn').textContent = dup ? `預設牌組內有重複零件（${dup}）。3 對 3 牌組戰中同名零件只能使用一次。` : '';
     if (fresh) GL.show.showBey(d);
   },
   renderAsmInfo() {
-    const d = Store.profile.decks[this.asmSlot], st = beyStats(d);
-    $('#asmSlotLbl').textContent = `牌組 ${this.asmSlot + 1} 號機`;
+    const P = Store.profile, d = this.curBuild(), st = beyStats(d), sl = P.deckIds.indexOf(d.id);
+    $('#asmSlotLbl').textContent = sl >= 0 ? `預設牌組 ${sl + 1} 號機` : `我的陀螺（未放入牌組）`;
     $('#asmName').textContent = beyName(d);
     $('#asmCode').textContent = beyCode(d);
     $('#asmType').innerHTML = `<span class="tag t-${st.type}">${TYPES[st.type].name}</span>`;
@@ -3782,15 +4094,34 @@ const UI = {
     return [...new Set(out)].join('、');
   },
   pickPart(id) {
-    const P = Store.profile, d = P.decks[this.asmSlot], K = KINDS[this.asmTab];
+    const P = Store.profile, d = this.curBuild(), K = KINDS[this.asmTab];
     if (d[K.key] === id) return;
-    // swap with another slot if that slot uses it (keeps deck legal)
-    const other = P.decks.findIndex((dd, i) => i !== this.asmSlot && dd[K.key] === id);
-    if (other >= 0 && (P.inv[this.asmTab][id] | 0) < 2) P.decks[other][K.key] = d[K.key];
     d[K.key] = id;
-    Store.save();
+    syncDecks(P); Store.save();
     GL.show.swapPart(d, this.asmTab);
     this.renderAssembly(false);
+  },
+  buildAction(act) {
+    const P = Store.profile, d = this.curBuild();
+    if (act === 'new' || act === 'copy') {
+      const src = act === 'copy' ? d : { b: BLADES.find((x) => owns('blade', x.id)).id, r: RATCHETS.find((x) => owns('ratchet', x.id)).id, t: BITS.find((x) => owns('bit', x.id)).id };
+      const id = 'b' + Date.now().toString(36);
+      P.builds.push({ id, b: src.b, r: src.r, t: src.t });
+      this.asmBuild = id;
+    } else if (act === 'del') {
+      if (P.deckIds.includes(d.id) || P.builds.length <= 3) return;
+      P.builds = P.builds.filter((x) => x.id !== d.id);
+      this.asmBuild = P.deckIds[0];
+    }
+    syncDecks(P); Store.save(); this.renderAssembly(true);
+  },
+  setSlot(k) {
+    const P = Store.profile, d = this.curBuild();
+    const other = P.deckIds.indexOf(d.id);
+    if (other >= 0 && other !== k) P.deckIds[other] = P.deckIds[k]; // swap positions
+    P.deckIds[k] = d.id;
+    syncDecks(P); Store.save(); this.renderAssembly(false);
+    this.toast(`已設為預設牌組 ${k + 1} 號機`);
   },
 
   /* ---------- SELECT ---------- */
@@ -3823,15 +4154,6 @@ const UI = {
   },
 
   /* ---------- GACHA ---------- */
-  renderDome() {
-    const cols = ['#ff4141', '#3d8bff', '#2fd27a', '#f6c632', '#ff7a1a', '#c66bff', '#36d3ff'];
-    let h = '';
-    for (let i = 0; i < 16; i++) {
-      const x = 8 + (i % 4) * 21 + (Math.floor(i / 4) % 2) * 9, y = 30 + Math.floor(i / 4) * 16 + rand(-3, 3);
-      h += `<span class="cap" style="left:${x}%;top:${y}%;background:linear-gradient(180deg,${cols[i % cols.length]} 50%,#e8ecf6 50%);animation-delay:${(i * 0.05).toFixed(2)}s"></span>`;
-    }
-    $('#dome').innerHTML = h;
-  },
   rollOne(guaranteeRare) {
     let r = Math.random() * 100;
     let rarity = r < RARITY.sr.w ? 'sr' : r < RARITY.sr.w + RARITY.rare.w ? 'rare' : 'common';
@@ -3841,47 +4163,112 @@ const UI = {
     const [kind, part] = pick(pool);
     return { kind, part, rarity };
   },
+  /* ---------- gacha ceremony ---------- */
   async pull(n) {
     const P = Store.profile, cost = n === 10 ? 900 : 100;
     if (this._pulling) return;
     if (P.coins < cost) { this.toast(`金幣不足，還差 ${cost - P.coins} 金幣。去對戰賺金幣吧！`); return; }
     SFX.ensure();
-    this._pulling = true;
+    this._pulling = true; this._skip = false;
     P.coins -= cost; this.refreshCoins();
     const res = [];
     for (let i = 0; i < n; i++) res.push(this.rollOne(false));
     if (n === 10 && !res.some((r) => r.rarity !== 'common')) res[9] = this.rollOne(true);
     let refund = 0;
     for (const r of res) {
-      const had = (P.inv[r.kind][r.part.id] | 0) > 0;
-      r.isNew = !had;
-      if (had) { refund += 30; r.dup = true; }
-      P.inv[r.kind][r.part.id] = (P.inv[r.kind][r.part.id] | 0) + 1;
+      r.had = P.inv[r.kind][r.part.id] | 0;
+      r.isNew = !r.had;
+      if (r.had) { refund += 30; r.dup = true; }
+      P.inv[r.kind][r.part.id] = r.had + 1;
     }
     P.coins += refund; P.stats.pulls += n;
     Store.save();
-    $('#dome').classList.add('shake');
-    for (let i = 0; i < 6; i++) SFX.tone(400 + i * 80, 0.06, 0.05, 'square', i * 0.09);
-    await wait(700);
-    $('#dome').classList.remove('shake');
-    const list = $('#pullList'); list.innerHTML = '';
-    const best = res.slice().sort((a, b) => ['common', 'rare', 'sr'].indexOf(b.rarity) - ['common', 'rare', 'sr'].indexOf(a.rarity))[0];
-    for (let i = 0; i < res.length; i++) {
-      const r = res[i];
-      const nm = partName(r.kind, r.part);
-      const el = document.createElement('div'); el.className = 'pull-item'; el.style.animationDelay = `${i * 0.06}s`;
-      el.innerHTML = `<img src="${Thumbs.get(r.kind, r.part.id)}" alt=""><div><div style="font-weight:700">${esc(nm)} ${r.isNew ? '<span class="new">NEW</span>' : ''}</div><div style="font-size:12px;color:var(--dim)">${KINDS[r.kind].name}${r.dup ? '・重複 → +30 金幣' : ''}</div></div><span class="r-${r.rarity}" style="font-weight:700;font-size:12px">${RARITY[r.rarity].name}</span>`;
-      list.appendChild(el);
+    const rank = (r) => ['common', 'rare', 'sr'].indexOf(r.rarity);
+    const best = res.reduce((a, b) => (rank(b) > rank(a) ? b : a));
+    // 1) crank + capsule drop
+    const dome = $('#dome'), crank = $('#crank');
+    dome.classList.add('shake'); crank.classList.add('turn');
+    for (let i = 0; i < 8; i++) SFX.tone(320 + i * 60, 0.05, 0.05, 'square', i * 0.08);
+    await wait(this._skip ? 0 : 750);
+    dome.classList.remove('shake'); crank.classList.remove('turn');
+    const ov = $('#gcOverlay'); ov.hidden = false; ov.className = 'gc-ov r-' + best.rarity;
+    $('#gcRow').innerHTML = res.map((r, k) => `<div class="gc-cap c-${r.rarity}" style="--d:${(k * 0.05).toFixed(2)}s" data-k="${k}"><i class="t"></i><i class="b"></i></div>`).join('');
+    $('#gcCard').hidden = true; $('#gcSum').hidden = true;
+    SFX.tone(160, 0.3, 0.2, 'sine', 0, 90);
+    await wait(this._skip ? 0 : 600);
+    // 2) build-up: the capsule glows in the colour of the best rarity it holds
+    ov.classList.add('charge');
+    SFX.gachaCharge(best.rarity);
+    await wait(this._skip ? 0 : (best.rarity === 'sr' ? 1500 : best.rarity === 'rare' ? 1100 : 750));
+    // 3) open each capsule in turn
+    for (let k = 0; k < res.length; k++) {
+      const r = res[k], cap = $(`#gcRow [data-k="${k}"]`);
+      cap.classList.add('open'); ov.classList.add('flash-' + r.rarity);
+      SFX.rareJingle(r.rarity); SFX.tone(1200, 0.08, 0.06, 'square');
+      if (n === 1 || r.rarity === 'sr' || (k === res.length - 1 && n === 10)) {
+        this.showCard(r); cap.innerHTML += `<img src="${Thumbs.get(r.kind, r.part.id)}" alt="">`;
+        GL.show.showPart(r.kind, r.part.id); GL.show.spinSpeed = 1.4; GL.show.flash = r.rarity === 'sr' ? 2.2 : 1.2;
+        await wait(this._skip ? 120 : (r.rarity === 'sr' ? 1700 : 1100));
+      } else {
+        cap.innerHTML += `<img src="${Thumbs.get(r.kind, r.part.id)}" alt="">`;
+        await wait(this._skip ? 30 : 260);
+      }
+      ov.classList.remove('flash-' + r.rarity);
     }
-    const show = n === 1 ? res[0] : best;
-    GL.show.showPart(show.kind, show.part.id);
-    GL.show.spinSpeed = 1.2;
-    $('#revEye').innerHTML = `<span class="r-${show.rarity}">${RARITY[show.rarity].name}</span>・${KINDS[show.kind].name}`;
-    $('#revName').textContent = partName(show.kind, show.part);
-    SFX.rareJingle(show.rarity);
-    const sc = GL.show; sc.flash = show.rarity === 'sr' ? 2 : 1;
+    // 4) summary
+    if (n === 10) this.showSummary(res); else $('#gcClose').hidden = false;
+    this.renderPullList(res); this.renderPool();
+    $('#revEye').innerHTML = `<span class="r-${best.rarity}">${RARITY[best.rarity].name}</span>・${KINDS[best.kind].name}`;
+    $('#revName').textContent = partName(best.kind, best.part);
     this.refreshCoins();
     this._pulling = false;
+  },
+  showCard(r) {
+    const c = $('#gcCard'); c.hidden = false; c.className = 'gc-card cut r-' + r.rarity;
+    const stars = r.rarity === 'sr' ? 3 : r.rarity === 'rare' ? 2 : 1;
+    c.innerHTML = `<div class="gc-stars">${'★'.repeat(stars)}${'☆'.repeat(3 - stars)}</div>
+      <div class="gc-kind">${RARITY[r.rarity].name}・${KINDS[r.kind].name}</div>
+      <div class="gc-name">${esc(partName(r.kind, r.part))}</div>
+      ${r.isNew ? '<div class="gc-new">NEW！ 首次取得</div>' : `<div class="gc-dup">已擁有 ×${r.had} → 轉換為 <span class="coin"></span> 30</div>`}`;
+    void c.offsetWidth; c.classList.add('in');
+  },
+  showSummary(res) {
+    const s = $('#gcSum'); s.hidden = false; $('#gcCard').hidden = true;
+    s.innerHTML = `<div class="eyebrow" style="margin-bottom:8px">10 連抽結果</div><div class="gc-grid">${res.map((r) => `<div class="gc-it r-${r.rarity} ${r.isNew ? 'isnew' : ''}"><img src="${Thumbs.get(r.kind, r.part.id)}" alt=""><b>${esc(partName(r.kind, r.part))}</b><small>${r.isNew ? 'NEW' : `已擁有 ×${r.had}`}</small></div>`).join('')}</div>
+      <div class="desc" style="margin-top:8px">新零件 ${res.filter((r) => r.isNew).length} 個・重複 ${res.filter((r) => r.dup).length} 個（共退還 ${res.filter((r) => r.dup).length * 30} 金幣）</div>`;
+    $('#gcClose').hidden = false;
+  },
+  closeGacha() { $('#gcOverlay').hidden = true; $('#gcClose').hidden = true; },
+  renderPullList(res) {
+    const list = $('#pullList'); list.innerHTML = '';
+    res.forEach((r, i) => {
+      const el = document.createElement('div'); el.className = 'pull-item'; el.style.animationDelay = `${i * 0.04}s`;
+      el.innerHTML = `<img src="${Thumbs.get(r.kind, r.part.id)}" alt=""><div><div style="font-weight:700">${esc(partName(r.kind, r.part))} ${r.isNew ? '<span class="new">NEW</span>' : '<span class="own">已擁有</span>'}</div><div style="font-size:12px;color:var(--dim)">${KINDS[r.kind].name}${r.dup ? '・重複 → +30 金幣' : ''}</div></div><span class="r-${r.rarity}" style="font-weight:700;font-size:12px">${RARITY[r.rarity].name}</span>`;
+      list.appendChild(el);
+    });
+  },
+  /* prize pool: every part, owned ones lit with count, missing ones dimmed */
+  renderPool() {
+    const P = Store.profile, inv = P.inv;
+    const all = [];
+    for (const [k, K] of Object.entries(KINDS)) for (const p of K.list) all.push([k, p]);
+    const owned = all.filter(([k, p]) => (inv[k][p.id] | 0) > 0).length;
+    $('#poolHead').innerHTML = `獎池一覽 <span class="num" style="color:var(--hot)">${owned}</span><span style="color:var(--dim)"> / ${all.length} 已擁有</span>`;
+    const order = ['sr', 'rare', 'common'];
+    $('#poolGrid').innerHTML = order.map((rr) => `<div class="pool-r r-${rr}">${RARITY[rr].name}</div>` + all.filter(([, p]) => p.rarity === rr).map(([k, p]) => {
+      const c = inv[k][p.id] | 0;
+      return `<div class="pool-it ${c ? 'have' : 'miss'}" title="${esc(partName(k, p))}"><img src="${Thumbs.get(k, p.id)}" alt=""><span>${c ? '×' + c : '未擁有'}</span></div>`;
+    }).join('')).join('');
+  },
+  renderDome() {
+    const cols = ['#ff4141', '#3d8bff', '#2fd27a', '#f6c632', '#ff7a1a', '#c66bff', '#36d3ff'];
+    let h = '';
+    for (let i = 0; i < 16; i++) {
+      const x = 8 + (i % 4) * 21 + (Math.floor(i / 4) % 2) * 9, y = 30 + Math.floor(i / 4) * 16 + rand(-3, 3);
+      h += `<span class="cap" style="left:${x}%;top:${y}%;background:linear-gradient(180deg,${cols[i % cols.length]} 50%,#e8ecf6 50%);animation-delay:${(i * 0.05).toFixed(2)}s"></span>`;
+    }
+    $('#dome').innerHTML = h;
+    this.renderPool();
   },
 
   /* ---------- COLLECTION ---------- */
@@ -3917,6 +4304,9 @@ function bindEvents() {
   document.addEventListener('click', (e) => {
     const t = e.target.closest('button'); if (!t) return;
     SFX.ensure();
+    if (t.dataset.go === 'survival') { SFX.click(); return Battle.startSurvival(); }
+    if (t.dataset.go === 'online') { SFX.click(); return UI.toast('線上對戰開發中，敬請期待！'); }
+    if (t.dataset.showbey) { SFX.click(); UI.hubBey = +t.dataset.showbey; return UI.renderHubBey(); }
     if (t.dataset.go) return UI.go(t.dataset.go);
     if (t.hasAttribute('data-settings')) return UI.toggleSettings();
     if (t.id === 'setClose') return UI.toggleSettings(false);
@@ -3924,7 +4314,9 @@ function bindEvents() {
     if (t.dataset.starter) { UI.starter = t.dataset.starter; SFX.click(); return UI.renderAuth(); }
     if (t.dataset.ptab) { UI.asmTab = t.dataset.ptab; SFX.click(); return UI.renderAssembly(false); }
     if (t.dataset.part) { SFX.click(); return UI.pickPart(t.dataset.part); }
-    if (t.dataset.slot) { UI.asmSlot = +t.dataset.slot; SFX.click(); return UI.renderAssembly(true); }
+    if (t.dataset.build) { UI.asmBuild = t.dataset.build; SFX.click(); return UI.renderAssembly(true); }
+    if (t.dataset.setslot) { SFX.click(); return UI.setSlot(+t.dataset.setslot); }
+    if (t.dataset.bact) { SFX.click(); return UI.buildAction(t.dataset.bact); }
     if (t.dataset.opp) { UI.oppSel = +t.dataset.opp; SFX.click(); return UI.renderSelect(); }
     if (t.dataset.mode) { UI.mode = t.dataset.mode; SFX.click(); return UI.renderSelect(); }
     if (t.dataset.ctab) { UI.collTab = t.dataset.ctab; UI.collSel = null; SFX.click(); return UI.renderCollection(); }
@@ -3944,11 +4336,13 @@ function bindEvents() {
   $('#spBtn').addEventListener('click', () => Battle.useSpecial(0));
   window.addEventListener('keydown', (e) => { if (!Battle.active) return; if (Battle.cine) { e.preventDefault(); return Battle.skipCine(); } if (e.code === 'Space') { e.preventDefault(); Battle.useSpecial(0); } });
   $('#cine').addEventListener('pointerdown', () => Battle.skipCine());
-  $('#resAgain').addEventListener('click', () => Battle.start(Battle.opp, Battle.mode));
+  $('#resAgain').addEventListener('click', () => Battle.again());
   $('#resHome').addEventListener('click', () => UI.go('hub'));
   $('#pull1').addEventListener('click', () => UI.pull(1));
   $$('[data-vol]').forEach((el) => el.addEventListener('input', () => SFX.setVol(el.dataset.vol, el.value / 100)));
   $('#pull10').addEventListener('click', () => UI.pull(10));
+  $('#gcClose').addEventListener('click', () => UI.closeGacha());
+  $('#gcOverlay').addEventListener('pointerdown', () => { if (UI._pulling) UI._skip = true; });
   Launcher.init();
 }
 let lastT = performance.now();

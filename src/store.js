@@ -74,15 +74,57 @@ function newProfile(name, starter) {
     { b: otherBlades[0], r: rs[0], t: ts[0] },
     { b: otherBlades[1], r: rs[1], t: ts[1] },
   ];
-  return { v: 1, name, starter, coins: 300, inv, decks, ladder: 0, stats: { w: 0, l: 0, spin: 0, out: 0, burst: 0, rift: 0, pulls: 0 }, createdAt: Date.now(), updatedAt: Date.now() };
+  return { v: 2, name, starter, coins: 300, inv, decks, builds: decks.map((d, i) => ({ id: 'b' + (i + 1), ...d })), deckIds: ['b1', 'b2', 'b3'], ladder: 0, stats: { w: 0, l: 0, spin: 0, out: 0, burst: 0, rift: 0, pulls: 0 }, createdAt: Date.now(), updatedAt: Date.now() };
 }
 function migrate(p) {
   if (!p || typeof p !== 'object' || !p.inv || !Array.isArray(p.decks)) return null;
-  p.stats = Object.assign({ w: 0, l: 0, spin: 0, out: 0, burst: 0, rift: 0, pulls: 0 }, p.stats || {});
+  p.stats = Object.assign({ w: 0, l: 0, spin: 0, out: 0, burst: 0, rift: 0, pulls: 0, best: 0, runs: 0 }, p.stats || {});
   p.coins = Math.max(0, p.coins | 0);
   p.ladder = p.ladder | 0;
   for (const k of ['blade', 'ratchet', 'bit']) p.inv[k] = p.inv[k] || {};
   p.decks = p.decks.slice(0, 3).map((d) => ({ b: BLADE[d.b] ? d.b : 'wolf', r: RATCHET[d.r] ? d.r : '3-60', t: BIT[d.t] ? d.t : 'F' }));
+  // build library: every saved combination; the 3 default deck slots point at builds by id
+  if (!Array.isArray(p.builds) || !p.builds.length) {
+    p.builds = p.decks.map((d, i) => ({ id: 'b' + (i + 1), ...d }));
+    p.deckIds = ['b1', 'b2', 'b3'];
+  }
+  p.builds = p.builds.filter((x) => x && x.id).map((x) => ({ id: x.id, b: BLADE[x.b] ? x.b : 'wolf', r: RATCHET[x.r] ? x.r : '3-60', t: BIT[x.t] ? x.t : 'F' }));
+  p.deckIds = (p.deckIds || []).slice(0, 3);
+  while (p.deckIds.length < 3) p.deckIds.push(p.builds[p.deckIds.length % p.builds.length].id);
+  syncDecks(p);
   return p;
 }
+function syncDecks(p) {
+  p.decks = p.deckIds.map((id, i) => { const b = p.builds.find((x) => x.id === id); return b ? { b: b.b, r: b.r, t: b.t } : p.decks[i]; });
+}
+/* Leaderboard backend. Today: the artifact's shared db (each player writes only their own row).
+   To move to a public server later, implement the same three methods against your own API. */
+const Board = {
+  get backend() { return Store.mode === 'cloud' && Store.db ? 'artifact' : 'local'; },
+  LKEY: 'spinx-board',
+  async top(n = 5) {
+    if (this.backend === 'artifact') {
+      try {
+        const snap = await Promise.race([Store.db.collection('leaderboard').orderBy('best', 'desc').limit(n).get(), new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 8000))]);
+        return snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) })).filter((r) => r.best > 0);
+      } catch (e) { return this.localTop(n); }
+    }
+    return this.localTop(n);
+  },
+  localTop(n) {
+    const P = Store.profile; const best = (P && P.stats.best) | 0;
+    return best > 0 ? [{ id: 'me', name: P.name, best }] : [];
+  },
+  myId() { return this.backend === 'artifact' ? Store.uid : 'me'; },
+  async submit(best) {
+    const P = Store.profile;
+    if (this.backend !== 'artifact' || !best) return;
+    try {
+      const ref = Store.db.doc('leaderboard/' + Store.uid);
+      const cur = await ref.get();
+      if (cur.exists && (cur.data().best | 0) >= best) { if (cur.data().name !== P.name) await ref.update({ name: P.name }); return; }
+      await ref.set({ name: P.name, best, at: Date.now() });
+    } catch (e) { /* read-only viewers cannot post */ }
+  },
+};
 const owns = (kind, id) => ((Store.profile.inv[kind] || {})[id] | 0) > 0;
