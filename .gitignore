@@ -1,0 +1,6 @@
+# build output (regenerate with ./build.sh)
+dist/game.js
+# raw Blender exports (regenerate with blender/build_parts.py; packed copy lives in assets/parts.*)
+assets/*.glb
+__pycache__/
+*.pyc

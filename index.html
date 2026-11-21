@@ -1,0 +1,478 @@
+<title>旋鋒對決 X-DRIVE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+<style>
+/* Layout: one full-screen WebGL stage behind angular esports HUD panels. Deliberately single dark theme (arena at night). */
+:root{
+  color-scheme: dark;
+  --bg:#06080e; --panel:rgba(13,17,28,.86); --panel2:rgba(22,28,44,.92); --line:#27324d; --line2:#3a4868;
+  --fg:#e9edf7; --dim:#8d98b4; --mute:#5b6683;
+  --hot:#ff6a1a; --hot2:#ffb347; --ice:#36d3ff;
+  --atk:#ff4141; --def:#3d8bff; --sta:#2fd27a; --bal:#f6c632;
+  --c-common:#9aa6c2; --c-rare:#36d3ff; --c-sr:#ffb347;
+  --f-disp:"Chakra Petch","Noto Sans TC",system-ui,sans-serif;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --cut:14px;
+}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;user-select:none;-webkit-user-select:none}
+#gl{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0}
+#ui{position:fixed;inset:0;z-index:2;pointer-events:none}
+#ui .screen{position:absolute;inset:0;pointer-events:none}
+#ui .screen > *{pointer-events:auto}
+#ui .screen .pe-none{pointer-events:none}
+button{font-family:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible,input:focus-visible{outline:2px solid var(--ice);outline-offset:2px}
+.num{font-family:var(--f-disp);font-variant-numeric:tabular-nums}
+.cut{clip-path:polygon(var(--cut) 0,100% 0,100% calc(100% - var(--cut)),calc(100% - var(--cut)) 100%,0 100%,0 var(--cut))}
+.panel{background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(6px)}
+.eyebrow{font-family:var(--f-disp);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
+h1,h2,h3{margin:0;text-wrap:balance}
+.btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 22px;font-weight:700;font-size:15px;background:var(--panel2);border:1px solid var(--line2);transition:transform .12s,background .15s,border-color .15s}
+.btn:hover{border-color:var(--hot);background:#1d2438}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:linear-gradient(100deg,#ff5a10,#ff8a1f);border-color:#ffa04a;color:#160700}
+.btn.primary:hover{background:linear-gradient(100deg,#ff6b25,#ff9c3c)}
+.btn[disabled]{opacity:.4;pointer-events:none}
+.tag{display:inline-flex;align-items:center;gap:6px;padding:2px 8px;font-size:12px;font-weight:700;border:1px solid currentColor;line-height:1.5}
+.t-atk{color:var(--atk)}.t-def{color:var(--def)}.t-sta{color:var(--sta)}.t-bal{color:var(--bal)}
+.r-common{color:var(--c-common)}.r-rare{color:var(--c-rare)}.r-sr{color:var(--c-sr)}
+.topbar{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;gap:18px;padding:14px 22px;background:linear-gradient(180deg,rgba(6,8,14,.95),rgba(6,8,14,0));}
+.brand{font-family:var(--f-disp);font-weight:700;font-size:20px;letter-spacing:.06em;display:flex;align-items:baseline;gap:10px}
+.brand b{color:var(--hot)}
+.brand small{font-family:var(--f-body);font-size:13px;color:var(--dim);letter-spacing:.1em}
+.spacer{flex:1}
+.chip{display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--panel);border:1px solid var(--line);font-size:14px}
+.coin{width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3b0,#ffc531 45%,#b77800);box-shadow:0 0 6px rgba(255,190,40,.6);flex:none}
+.back{position:absolute;top:70px;left:22px}
+/* ===== Auth ===== */
+#s-auth{display:grid;place-items:center}
+.auth-card{width:min(520px,calc(100% - 32px));padding:34px 34px 30px;display:grid;gap:18px}
+.auth-logo{font-family:var(--f-disp);font-size:44px;font-weight:700;line-height:1;letter-spacing:.04em}
+.auth-logo b{color:var(--hot)}
+.auth-card label{font-size:13px;color:var(--dim)}
+.inp{width:100%;padding:12px 14px;background:#0a0e18;border:1px solid var(--line2);color:var(--fg);font-size:16px;font-family:var(--f-body)}
+.starter-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.starter{padding:12px 6px;border:1px solid var(--line2);background:#0c111d;display:grid;gap:4px;justify-items:center;font-weight:700;transition:border-color .15s,background .15s}
+.starter small{font-weight:400;color:var(--dim);font-size:11px}
+.starter[aria-pressed="true"]{background:#1a2133;border-color:currentColor}
+.acct{font-size:13px;color:var(--dim);display:flex;align-items:center;gap:8px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--sta);box-shadow:0 0 8px var(--sta)}
+.dot.off{background:var(--bal);box-shadow:0 0 8px var(--bal)}
+/* ===== Hub ===== */
+.hub-menu{position:absolute;left:max(22px,4vw);top:50%;transform:translateY(-50%);display:grid;gap:10px;width:min(380px,40vw)}
+.menu-item{display:grid;grid-template-columns:52px 1fr auto;align-items:center;gap:14px;padding:14px 18px;text-align:left;background:var(--panel);border:1px solid var(--line);transition:transform .15s,border-color .15s,background .15s}
+.menu-item:hover{transform:translateX(6px);border-color:var(--hot);background:var(--panel2)}
+.menu-item .ic{font-family:var(--f-disp);font-size:26px;font-weight:700;color:var(--hot);text-align:center}
+.menu-item h3{font-size:19px;font-weight:900}
+.menu-item p{margin:2px 0 0;font-size:12px;color:var(--dim)}
+.menu-item .arrow{color:var(--mute);font-family:var(--f-disp)}
+.hub-bey{position:absolute;right:max(22px,4vw);bottom:40px;width:min(420px,44vw);padding:18px 20px;display:grid;gap:8px}
+.hub-bey .nm{font-size:24px;font-weight:900}
+/* ===== Assembly ===== */
+.asm{position:absolute;inset:64px 18px 18px 18px;display:grid;grid-template-columns:minmax(300px,360px) 1fr minmax(280px,330px);gap:16px}
+.asm > *{min-width:0}
+.col{display:flex;flex-direction:column;min-height:0}
+.tabs{display:flex;gap:4px;margin-bottom:8px}
+.tab{flex:1;padding:10px 4px;font-weight:700;background:var(--panel);border:1px solid var(--line);font-size:14px}
+.tab[aria-selected="true"]{border-color:var(--hot);color:var(--hot);background:var(--panel2)}
+.plist{flex:1;overflow:auto;display:grid;grid-template-columns:1fr 1fr;gap:8px;align-content:start;padding:2px 4px 2px 0}
+.pcard{position:relative;display:grid;gap:2px;padding:8px;background:var(--panel);border:1px solid var(--line);text-align:left;transition:border-color .12s,background .12s}
+.pcard:hover{border-color:var(--line2);background:var(--panel2)}
+.pcard[aria-pressed="true"]{border-color:var(--hot);box-shadow:inset 0 0 0 1px var(--hot)}
+.pcard img{width:100%;aspect-ratio:1;object-fit:contain;max-width:100%;display:block}
+.pcard .pn{font-weight:700;font-size:13px;line-height:1.3}
+.pcard .pm{font-size:11px;color:var(--dim);display:flex;justify-content:space-between}
+.pcard .cnt{position:absolute;top:6px;right:8px;font-family:var(--f-disp);font-size:12px;color:var(--dim)}
+.pcard.locked img{filter:brightness(0) opacity(.45)}
+.pcard.used{opacity:.55}
+.pcard .usedby{position:absolute;top:6px;left:8px;font-size:10px;font-weight:700;color:#160700;background:var(--hot2);padding:0 5px}
+.stage-info{align-self:start;justify-self:center;text-align:center;padding-top:6px;pointer-events:none}
+.stage-info .nm{font-size:30px;font-weight:900;text-shadow:0 2px 14px rgba(0,0,0,.8)}
+.stage-info .code{font-family:var(--f-disp);font-size:16px;color:var(--hot2);letter-spacing:.12em}
+.statbox{padding:16px 18px;display:grid;gap:10px}
+.stat{display:grid;grid-template-columns:72px 1fr 34px;align-items:center;gap:10px;font-size:13px}
+.bar{height:8px;background:#0b0f1a;border:1px solid var(--line);position:relative;overflow:hidden}
+.bar i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,var(--hot),var(--hot2));transition:width .35s}
+.deck{display:grid;gap:8px;margin-top:12px}
+.slot{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:center;padding:10px 12px;background:var(--panel);border:1px solid var(--line);text-align:left}
+.slot[aria-pressed="true"]{border-color:var(--ice);box-shadow:inset 0 0 0 1px var(--ice)}
+.slot .n{font-family:var(--f-disp);font-size:22px;font-weight:700;color:var(--ice);text-align:center}
+.slot .sn{font-weight:700;font-size:14px}
+.slot .sc{font-family:var(--f-disp);font-size:12px;color:var(--dim)}
+.warn{font-size:12px;color:var(--bal);min-height:1.3em}
+.desc{font-size:13px;color:var(--dim);line-height:1.6}
+/* ===== Battle select ===== */
+.sel{position:absolute;inset:70px 22px 22px;display:grid;grid-template-columns:1fr minmax(300px,380px);gap:18px}
+.sel > *{min-width:0}
+.ladder{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;align-content:start;overflow:auto}
+.opp{position:relative;display:grid;gap:6px;padding:14px;text-align:left;background:var(--panel);border:1px solid var(--line);min-height:150px;transition:border-color .15s,transform .15s}
+.opp:hover{border-color:var(--line2);transform:translateY(-2px)}
+.opp[aria-pressed="true"]{border-color:var(--hot);box-shadow:inset 0 0 0 1px var(--hot)}
+.opp.locked{opacity:.4;pointer-events:none}
+.opp .av{width:46px;height:46px;display:grid;place-items:center;font-size:22px;font-weight:900;color:#0b0d13;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.opp .lv{position:absolute;top:12px;right:14px;font-family:var(--f-disp);font-weight:700;color:var(--mute);font-size:22px}
+.opp .on{font-weight:900;font-size:17px}
+.opp .ot{font-size:12px;color:var(--dim)}
+.opp .clr{position:absolute;bottom:12px;right:14px;font-size:11px;color:var(--sta);font-weight:700}
+.side{padding:18px;display:flex;flex-direction:column;gap:14px}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.seg button{padding:12px;border:1px solid var(--line2);background:#0c111d;font-weight:700;display:grid;gap:2px}
+.seg button small{font-weight:400;font-size:11px;color:var(--dim)}
+.seg button[aria-pressed="true"]{border-color:var(--hot);color:var(--hot);background:#1b1410}
+.mini-deck{display:grid;gap:6px}
+.mini-deck div{display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:8px 10px;background:#0b0f1a;border:1px solid var(--line)}
+/* ===== Battle HUD ===== */
+.hud-top{position:absolute;top:14px;left:50%;transform:translateX(-50%);display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:14px;width:min(980px,calc(100% - 32px));align-items:center;pointer-events:none}
+.pl{display:flex;align-items:center;gap:12px;padding:10px 16px}
+.pl.r{flex-direction:row-reverse;text-align:right}
+.pl .who{display:grid;gap:2px;min-width:0}
+.pl .who b{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl .who span{font-size:12px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pips{display:flex;gap:5px;margin-left:auto}
+.pl.r .pips{margin-left:0;margin-right:auto;flex-direction:row-reverse}
+.pip{width:18px;height:24px;background:#0b0f1a;border:1px solid var(--line2);transform:skewX(-14deg);transition:background .3s,box-shadow .3s}
+.pip.on{background:var(--hot);border-color:var(--hot2);box-shadow:0 0 12px var(--hot)}
+.pl.r .pip.on{background:var(--ice);border-color:#9be9ff;box-shadow:0 0 12px var(--ice)}
+.round{padding:8px 16px;text-align:center}
+.round .num{font-size:28px;font-weight:700;line-height:1}
+.gauge{position:absolute;bottom:22px;width:min(270px,24vw);padding:12px 14px;display:grid;gap:7px;pointer-events:none}
+.gauge.l{left:22px}.gauge.r{right:22px;text-align:right}
+.gauge .rpm{font-size:26px;font-weight:700;line-height:1}
+.gauge .rpm small{font-size:12px;color:var(--dim);margin-left:4px}
+.gbar{height:10px;background:#0b0f1a;border:1px solid var(--line);position:relative;overflow:hidden}
+.gbar i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,var(--hot),var(--hot2))}
+.gauge.r .gbar i{inset:0 0 0 auto;background:linear-gradient(270deg,var(--ice),#9be9ff)}
+.ratchet{display:flex;gap:3px;align-items:center;font-size:11px;color:var(--dim)}
+.gauge.r .ratchet{justify-content:flex-end}
+.ratchet i{width:14px;height:6px;background:#0b0f1a;border:1px solid var(--line2)}
+.ratchet i.on{background:var(--atk);border-color:#ff8a8a}
+.banner{position:absolute;left:0;right:0;top:36%;display:grid;justify-items:center;gap:4px;pointer-events:none;opacity:0}
+.banner.show{animation:bannerIn 2.4s cubic-bezier(.2,.8,.2,1) forwards}
+.banner .big{font-family:var(--f-disp);font-weight:700;font-size:clamp(40px,7vw,92px);letter-spacing:.04em;line-height:1;background:linear-gradient(180deg,#fff,#ffd18a 55%,#ff6a1a);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 22px rgba(255,106,26,.55))}
+.banner .sub{font-size:clamp(20px,2.6vw,32px);font-weight:900;letter-spacing:.3em}
+.banner .pts{font-family:var(--f-disp);font-size:22px;font-weight:700;color:var(--hot2)}
+.banner.blue .big{background:linear-gradient(180deg,#fff,#a9ecff 55%,#36d3ff);-webkit-background-clip:text;background-clip:text;filter:drop-shadow(0 4px 22px rgba(54,211,255,.55))}
+.banner.blue .pts{color:#9be9ff}
+@keyframes bannerIn{0%{opacity:0;transform:scale(1.6) skewX(-8deg)}12%{opacity:1;transform:scale(1) skewX(-8deg)}80%{opacity:1;transform:scale(1.02) skewX(-8deg)}100%{opacity:0;transform:scale(1.08) skewX(-8deg)}}
+.count{position:absolute;left:0;right:0;top:30%;text-align:center;font-family:var(--f-disp);font-weight:700;font-size:clamp(60px,11vw,150px);line-height:1;pointer-events:none;color:#fff;text-shadow:0 0 30px rgba(255,140,40,.8)}
+.count.pop{animation:pop .6s ease-out}
+@keyframes pop{0%{transform:scale(1.8);opacity:0}30%{transform:scale(1);opacity:1}100%{transform:scale(.92);opacity:.9}}
+.launcher{position:absolute;right:22px;top:50%;transform:translateY(-46%);width:260px;padding:14px 16px 16px;display:grid;gap:10px;justify-items:center}
+.launcher .hint{font-size:12px;color:var(--dim);text-align:center;line-height:1.5}
+.track{position:relative;width:64px;height:250px;background:repeating-linear-gradient(180deg,#0b0f1a 0 9px,#121829 9px 12px);border:1px solid var(--line2);touch-action:none;cursor:grab}
+.track .fill{position:absolute;left:0;right:0;top:0;height:0;background:linear-gradient(180deg,rgba(255,106,26,.15),rgba(255,106,26,.55))}
+.handle{position:absolute;left:-18px;right:-18px;top:0;height:30px;background:linear-gradient(180deg,#ffb347,#ff6a1a);border:1px solid #ffd39a;display:grid;place-items:center;font-family:var(--f-disp);font-weight:700;font-size:12px;color:#1c0a00;letter-spacing:.12em;box-shadow:0 0 18px rgba(255,106,26,.6)}
+.track.hold{cursor:grabbing}
+.track.hold .handle{box-shadow:0 0 28px rgba(255,190,80,.95)}
+.aimrow{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--dim);width:100%}
+.aimrow input{flex:1;accent-color:var(--hot)}
+.powread{font-family:var(--f-disp);font-size:20px;font-weight:700;min-height:24px;color:var(--hot2)}
+.spg{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:center;font-size:11px;color:var(--dim)}
+.gauge.r .spg{grid-template-columns:1fr auto}.gauge.r .spg span{order:2}
+.spbar{height:8px;background:#0b0f1a;border:1px solid var(--line2);position:relative;overflow:hidden}
+.spbar i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,#b44cff,#ff4fd8)}
+.gauge.r .spbar i{inset:0 0 0 auto}
+.spg.ready .spbar{border-color:#ff8ae6;box-shadow:0 0 12px #ff4fd8}
+.spg.ready .spbar i{animation:spglow .5s ease-in-out infinite alternate}
+.spg.used .spbar{opacity:.4}
+@keyframes spglow{to{filter:brightness(1.6)}}
+.spbtn{position:absolute;left:22px;bottom:168px;display:flex;gap:10px;align-items:center;padding:10px 16px;background:var(--panel);border:1px solid var(--line2);text-align:left;pointer-events:auto;transition:transform .15s}
+.spbtn .k{font-family:var(--f-disp);font-size:11px;padding:3px 6px;border:1px solid var(--line2);color:var(--dim)}
+.spbtn b{display:block;font-size:16px}.spbtn small{display:block;font-size:11px;color:var(--dim)}
+.spbtn[disabled]{opacity:.45;cursor:default}
+.spbtn.ready{background:linear-gradient(100deg,#5a1a8a,#b0249a);border-color:#ff8ae6;box-shadow:0 0 22px rgba(255,79,216,.6);animation:spglow .5s ease-in-out infinite alternate}
+.spbtn.ready small{color:#ffd6f6}
+.cutin{position:absolute;inset:0;pointer-events:none;opacity:0;--sc:#ff6a1a}
+.cutin.show{animation:ciFade 1.15s ease-out forwards}
+.ci-lines{position:absolute;inset:0;background:repeating-conic-gradient(from 0deg at 50% 50%,rgba(255,255,255,.0) 0 3deg,rgba(255,255,255,.07) 3deg 4deg);mix-blend-mode:screen}
+.ci-band{position:absolute;left:-10%;right:-10%;top:38%;height:150px;display:flex;align-items:center;gap:26px;padding:0 18%;background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--sc) 55%,#000) 20%,color-mix(in srgb,var(--sc) 70%,#000) 80%,transparent);transform:skewY(-6deg);border-top:3px solid var(--sc);border-bottom:3px solid var(--sc);box-shadow:0 0 60px color-mix(in srgb,var(--sc) 60%,transparent)}
+.cutin.right .ci-band{flex-direction:row-reverse;text-align:right;transform:skewY(6deg)}
+.ci-band img{width:150px;height:150px;transform:skewY(6deg) scale(1.25);filter:drop-shadow(0 0 18px var(--sc))}
+.cutin.right .ci-band img{transform:skewY(-6deg) scale(1.25)}
+.ci-txt{transform:skewY(6deg)}.cutin.right .ci-txt{transform:skewY(-6deg)}
+.ci-who{font-size:14px;letter-spacing:.2em;color:rgba(255,255,255,.85)}
+.ci-name{font-size:clamp(34px,5vw,64px);font-weight:900;line-height:1.1;color:#fff;text-shadow:0 0 24px var(--sc),0 4px 0 rgba(0,0,0,.4)}
+.ci-kind{font-family:var(--f-disp);font-size:14px;font-weight:700;color:var(--sc);letter-spacing:.3em;filter:brightness(1.6)}
+.cutin.show .ci-band{animation:ciIn 1.15s cubic-bezier(.2,.9,.2,1) forwards}
+.cutin.right.show .ci-band{animation-name:ciInR}
+@keyframes ciFade{0%{opacity:0}8%{opacity:1}80%{opacity:1}100%{opacity:0}}
+@keyframes ciIn{0%{translate:-60% 0}14%{translate:0 0}80%{translate:3% 0}100%{translate:60% 0}}
+@keyframes ciInR{0%{translate:60% 0}14%{translate:0 0}80%{translate:-3% 0}100%{translate:-60% 0}}
+.toast{position:absolute;left:50%;top:22%;transform:translateX(-50%);padding:10px 18px;font-weight:700;background:rgba(40,10,10,.9);border:1px solid var(--atk);color:#ffd0d0;pointer-events:none;opacity:0;transition:opacity .25s}
+.toast.show{opacity:1}
+.quit{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);padding:8px 16px;font-size:13px;opacity:.75}.quit:hover{opacity:1}
+/* ===== Result ===== */
+#s-result{display:grid;place-items:center;background:radial-gradient(circle at 50% 40%,rgba(6,8,14,.55),rgba(6,8,14,.9))}
+.res-card{width:min(560px,calc(100% - 32px));padding:30px;display:grid;gap:16px;text-align:center}
+.res-title{font-family:var(--f-disp);font-size:64px;font-weight:700;line-height:1}
+.res-score{font-family:var(--f-disp);font-size:36px;font-weight:700}
+.res-list{display:grid;grid-template-columns:1fr auto;gap:6px 18px;text-align:left;font-size:14px;padding:14px 16px;background:#0b0f1a;border:1px solid var(--line)}
+.res-list span:nth-child(2n){text-align:right;font-family:var(--f-disp)}
+/* ===== Gacha ===== */
+.gacha{position:absolute;inset:64px 22px 22px;display:grid;grid-template-columns:minmax(300px,380px) 1fr minmax(260px,320px);gap:18px}
+.gacha > *{min-width:0}
+.machine{padding:22px;display:grid;gap:16px;align-content:start}
+.dome{position:relative;aspect-ratio:1;max-width:100%;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.18),rgba(60,90,160,.08) 50%,rgba(10,14,24,.9) 72%);border:2px solid var(--line2);overflow:hidden}
+.cap{position:absolute;width:22%;aspect-ratio:1;border-radius:50%;box-shadow:inset -6px -8px 12px rgba(0,0,0,.45),inset 4px 5px 8px rgba(255,255,255,.35)}
+.dome.shake .cap{animation:jig .18s infinite alternate}
+@keyframes jig{to{transform:translate(4px,-6px) rotate(18deg)}}
+.odds{font-size:12px;color:var(--dim);line-height:1.8}
+.pull-res{padding:16px;display:flex;flex-direction:column;gap:10px;min-height:0}
+.pull-list{display:grid;gap:6px;overflow:auto}
+.pull-item{display:grid;grid-template-columns:44px 1fr auto;gap:10px;align-items:center;padding:6px 8px;background:#0b0f1a;border:1px solid var(--line);animation:slideIn .35s ease-out both}
+.pull-item img{width:44px;height:44px}
+.pull-item .new{font-size:10px;font-weight:900;color:#160700;background:var(--hot2);padding:0 5px}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}}
+.reveal{align-self:end;justify-self:center;text-align:center;padding-bottom:20px;pointer-events:none}
+.reveal .nm{font-size:30px;font-weight:900;text-shadow:0 2px 14px #000}
+/* ===== Collection ===== */
+.coll{position:absolute;inset:64px 22px 22px;display:grid;grid-template-columns:1fr minmax(280px,360px);gap:18px}
+.coll > *{min-width:0}
+.coll-main{display:flex;flex-direction:column;min-height:0}
+.coll-grid{flex:1;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;align-content:start}
+.progress{display:flex;gap:16px;align-items:center;margin-bottom:10px;font-size:13px;color:var(--dim)}
+/* ===== Rules ===== */
+.rules{position:absolute;inset:64px max(22px,8vw) 22px;overflow:auto;padding:28px 32px}
+.rules h2{font-size:26px;font-weight:900;margin-bottom:6px}
+.rules h3{font-size:17px;margin:22px 0 8px;color:var(--hot2)}
+.rules p,.rules li{line-height:1.8;color:#c9d0e2;max-width:72ch}
+.ftable{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:10px 0}
+.fcell{padding:14px;background:#0b0f1a;border:1px solid var(--line)}
+.fcell b{display:block;font-size:17px}
+.fcell .num{font-size:30px;color:var(--hot);font-weight:700}
+.fcell small{color:var(--dim);font-size:12px;line-height:1.5;display:block}
+#loading{position:fixed;inset:0;z-index:9;display:grid;place-items:center;background:var(--bg);font-family:var(--f-disp);letter-spacing:.3em;color:var(--dim)}
+@media (max-width:900px){
+  .asm,.sel,.gacha,.coll{grid-template-columns:1fr;overflow:auto}
+  .hub-menu{width:calc(100% - 44px)}
+  .ladder{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ftable{grid-template-columns:1fr 1fr}
+}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+
+<canvas id="gl"></canvas>
+<div id="loading">LOADING…</div>
+<div id="ui">
+  <!-- AUTH -->
+  <section class="screen" id="s-auth" hidden>
+    <form class="auth-card panel cut" id="authForm">
+      <div>
+        <div class="eyebrow">Blader Registration · 刀鋒玩家登錄</div>
+        <div class="auth-logo">旋鋒對決 <b>X</b></div>
+      </div>
+      <div class="acct" id="acctLine"><span class="dot"></span><span>正在連線帳號…</span></div>
+      <div style="display:grid;gap:6px">
+        <label for="nick">玩家暱稱（2–12 字）</label>
+        <input class="inp" id="nick" maxlength="12" autocomplete="off" placeholder="例如：疾風之翼">
+      </div>
+      <div style="display:grid;gap:6px">
+        <label>選擇你的起始類型</label>
+        <div class="starter-grid" id="starterGrid"></div>
+        <div class="desc" id="starterDesc"></div>
+      </div>
+      <div class="warn" id="authWarn"></div>
+      <button class="btn primary cut" type="submit" id="authGo">建立檔案並進入</button>
+    </form>
+  </section>
+
+  <!-- HUB -->
+  <section class="screen" id="s-hub" hidden>
+    <div class="topbar" data-topbar></div>
+    <nav class="hub-menu">
+      <div class="eyebrow" style="margin-bottom:4px" id="hubGreet">歡迎回來</div>
+      <button class="menu-item cut" data-go="select"><span class="ic">VS</span><span><h3>對戰</h3><p>挑戰之路・8 位對手・3 對 3 牌組戰</p></span><span class="arrow">›</span></button>
+      <button class="menu-item cut" data-go="assembly"><span class="ic">⚙</span><span><h3>組裝工坊</h3><p>戰刃 × 固鎖輪 × 軸心，自由組裝與編輯牌組</p></span><span class="arrow">›</span></button>
+      <button class="menu-item cut" data-go="gacha"><span class="ic">◎</span><span><h3>扭蛋機</h3><p>用對戰贏來的金幣抽取新零件</p></span><span class="arrow">›</span></button>
+      <button class="menu-item cut" data-go="collection"><span class="ic">▤</span><span><h3>收藏圖鑑</h3><p id="hubColl">零件收集進度</p></span><span class="arrow">›</span></button>
+      <button class="menu-item cut" data-go="rules"><span class="ic">?</span><span><h3>比賽規則</h3><p>計分方式・終結種類・發射規範</p></span><span class="arrow">›</span></button>
+    </nav>
+    <div class="hub-bey panel cut pe-none">
+      <div class="eyebrow">牌組 1 號機</div>
+      <div class="nm" id="hubBeyName"></div>
+      <div id="hubBeyTags" style="display:flex;gap:6px"></div>
+    </div>
+  </section>
+
+  <!-- ASSEMBLY -->
+  <section class="screen" id="s-assembly" hidden>
+    <div class="topbar" data-topbar></div>
+    <div class="asm">
+      <div class="col">
+        <div class="tabs" role="tablist">
+          <button class="tab" role="tab" data-ptab="blade" aria-selected="true">戰刃</button>
+          <button class="tab" role="tab" data-ptab="ratchet" aria-selected="false">固鎖輪</button>
+          <button class="tab" role="tab" data-ptab="bit" aria-selected="false">軸心</button>
+        </div>
+        <div class="plist" id="plist"></div>
+      </div>
+      <div class="stage-info pe-none">
+        <div class="eyebrow" id="asmSlotLbl">牌組 1 號機</div>
+        <div class="nm" id="asmName"></div>
+        <div class="code" id="asmCode"></div>
+      </div>
+      <div class="col">
+        <div class="statbox panel cut">
+          <div style="display:flex;justify-content:space-between;align-items:center"><span class="eyebrow">性能數據</span><span id="asmType"></span></div>
+          <div id="asmStats"></div>
+          <div class="desc" id="asmDesc"></div>
+        </div>
+        <div class="deck" id="deckSlots"></div>
+        <div class="warn" id="deckWarn"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BATTLE SELECT -->
+  <section class="screen" id="s-select" hidden>
+    <div class="topbar" data-topbar></div>
+    <div class="sel">
+      <div class="col" style="min-height:0">
+        <div class="eyebrow" style="margin-bottom:10px">挑戰之路 · 擊敗對手解鎖下一位</div>
+        <div class="ladder" id="ladder"></div>
+      </div>
+      <div class="side panel cut">
+        <div><div class="eyebrow">對手</div><h2 id="oppName" style="font-size:24px;font-weight:900;margin-top:4px"></h2><div class="desc" id="oppInfo"></div></div>
+        <div><div class="eyebrow" style="margin-bottom:6px">賽制</div>
+          <div class="seg" id="modeSeg">
+            <button data-mode="3v3" aria-pressed="true">3 對 3 牌組戰<small>依序使用 3 顆陀螺</small></button>
+            <button data-mode="1v1" aria-pressed="false">1 對 1<small>只用 1 號機</small></button>
+          </div>
+        </div>
+        <div><div class="eyebrow" style="margin-bottom:6px">你的牌組</div><div class="mini-deck" id="selDeck"></div></div>
+        <div class="warn" id="selWarn"></div>
+        <div class="spacer"></div>
+        <div class="desc">先取得 <b class="num" style="color:var(--hot)">4</b> 分者獲勝。旋轉終結 1 分・擊飛 2 分・爆裂 2 分・極限 3 分。</div>
+        <button class="btn primary cut" id="startBattle">進入對戰</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- BATTLE -->
+  <section class="screen" id="s-battle" hidden>
+    <div class="hud-top">
+      <div class="pl panel cut"><div class="who"><b id="p1n"></b><span id="p1b"></span></div><div class="pips" id="p1pips"></div></div>
+      <div class="round panel cut"><div class="eyebrow">ROUND</div><div class="num" id="roundNo">1</div></div>
+      <div class="pl r panel cut"><div class="who"><b id="p2n"></b><span id="p2b"></span></div><div class="pips" id="p2pips"></div></div>
+    </div>
+    <div class="gauge l panel cut"><div class="eyebrow">你的轉速</div><div class="rpm num" id="g1rpm">0<small>RPM</small></div><div class="gbar"><i id="g1bar"></i></div><div class="ratchet" id="g1rat"></div><div class="spg"><span>必殺</span><div class="spbar"><i id="g1sp"></i></div></div></div>
+    <div class="gauge r panel cut"><div class="eyebrow">對手轉速</div><div class="rpm num" id="g2rpm">0<small>RPM</small></div><div class="gbar"><i id="g2bar"></i></div><div class="ratchet" id="g2rat"></div><div class="spg"><span>必殺</span><div class="spbar"><i id="g2sp"></i></div></div></div>
+    <button class="spbtn cut" id="spBtn" disabled><span class="k">SPACE</span><span><b>必殺技</b><small id="spName"></small></span></button>
+    <div class="cutin" id="cutin"><div class="ci-lines"></div><div class="ci-band"><img id="ciImg" alt=""><div class="ci-txt"><div class="ci-who" id="ciWho"></div><div class="ci-name" id="ciName"></div><div class="ci-kind" id="ciKind"></div></div></div></div>
+    <div class="count pe-none" id="count"></div>
+    <div class="banner" id="banner"><div class="sub" id="bnSub"></div><div class="big" id="bnBig"></div><div class="pts" id="bnPts"></div></div>
+    <div class="toast" id="toast"></div>
+    <div class="launcher panel cut" id="launcher" hidden>
+      <div class="eyebrow">拉繩發射器</div>
+      <div class="aimrow"><span>中央</span><input type="range" id="aim" min="-100" max="100" value="20" aria-label="發射角度"><span>外圈軌道</span></div>
+      <div class="track" id="track"><div class="fill" id="tfill"></div><div class="handle" id="handle">PULL</div></div>
+      <div class="powread" id="powread"></div>
+      <div class="hint" id="lhint">按住拉柄，聽到「GO SHOOT」後<br>快速往下拉到底！越快轉速越高</div>
+    </div>
+    <button class="btn quit cut" id="quitBattle">退出對戰</button>
+  </section>
+
+  <!-- RESULT -->
+  <section class="screen" id="s-result" hidden>
+    <div class="res-card panel cut">
+      <div class="eyebrow" id="resEye">MATCH RESULT</div>
+      <div class="res-title" id="resTitle"></div>
+      <div class="res-score num" id="resScore"></div>
+      <div class="res-list" id="resList"></div>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <button class="btn cut" id="resAgain">再戰一次</button>
+        <button class="btn primary cut" id="resHome">回到大廳</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- GACHA -->
+  <section class="screen" id="s-gacha" hidden>
+    <div class="topbar" data-topbar></div>
+    <div class="gacha">
+      <div class="machine panel cut">
+        <div><div class="eyebrow">Parts Capsule</div><h2 style="font-size:24px;font-weight:900">零件扭蛋機</h2></div>
+        <div class="dome" id="dome"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <button class="btn primary cut" id="pull1"><span class="coin"></span><span class="num">100</span>抽 1 次</button>
+          <button class="btn cut" id="pull10"><span class="coin"></span><span class="num">900</span>10 連抽</button>
+        </div>
+        <div class="odds">機率：普通 62%・稀有 29%・超稀有 9%<br>10 連抽保證至少 1 個稀有以上<br>重複的零件會自動轉換為 30 金幣</div>
+      </div>
+      <div class="reveal" id="reveal"><div class="eyebrow" id="revEye"></div><div class="nm" id="revName"></div></div>
+      <div class="pull-res panel cut"><div class="eyebrow">抽取結果</div><div class="pull-list" id="pullList"><div class="desc">還沒抽過。按下左邊的按鈕試試看！</div></div></div>
+    </div>
+  </section>
+
+  <!-- COLLECTION -->
+  <section class="screen" id="s-collection" hidden>
+    <div class="topbar" data-topbar></div>
+    <div class="coll">
+      <div class="coll-main">
+        <div class="tabs" role="tablist">
+          <button class="tab" role="tab" data-ctab="blade" aria-selected="true">戰刃</button>
+          <button class="tab" role="tab" data-ctab="ratchet" aria-selected="false">固鎖輪</button>
+          <button class="tab" role="tab" data-ctab="bit" aria-selected="false">軸心</button>
+        </div>
+        <div class="progress" id="collProg"></div>
+        <div class="coll-grid" id="collGrid"></div>
+      </div>
+      <div class="statbox panel cut" style="align-self:end" id="collInfo"></div>
+    </div>
+  </section>
+
+  <!-- RULES -->
+  <section class="screen" id="s-rules" hidden>
+    <div class="topbar" data-topbar></div>
+    <article class="rules panel cut">
+      <div class="eyebrow">Official-style Battle Rules</div>
+      <h2>比賽規則</h2>
+      <p>本遊戲採用 X 世代競技陀螺的標準賽制：兩名刀鋒玩家同時發射，陀螺在對戰盤內碰撞，依照終結方式取得分數，<b>先取得 4 分的一方獲勝</b>。</p>
+      <h3>四種終結方式</h3>
+      <div class="ftable">
+        <div class="fcell"><b>旋轉終結</b><span class="num">1</span><small>對手的陀螺先停止旋轉（倒下）。</small></div>
+        <div class="fcell"><b>擊飛終結</b><span class="num">2</span><small>把對手撞進兩側的「場外區」。</small></div>
+        <div class="fcell"><b>爆裂終結</b><span class="num">2</span><small>撞擊讓對手的固鎖輪鬆脫，陀螺解體成零件。</small></div>
+        <div class="fcell"><b>極限終結</b><span class="num">3</span><small>把對手撞進正對面的「極限區」。</small></div>
+      </div>
+      <h3>陀螺構造</h3>
+      <ul>
+        <li><b>戰刃</b>：最上層的金屬刃，決定攻擊、防禦、持久的基本性能與重量。</li>
+        <li><b>固鎖輪</b>：以「齒數-高度」標示，例如 3-60 代表 3 個卡榫、高度 6.0mm。齒數越多越不容易爆裂；高度越高，打擊點越高但重心不穩。</li>
+        <li><b>軸心</b>：與盤面接觸的底部零件，決定移動方式。軸心外圈的齒輪咬住對戰盤的「極限軌道」時，會觸發<b>極限衝刺</b>瞬間加速。</li>
+      </ul>
+      <h3>對戰盤</h3>
+      <ul>
+        <li>外圈是一整圈齒狀的<b>極限軌道</b>。抓地力高的軸心（平軸、突擊軸、橡膠平軸）衝上軌道後會高速衝刺，帶著動能撞向對手。</li>
+        <li>正對面的缺口是<b>極限區</b>（3 分），左右兩側靠近玩家的缺口是<b>場外區</b>（2 分）。</li>
+      </ul>
+      <h3>發射規範</h3>
+      <ul>
+        <li>倒數「3、2、1、GO SHOOT！」喊到 GO SHOOT 時才可以拉繩發射。</li>
+        <li>太早或太晚發射都算<b>發射失誤</b>。同一場比賽第一次失誤為警告，<b>第二次失誤對手得 1 分</b>，然後重新發射。</li>
+        <li>拉繩的速度越快，陀螺的初始轉速越高。發射角度可以選擇往中央或往外圈軌道。</li>
+      </ul>
+      <h3>3 對 3 牌組戰</h3>
+      <ul>
+        <li>每位玩家登錄 3 顆陀螺，每一回合依照 1 → 2 → 3 號機的順序上場，用完後重新輪替。</li>
+        <li>同一個牌組內，<b>同名的零件只能使用一次</b>（不能有兩個相同的戰刃、固鎖輪或軸心）。</li>
+        <li>雙方同時終結（例如同時停止）判定為平手，該回合不計分並重新發射。</li>
+      </ul>
+      <h3>類型相剋</h3>
+      <p><span class="t-atk">攻擊型</span> 擅長擊飛持久型・<span class="t-sta">持久型</span> 靠長時間旋轉贏過防禦型・<span class="t-def">防禦型</span> 能承受攻擊型的衝擊・<span class="t-bal">平衡型</span> 攻守兼備，視發射技巧而定。</p>
+    </article>
+  </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/shaders/GammaCorrectionShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+<script>
+/*__GAME__*/
+</script>
