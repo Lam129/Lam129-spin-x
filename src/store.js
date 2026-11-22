@@ -142,20 +142,8 @@ const Store = {
 };
 function newProfile(name, starter) {
   const inv = { blade: {}, ratchet: {}, bit: {} };
-  const s = STARTERS[starter];
-  const blades = new Set([s.b, 'wolf', 'silver', 'moon', 'phoenix'].filter((x) => x !== s.b).slice(0, 2));
-  blades.add(s.b);
-  blades.forEach((b) => (inv.blade[b] = 1));
-  ['3-60', '4-60', '5-60'].forEach((r) => (inv.ratchet[r] = 1));
-  ['F', 'T', 'B', s.t].forEach((t) => (inv.bit[t] = 1));
-  const otherBlades = [...blades].filter((b) => b !== s.b);
-  const rs = ['3-60', '4-60', '5-60'].filter((r) => r !== s.r);
-  const ts = ['F', 'T', 'B', 'N'].filter((t) => t !== s.t && inv.bit[t]);
-  const decks = [
-    { b: s.b, r: s.r, t: s.t },
-    { b: otherBlades[0], r: rs[0], t: ts[0] },
-    { b: otherBlades[1], r: rs[1], t: ts[1] },
-  ];
+  const decks = (STARTER_PACKS[starter] || STARTER_PACKS.atk).map((d) => ({ ...d }));
+  for (const d of decks) { inv.blade[d.b] = 1; inv.ratchet[d.r] = 1; inv.bit[d.t] = 1; }
   return { v: 2, name, starter, coins: 200, inv, decks, builds: decks.map((d, i) => ({ id: 'b' + (i + 1), ...d })), deckIds: ['b1', 'b2', 'b3'], ladder: 0, stats: { w: 0, l: 0, spin: 0, out: 0, burst: 0, rift: 0, pulls: 0 }, createdAt: Date.now(), updatedAt: Date.now() };
 }
 function migrate(p) {

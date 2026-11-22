@@ -132,26 +132,15 @@ const UI = {
       warn.textContent = e.msg || (e.code === 'busy' ? '目前流量過大，請稍後再試。' : '連線失敗，請稍後再試。');
     } finally { btn.disabled = false; }
   },
-  startAuthCycle() {
-    const show = ['flame@rb', 'kirin@sy', 'wolf@lv', 'jelly@cr', 'bull@gd', 'fox@sk', 'darkstar@rb', 'phoenix@gd'];
-    let k = 0;
-    const step = () => {
-      if (this.cur !== 'auth') return this.stopAuthCycle();
-      const b = show[k++ % show.length];
-      GL.show.showBey({ b, r: '3-60', t: 'F' }); this.authPose();
-      const el = $('#ahBey'); if (el) el.textContent = BLADE[b].name;
-    };
-    this.stopAuthCycle(); step();
-    this._authCycle = setInterval(step, 3200);
-  },
-  authPose() { const sh = GL.show; sh.lookY = -0.42; sh.zoom = GL.w < 820 ? 0.95 : 0.88; },
-  stopAuthCycle() { clearInterval(this._authCycle); this._authCycle = null; },
+  startAuthCycle() { Battle.startDemo(); },
+  stopAuthCycle() { Battle.stopDemo(); },
   renderAuth() {
     const grid = $('#starterGrid');
-    grid.innerHTML = Object.entries(TYPES).map(([k, t]) => `<button type="button" class="starter t-${k}" data-starter="${k}" aria-pressed="${k === this.starter}">${t.name}<small>${esc(beyName(STARTERS[k]))}</small></button>`).join('');
-    $('#starterDesc').textContent = `${TYPES[this.starter].desc} 起始陀螺：${beyName(STARTERS[this.starter])} ${beyCode(STARTERS[this.starter])}`;
-    GL.show.setOffset(-0.2);
-    if (this._authCycle) { GL.show.showBey(STARTERS[this.starter]); this.authPose(); $('#ahBey').textContent = beyName(STARTERS[this.starter]); }
+    grid.innerHTML = Object.entries(TYPES).map(([k, t]) => {
+      const pack = STARTER_PACKS[k];
+      return `<button type="button" class="starter t-${k}" data-starter="${k}" aria-pressed="${k === this.starter}"><img class="sbig" src="${Thumbs.get('blade', pack[0].b)}" alt=""><b>${t.name}</b><span class="smini">${pack.map((d) => `<img src="${Thumbs.get('blade', d.b)}" alt="" title="${esc(beyName(d))}">`).join('')}</span></button>`;
+    }).join('');
+    $('#starterDesc').textContent = `${TYPES[this.starter].desc} 起始陀螺：${STARTER_PACKS[this.starter].map((d) => BLADE[d.b].name).join('・')}`;
   },
   acctLine() {
     const el = $('#acctLine');
@@ -463,7 +452,7 @@ function bindEvents() {
   $('#startBattle').addEventListener('click', () => Battle.start(OPPONENTS[UI.oppSel], UI.mode));
   $('#quitBattle').addEventListener('click', () => Battle.quit());
   $('#spBtn').addEventListener('click', () => Battle.useSpecial(0));
-  window.addEventListener('keydown', (e) => { if (!Battle.active) return; if (Battle.cine) { e.preventDefault(); return Battle.skipCine(); } if (e.code === 'Space') { e.preventDefault(); Battle.useSpecial(0); } });
+  window.addEventListener('keydown', (e) => { if (!Battle.active || Battle.demo) return; if (Battle.cine) { e.preventDefault(); return Battle.skipCine(); } if (e.code === 'Space') { e.preventDefault(); Battle.useSpecial(0); } });
   $('#cine').addEventListener('pointerdown', () => Battle.skipCine());
   $('#resAgain').addEventListener('click', () => Battle.again());
   $('#resHome').addEventListener('click', () => UI.go('hub'));
@@ -517,17 +506,17 @@ function loop(now) {
 }
 async function boot() {
   const tips = ['組裝鋒輪、鎖芯、旋尖，打造你的專屬陀螺', '拉繩越快，陀螺的初始轉速越高', '攻擊型擅長擊出，持久型靠轉速取勝，防禦型最耐撞', '把對手撞進裂界區可以一次拿 3 分', '必殺技集滿後按空白鍵（手機點按鈕）施放', '扭蛋連續 60 抽一定出傳說零件', '每位頭目都有自己的戰鬥盤，地形會改變戰術'];
-  let ti = 0; const tipTimer = setInterval(() => { const el = $('#ldTip'); if (!el) return; el.style.opacity = 0; setTimeout(() => { el.textContent = tips[++ti % tips.length]; el.style.opacity = 1; }, 400); }, 2600);
+  let ti = 0; const tipTimer = setInterval(() => { const el = $('#ldTip'); if (!el) return; el.style.opacity = 0; setTimeout(() => { el.textContent = '提示：' + tips[++ti % tips.length]; el.style.opacity = 1; }, 400); }, 2600);
   if (!window.THREE) { $('#ldPct').textContent = '3D 引擎載入失敗，請重新整理頁面。'; return; }
   if (THREE.ColorManagement) THREE.ColorManagement.legacyMode = false;
-  await Assets.load((f) => { const pct = Math.min(100, Math.round(f * 100)); $('#ldBar').style.width = pct + '%'; $('#ldPct').textContent = `載入 3D 模型 ${pct}%`; });
-  $('#ldBar').style.width = '100%'; $('#ldPct').textContent = '準備戰鬥盤…';
+  await Assets.load((f) => { const pct = Math.min(100, Math.round(f * 100)); $('#ldBar').style.width = pct + '%'; $('#ldPct').textContent = `遊戲資源載入中… ${pct}%`; });
+  $('#ldBar').style.width = '100%'; $('#ldPct').textContent = '遊戲資源載入中… 100%';
   GL.init();
   bindEvents();
   requestAnimationFrame(loop);
   const p = await Store.init();
   clearInterval(tipTimer);
-  $('#loading').hidden = true;
+  $('#loading').hidden = true; const lv = $('#ldVid'); if (lv) { lv.pause(); lv.removeAttribute('src'); lv.load(); }
   if (p) UI.go('hub');
   else {
     UI.show('auth'); UI.renderAuth(); UI.setAuthTab(Store.mode === 'server' ? 'register' : 'local'); UI.startAuthCycle();

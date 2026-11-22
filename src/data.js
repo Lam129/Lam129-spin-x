@@ -213,12 +213,14 @@ const KINDS = {
 /* display name of a part */
 function partName(kind, p) { const sfx = p.base && p.base !== p.id ? `・${p.series}` : ''; return kind === 'ratchet' ? p.code + sfx : kind === 'bit' ? `${p.name} ${p.code}${sfx}` : p.name; }
 
-const STARTERS = {
-  atk: { b: 'wolf', r: '3-60', t: 'F' },
-  def: { b: 'silver', r: '5-60', t: 'N' },
-  sta: { b: 'moon', r: '5-60', t: 'B' },
-  bal: { b: 'phoenix', r: '4-60', t: 'T' },
+// every starter pack: three common blades of the chosen type, with common ratchets and bits that suit it
+const STARTER_PACKS = {
+  atk: [{ b: 'wolf', r: '3-60', t: 'F' }, { b: 'hawk', r: '4-60', t: 'W' }, { b: 'viper', r: '5-60', t: 'F' }],
+  def: [{ b: 'silver', r: '5-60', t: 'N' }, { b: 'golem', r: '4-60', t: 'N' }, { b: 'rhino', r: '3-60', t: 'N' }],
+  sta: [{ b: 'moon', r: '5-60', t: 'B' }, { b: 'crane', r: '4-60', t: 'O' }, { b: 'dragonfly', r: '3-60', t: 'D' }],
+  bal: [{ b: 'phoenix', r: '4-60', t: 'T' }, { b: 'mantis', r: '3-60', t: 'HT' }, { b: 'mantis@ob', r: '5-60', t: 'T' }],
 };
+const STARTERS = Object.fromEntries(Object.entries(STARTER_PACKS).map(([k, v]) => [k, v[0]]));
 
 /* Stadiums: physics + look. pockets: kind 'rift' (3 pts) / 'out' (2 pts). */
 const STADIUMS = {

@@ -29,7 +29,7 @@ jobs:
         run: |
           mkdir -p site/assets
           cp -r assets/voice site/assets/
-          cp assets/parts.json assets/parts_*.txt site/assets/
+          cp assets/parts.json assets/parts_*.txt assets/reel.mp4 assets/reel.jpg site/assets/
           node -e "
             const fs=require('fs');
             const api=process.env.SPIN_API_URL||'';

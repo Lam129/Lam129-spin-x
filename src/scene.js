@@ -188,6 +188,7 @@ class BattleScene {
     if (this.scene.fog) { this.scene.fog.near = 14 * k; this.scene.fog.far = 30 * k; }
   }
   setStadium(id) {
+    this.stadiumId = id;
     applyStadium(id);
     if (this.stadium) { this.scene.remove(this.stadium); disposeTree(this.stadium); this.stadium.traverse((n) => n.geometry && n.geometry.dispose()); }
     const T = STADIUMS[AR.stadium].theme;
@@ -435,6 +436,11 @@ class BattleScene {
       const z = this.zoomTo;
       base.set(z.x * 0.55, 4.2, z.z * 0.55 + 4.6);
       lookT.set(z.x, 0.4, z.z);
+    } else if (this.follow && this.demoCam) {
+      const f = this.follow; this.demoA = (this.demoA || 0) + dt * 0.22;
+      const r = GL.w < GL.h ? 5.4 : 4.3;
+      base.set(f.x * 0.7 + Math.sin(this.demoA) * r, 2.2, f.z * 0.7 + Math.cos(this.demoA) * r);
+      lookT.set(f.x * 0.85, 0.3, f.z * 0.85);
     } else if (this.follow) {
       const f = this.follow;
       lookT.set(f.x * 0.25, 0, f.z * 0.25 + 0.4);
@@ -448,6 +454,11 @@ class BattleScene {
       this.shake = Math.max(0, this.shake - dt * 2.5);
     }
     this.cam.lookAt(this.look);
+    if (this.demoCam) {
+      const ox = this.demoCentered ? 0 : GL.w > 820 ? GL.w * 0.2 : 0, oy = this.demoCentered || GL.w > 820 ? 0 : GL.h * 0.3;   // keep the fight clear of the form
+      if (!this.cam.view || !this.cam.view.enabled || this.cam.view.offsetX !== ox || this.cam.view.offsetY !== oy) this.cam.setViewOffset(GL.w, GL.h, ox, oy, GL.w, GL.h);
+    }
+    else if (this.cam.view && this.cam.view.enabled) this.cam.clearViewOffset();
     this.fovKick = Math.max(0, (this.fovKick || 0) - dt * 30);
     const fov = 42 - (this.dashFx || 0) * 4 - (this.zoomTo ? 6 : 0) - (this.cine ? 8 : 0) + this.fovKick;
     if (Math.abs(this.cam.fov - fov) > 0.01) { this.cam.fov = lerp(this.cam.fov, fov, 1 - Math.exp(-dt * 5)); this.cam.updateProjectionMatrix(); }

@@ -24,6 +24,47 @@ const Battle = {
     this.renderPips();
     this.nextRound();
   },
+  /* background demo: two AI tops fight on random stadiums, specials included, no HUD, muted */
+  startDemo() {
+    if (this.demo) return;
+    this.demo = true; this.active = true; this.survival = false; this.winPts = 99; this.mode = '1v1';
+    this.score = [0, 0]; this.round = 0; this.errors = [0, 0]; this.finishes = []; this.slotRes = [[], []];
+    SFX.setMuted(true);
+    document.body.classList.add('demo');
+    const cine = $('#cine'); this._cineHome = cine.parentElement; $('#s-auth').appendChild(cine);
+    GL.battle.demoCam = true;
+    GL.setMode('battle');
+    this.demoNext();
+  },
+  demoNext() {
+    if (!this.demo) return;
+    const pool = BLADES.filter((b) => b.rarity === 'sr' || b.rarity === 'ur' || (!b.base && b.rarity === 'rare'));
+    const pick = () => pool[Math.floor(Math.random() * pool.length)].id;
+    const bitFor = (id) => ({ atk: 'F', def: 'N', sta: 'B', bal: 'T' })[BLADE[id].type];
+    let a = pick(), b = pick();
+    // at least one attacker so rounds are short and full of contact
+    while (baseOf(b) === baseOf(a) || (BLADE[a].type !== 'atk' && BLADE[b].type !== 'atk')) { a = pick(); b = pick(); }
+    if (Math.random() < 0.5) [a, b] = [b, a];
+    const opps = OPPONENTS.slice().sort(() => Math.random() - 0.5);
+    this.demoP = opps[0]; this.opp = Object.assign({}, opps[1], { boss: 0 });
+    this.pDeck = [{ b: a, r: '3-60', t: bitFor(a) }]; this.oDeck = [{ b, r: '4-60', t: bitFor(b) }];
+    const st = Object.keys(STADIUMS); GL.battle.setStadium(st[Math.floor(Math.random() * st.length)]);
+    this.demoPlan = aiLaunch(this.opp, this.oDeck[0], this.pDeck[0]);
+    this.demoAt = [rand(0.8, 2.5), rand(0.8, 2.5)];
+    const vs = $('#demoVs');
+    if (vs) vs.innerHTML = `<b style="color:#ff8a4a">${esc(BLADE[a].name)}</b><i>VS</i><b style="color:#5ac8ff">${esc(BLADE[b].name)}</b><small>● LIVE 示範對戰・${esc(STADIUMS[GL.battle.stadiumId] ? STADIUMS[GL.battle.stadiumId].name : '')}</small>`;
+    this.nextRound();
+  },
+  stopDemo() {
+    if (!this.demo) return;
+    this.demo = false; this.active = false; this._cd = null;
+    if (this.cine) { this.cine.timers.forEach(clearTimeout); this.cine = null; }
+    const cine = $('#cine'); cine.className = 'cine'; if (this._cineHome) this._cineHome.appendChild(cine);
+    GL.battle.cine = null; GL.battle.demoCam = false; GL.battle.zoomTo = null; GL.battle.follow = null;
+    SFX.stopGrind(); SFX.setMuted(false);
+    document.body.classList.remove('demo');
+    GL.setMode('show');
+  },
   cfgFor(side) { const d = side ? this.oDeck : this.pDeck; return d[this.round % d.length]; },
   nextRound(replay = false) {
     if (!replay) this.round++;
@@ -165,14 +206,17 @@ const Battle = {
     if (this.slowT > 0) { this.slowT -= dtReal; if (this.slowT <= 0) this.timeScale = 1; }
     let dt = dtReal * this.timeScale * SIM_SPEED;
     if (this.hitStop > 0) { this.hitStop -= dtReal; dt = 0; }
-    if (this.phase === 'ready' || this.phase === 'go') {
+    if ((this.phase === 'ready' || this.phase === 'go') && !this.demo) {
       if (!this.playerLaunched) sc.showAim(0, Launcher.aim);
+    }
+    if (this.phase === 'go' && this.demo && !this.playerLaunched && (performance.now() - this.goAt) / 1000 >= this.demoPlan.delay * 0.8) {
+      this.playerLaunched = true; this.doLaunch(0, this.demoPlan.power, -this.demoPlan.aim);
     }
     if (this.phase === 'go') {
       const since = (performance.now() - this.goAt) / 1000;
       if (!this.aiLaunched && since >= this.aiPlan.delay) { this.aiLaunched = true; this.doLaunch(1, this.aiPlan.power, this.aiPlan.aim); }
-      if (!this.playerLaunched && since > 2.6 && !Launcher.holding) return this.launchError(0, '太晚發射！');
-      if (!this.playerLaunched && since > 3.6) return this.launchError(0, '太晚發射！');
+      if (!this.demo && !this.playerLaunched && since > 2.6 && !Launcher.holding) return this.launchError(0, '太晚發射！');
+      if (!this.demo && !this.playerLaunched && since > 3.6) return this.launchError(0, '太晚發射！');
       if (this.playerLaunched && this.aiLaunched) this.setPhase('fight');
     }
     if (this.phase === 'fight' || this.phase === 'go' || this.phase === 'finish') {
@@ -200,7 +244,17 @@ const Battle = {
     SFX.setGrind(dash);
     SFX.setHum(0, A.s, A.state === 'spin'); SFX.setHum(1, B.s, B.state === 'spin');
     this.renderGauges();
-    if (this.phase === 'fight') {
+    if (this.phase === 'fight' && this.demo && this.phaseT > 26 && !this.cine) { this.setPhase('finish'); setTimeout(() => this.demoNext(), 800); }
+    if (this.phase === 'fight' && this.demo) {
+      for (const side of [0, 1]) {
+        const me = this.arena.beys[side], other = this.arena.beys[1 - side];
+        if (this.phaseT > 3.5 + side * 2 && !me.usedSpecial && me.state === 'spin') me.charge = Math.max(me.charge || 0, 1);
+        if (me.usedSpecial || (me.charge || 0) < 1 || me.state !== 'spin' || this.cine) continue;
+        this.demoAt[side] -= dtReal;
+        const near = Math.hypot(me.x - other.x, me.z - other.z) < 2.4;
+        if (this.demoAt[side] <= 0 && (near || me.s < 0.4)) this.useSpecial(side);
+      }
+    } else if (this.phase === 'fight') {
       const ai = this.arena.beys[1];
       if (!ai.usedSpecial && (ai.charge || 0) >= 1 && ai.state === 'spin') {
         this.aiSpecialAt -= dtReal;
@@ -232,9 +286,9 @@ const Battle = {
     const el = $('#cine');
     el.className = 'cine ' + (side ? 'right' : 'left');
     el.style.setProperty('--sc', col);
-    $('#cnPortrait').innerHTML = side ? oppAvatar(this.opp, 300) : playerAvatar(300);
+    $('#cnPortrait').innerHTML = side ? oppAvatar(this.opp, 300) : this.demo ? oppAvatar(this.demoP, 300) : playerAvatar(300);
     $('#cnBlade').src = Thumbs.get('blade', cfg.b);
-    $('#cnWho').textContent = `${side ? this.opp.name : Store.profile.name}・${BLADE[cfg.b].name}`;
+    $('#cnWho').textContent = `${side ? this.opp.name : this.demo ? this.demoP.name : Store.profile.name}・${BLADE[cfg.b].name}`;
     $('#cnKind').textContent = SPECIAL_KIND[sp.kind];
     $('#cnName').innerHTML = [...sp.name].map((ch, k) => `<span style="--d:${(k * 0.07).toFixed(2)}s">${ch === '・' ? '<i class="dot"></i>' : esc(ch)}</span>`).join('');
     $('#cnInk').innerHTML = Array.from({ length: 14 }, () => `<i style="left:${rand(5, 95).toFixed(1)}%;top:${rand(15, 85).toFixed(1)}%;--s:${rand(0.4, 1.6).toFixed(2)};--d:${rand(0, 0.25).toFixed(2)}s"></i>`).join('');
@@ -317,6 +371,7 @@ const Battle = {
     sc.fx.ring(lb.x, fy, lb.z, winner ? 0x36d3ff : 0xff6a1a, 3, 0.7);
     sc.blurAt = new THREE.Vector3(lb.x, fy, lb.z); sc.blurKick = 1.1;
     if (ev.type === 'rift' || ev.type === 'out') { sc.fx.star(lb.x, fy + 0.3, lb.z, 4, ev.type === 'rift' ? 0xff3b1a : 0xffb347, 0.4); sc.fx.spark(lb.x, fy, lb.z, 80, 5, ev.type === 'rift' ? 0xff5a2a : 0xffc060, 0.8, 1.3); if (sc.fx.post) { sc.fx.post.uFlash.value = 0.35; sc.fx.post.uFlashCol.value.set(ev.type === 'rift' ? 0xff6a3a : 0xffd090); } }
+    if (this.demo) { const tok = this.arena; setTimeout(() => { if (this.demo && this.arena === tok) this.demoNext(); }, 2600); return; }
     setTimeout(() => {
       SFX.finish();
       UI.banner(F.en, F.name, `${winner === 0 ? Store.profile.name : this.opp.name} +${F.pts}`, winner === 1);
@@ -330,6 +385,7 @@ const Battle = {
   },
   roundDraw() {
     this.setPhase('finish');
+    if (this.demo) { setTimeout(() => this.demoNext(), 1500); return; }
     UI.banner('DRAW', '同時終結', '平手・本回合不計分', false);
     setTimeout(() => { if (this.active) this.nextRound(true); }, 2800);
   },
@@ -468,7 +524,7 @@ const Launcher = {
     const aim = $('#aim');
     aim.addEventListener('input', () => { this.aim = aim.value / 100; });
     window.addEventListener('keydown', (e) => {
-      if (!Battle.active || this.done) return;
+      if (!Battle.active || Battle.demo || this.done) return;
       if (e.key === 'a' || e.key === 'ArrowLeft') { aim.value = Math.max(-100, +aim.value - 10); this.aim = aim.value / 100; }
       if (e.key === 'd' || e.key === 'ArrowRight') { aim.value = Math.min(100, +aim.value + 10); this.aim = aim.value / 100; }
     });

@@ -369,7 +369,7 @@ h1,h2,h3{margin:0;text-wrap:balance}
 @keyframes cnFlash{0%{opacity:.95}100%{opacity:0}}
 .cn-skip{position:absolute;right:22px;bottom:18px;font-size:12px;color:rgba(255,255,255,.6);opacity:0}
 .cine.charge .cn-skip,.cine.cut .cn-skip{opacity:1}
-.toast{position:absolute;left:50%;top:22%;transform:translateX(-50%);padding:10px 18px;font-weight:700;background:rgba(40,10,10,.9);border:1px solid var(--atk);color:#ffd0d0;pointer-events:none;opacity:0;transition:opacity .25s}
+.toast{position:fixed;z-index:20;left:50%;top:22%;transform:translateX(-50%);padding:10px 18px;font-weight:700;background:rgba(40,10,10,.9);border:1px solid var(--atk);color:#ffd0d0;pointer-events:none;opacity:0;transition:opacity .25s}
 .toast.show{opacity:1}
 .quit{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);padding:8px 16px;font-size:13px;opacity:.75}.quit:hover{opacity:1}
 /* ===== Result ===== */
@@ -479,32 +479,36 @@ img.lz{background:linear-gradient(90deg,#0b0f1a,#151b2a,#0b0f1a);background-size
 .fcell b{display:block;font-size:17px}
 .fcell .num{font-size:30px;color:var(--hot);font-weight:700}
 .fcell small{color:var(--dim);font-size:12px;line-height:1.5;display:block}
-#loading{position:fixed;inset:0;z-index:9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;background:radial-gradient(ellipse at 50% 40%,#2a0e06 0,#0a0710 55%,#04050a 100%);overflow:hidden;text-align:center}
-.ld-rays{position:absolute;left:50%;top:38%;width:2200px;height:2200px;translate:-50% -50%;background:repeating-conic-gradient(from 0deg,rgba(255,140,60,.09) 0 1.5deg,transparent 1.5deg 7deg);mask:radial-gradient(circle,transparent 0 80px,#000 200px,transparent 800px);-webkit-mask:radial-gradient(circle,transparent 0 80px,#000 200px,transparent 800px);animation:lbRays 40s linear infinite}
-.ld-top{position:relative;width:150px;height:150px;margin-bottom:6px;filter:drop-shadow(0 0 30px rgba(255,106,26,.55))}
-.ld-top i{position:absolute;inset:0;border-radius:50%}
-.ld-top .r1{background:conic-gradient(from 0deg,#ff6a1a,#ffd27a 12%,#fff 14%,#8a95b0 20%,#2a3248 30%,#ff6a1a 38%,#ffd27a 46%,#fff 48%,#8a95b0 56%,#2a3248 66%,#ff6a1a 72%,#ffd27a 82%,#fff 84%,#8a95b0 90%,#2a3248 100%);clip-path:polygon(50% 0,64% 30%,100% 24%,78% 52%,96% 86%,58% 72%,34% 100%,30% 64%,0 58%,28% 38%,12% 6%,42% 22%);animation:ldSpin .35s linear infinite}
-.ld-top .r2{inset:12%;background:conic-gradient(#ff3e0a,#ff9a2a,#ff3e0a);clip-path:polygon(50% 4%,61% 38%,96% 50%,61% 62%,50% 96%,39% 62%,4% 50%,39% 38%);animation:ldSpin .35s linear infinite reverse;opacity:.85}
-.ld-top .core{inset:32%;background:radial-gradient(circle at 40% 35%,#fff,#ffb347 35%,#7a2a08 75%);box-shadow:0 0 20px #ff6a1a,inset 0 0 8px rgba(0,0,0,.5)}
-@keyframes ldSpin{to{rotate:360deg}}
+#loading{position:fixed;inset:0;z-index:9;background:#05060a;overflow:hidden;text-align:center}
+.ld-vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(1.15) brightness(.8)}
+.ld-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,6,10,.15) 0,rgba(5,6,10,.3) 45%,rgba(5,6,10,.95) 100%),repeating-linear-gradient(0deg,rgba(0,0,0,.16) 0 2px,transparent 2px 4px)}
+.ld-main{position:absolute;left:16px;right:16px;bottom:max(56px,8vh);display:flex;flex-direction:column;align-items:center;gap:14px}
 .ld-logo{position:relative;font:900 clamp(40px,8vw,72px) var(--f-body);font-style:italic;letter-spacing:.03em;color:#fff;text-shadow:5px 5px 0 #ff5a10,0 0 30px rgba(255,90,20,.6);line-height:1.05}
 .ld-logo span{display:block;font:700 14px var(--f-disp);letter-spacing:.8em;color:var(--ice);text-shadow:none;font-style:normal;margin-top:8px}
-.ld-feats{position:relative;color:var(--dim);font-size:15px}.ld-feats b{color:var(--hot2);font-family:var(--f-disp);font-size:20px}
 .ld-bar{position:relative;width:min(360px,80vw);height:8px;background:#0b0f1a;border:1px solid var(--line2);overflow:hidden;clip-path:polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%)}
 .ld-bar i{position:absolute;inset:0 auto 0 0;width:0;background:linear-gradient(90deg,#ff5a10,#ffd27a);box-shadow:0 0 12px #ff6a1a;transition:width .25s}
 .ld-pct{position:relative;font:700 13px var(--f-disp);letter-spacing:.2em;color:var(--dim)}
-.ld-tip{position:relative;max-width:520px;min-height:2.6em;color:#c9d0e2;font-size:14px;line-height:1.6;transition:opacity .4s}
+.ld-tip{position:relative;max-width:520px;min-height:2.6em;color:#9aa3ba;font-size:13px;line-height:1.6;transition:opacity .4s}
 /* auth screen with hero */
 #s-auth{display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,480px);align-items:center;gap:32px;padding:24px max(24px,4vw)}
-.auth-hero{display:grid;gap:14px;align-content:end;align-self:stretch;max-width:560px;padding:44vh 0 2vh}
-.ah-logo{font:900 clamp(44px,6vw,84px) var(--f-body);font-style:italic;line-height:1.02;text-shadow:6px 6px 0 #ff5a10,0 0 36px rgba(255,90,20,.5)}
-.ah-logo span{display:block;font:700 15px var(--f-disp);letter-spacing:.8em;color:var(--ice);text-shadow:none;font-style:normal;margin-top:10px}
-.ah-tag{margin:0;font-size:18px;color:#dfe5f2;line-height:1.6;text-shadow:0 2px 10px #000}
-.ah-feats{list-style:none;margin:6px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.ah-feats li{display:flex;gap:12px;align-items:center;padding:10px 12px;background:rgba(12,16,28,.7);border:1px solid var(--line);backdrop-filter:blur(4px)}
-.ah-feats b{font:700 30px var(--f-disp);color:var(--hot);min-width:46px;text-align:center}
-.ah-feats span{font-weight:900;font-size:15px}.ah-feats small{display:block;font-weight:400;font-size:12px;color:var(--dim)}
-.ah-now{display:flex;gap:10px;align-items:baseline;margin-top:4px}.ah-now small{font:700 11px var(--f-disp);letter-spacing:.2em;color:var(--dim)}.ah-now b{font-size:16px;color:var(--hot2)}
+.auth-hero{position:relative;z-index:5;display:flex;flex-direction:column;justify-content:space-between;align-self:stretch;padding:2vh 0}
+.ah-logo{font:900 clamp(44px,5.4vw,76px) var(--f-body);font-style:italic;line-height:1.02;text-shadow:6px 6px 0 #ff5a10,0 0 36px rgba(255,90,20,.5)}
+.ah-logo span{display:block;font:700 14px var(--f-disp);letter-spacing:.8em;color:var(--ice);text-shadow:none;font-style:normal;margin-top:10px}
+.ah-vs{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;font-style:italic;text-shadow:0 2px 12px #000}
+.ah-vs b{font-size:22px;font-weight:900}.ah-vs i{font:900 italic 30px var(--f-disp);color:#fff}
+.ah-vs small{flex-basis:100%;font-style:normal;font-size:12px;color:#c9d0e2}
+#s-auth::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(5,6,10,0) 0,rgba(5,6,10,.15) 45%,rgba(5,6,10,.8) 72%);pointer-events:none}
+#s-auth .auth-card{position:relative;z-index:5;background:rgba(9,12,20,.84);backdrop-filter:blur(8px)}
+#s-auth .cine{z-index:3}
+#s-auth .inp{width:100%;box-sizing:border-box;min-width:0}
+body.demo .cine .cn-panel.cn-a{display:none}
+.starter-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+.starter{padding:8px 4px!important}
+.starter .sbig{width:58px;height:58px}
+.starter .smini{display:flex;gap:2px}.starter .smini img{width:22px;height:22px;border-radius:50%;border:1px solid var(--line2);background:#05070c}
+.starter.t-atk{--c:var(--atk)}.starter.t-def{--c:var(--def)}.starter.t-sta{--c:var(--sta)}.starter.t-bal{--c:var(--bal)}
+.starter b{color:var(--c)}
+.starter[aria-pressed="true"]{border-color:var(--c)!important;box-shadow:0 0 0 1px var(--c),0 0 16px color-mix(in srgb,var(--c) 35%,transparent)}
 .auth-card{width:100%;box-sizing:border-box;min-width:0;justify-self:end;max-height:calc(100vh - 48px);overflow:auto}
 .auth-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
 .auth-tabs button{padding:10px 4px;font-weight:700;background:#0c111d;border:1px solid var(--line2)}
@@ -576,10 +580,11 @@ img.lz{background:linear-gradient(90deg,#0b0f1a,#151b2a,#0b0f1a);background-size
   /* result & auth */
   .res-title{font-size:44px}.res-score{font-size:28px}
   .starter-grid{grid-template-columns:repeat(2,1fr)}
-  #s-auth{display:flex;flex-direction:column;align-items:stretch;gap:16px;padding:18px max(14px,env(safe-area-inset-left,0px)) 24px}
-  .auth-hero{max-width:none;padding:min(40vh,340px) 0 0}
-  .ah-logo{font-size:40px}.ah-tag{font-size:15px}
-  .ah-feats{grid-template-columns:1fr 1fr;gap:6px}.ah-feats li{padding:8px}.ah-feats b{font-size:22px;min-width:30px}
+  #s-auth{display:flex;flex-direction:column;align-items:stretch;gap:12px;padding:14px max(14px,env(safe-area-inset-left,0px)) 24px}
+  #s-auth::before{background:linear-gradient(180deg,rgba(5,6,10,0) 0,rgba(5,6,10,0) 30vh,rgba(5,6,10,.92) 44vh)}
+  .auth-hero{min-height:40vh;padding:0}
+  .ah-logo{font-size:38px}.ah-vs b{font-size:16px}.ah-vs i{font-size:20px}
+  .starter-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
   .auth-card{max-height:none;justify-self:stretch}
   .auth-card{padding:24px 20px}
   .settings{right:12px;left:12px;width:auto}
@@ -637,14 +642,17 @@ img.lz{background:linear-gradient(90deg,#0b0f1a,#151b2a,#0b0f1a);background-size
 </style>
 
 <canvas id="gl"></canvas>
+<div class="toast" id="toast"></div>
 <div id="loading">
-  <div class="ld-rays"></div>
-  <div class="ld-top" aria-hidden="true"><i class="r1"></i><i class="r2"></i><i class="core"></i></div>
-  <div class="ld-logo">陀螺對決<span>SPIN DUEL</span></div>
-  <div class="ld-feats"><b>802</b> 種零件・<b>8</b> 座戰鬥盤・<b>30</b> 種必殺技</div>
-  <div class="ld-bar"><i id="ldBar"></i></div>
-  <div class="ld-pct" id="ldPct">載入中…</div>
-  <div class="ld-tip" id="ldTip">組裝鋒輪、鎖芯、旋尖，打造你的專屬陀螺</div>
+  <video class="ld-vid" id="ldVid" src="assets/reel.mp4" poster="assets/reel.jpg" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
+  <div class="ld-shade"></div>
+  <div class="ld-main">
+    <div class="ld-logo">陀螺對決<span>SPIN DUEL</span></div>
+    <div class="ld-bar"><i id="ldBar"></i></div>
+    <div class="ld-pct" id="ldPct">遊戲資源載入中…</div>
+    <div class="ld-tip" id="ldTip">提示：組裝鋒輪、鎖芯、旋尖，打造你的專屬陀螺</div>
+  </div>
+</div>
 </div>
 <div class="settings panel cut" id="settings" hidden>
   <div style="display:flex;justify-content:space-between;align-items:center"><b>設定</b><button class="btn cut" id="setClose" style="padding:4px 10px">關閉</button></div>
@@ -659,22 +667,11 @@ img.lz{background:linear-gradient(90deg,#0b0f1a,#151b2a,#0b0f1a);background-size
   <!-- AUTH -->
   <section class="screen" id="s-auth" hidden>
     <div class="auth-hero pe-none">
-      <div class="eyebrow">Original 3D Spinning-Top Battles</div>
       <div class="ah-logo">陀螺對決<span>SPIN DUEL</span></div>
-      <p class="ah-tag">組裝你的專屬陀螺，拉繩發射，在 8 座戰鬥盤上一決勝負。</p>
-      <ul class="ah-feats">
-        <li><b>802</b><span>種零件<small>鋒輪・鎖芯・旋尖自由組裝</small></span></li>
-        <li><b>30</b><span>種必殺技<small>召喚靈獸的電影化演出</small></span></li>
-        <li><b>8</b><span>位頭目<small>每人一座專屬戰鬥盤</small></span></li>
-        <li><b>∞</b><span>生存模式<small>挑戰連勝排行榜</small></span></li>
-      </ul>
-      <div class="ah-now"><small>展示中</small><b id="ahBey"></b></div>
+      <div class="ah-vs" id="demoVs"></div>
     </div>
     <form class="auth-card panel cut" id="authForm">
-      <div>
-        <div class="eyebrow">Player Registration · 旋鬥士登錄</div>
-        <div class="auth-logo">陀螺對決<span class="auth-sub">SPIN DUEL</span></div>
-      </div>
+      <div class="eyebrow">Player Registration · 旋鬥士登錄</div>
       <div class="auth-tabs" id="authTabs" role="tablist" hidden>
         <button type="button" role="tab" data-atab="login">登入</button>
         <button type="button" role="tab" data-atab="register">註冊</button>
@@ -688,7 +685,7 @@ img.lz{background:linear-gradient(90deg,#0b0f1a,#151b2a,#0b0f1a);background-size
         <input class="inp" id="nick" maxlength="12" autocomplete="off" placeholder="例如：疾風之翼">
       </div>
       <div class="af" id="fStarterWrap">
-        <label>選擇你的起始類型</label>
+        <label>選擇起始類型（送 3 顆同類型的陀螺）</label>
         <div class="starter-grid" id="starterGrid"></div>
         <div class="desc" id="starterDesc"></div>
       </div>
@@ -813,7 +810,6 @@ img.lz{background:linear-gradient(90deg,#0b0f1a,#151b2a,#0b0f1a);background-size
     <div class="cutin" id="cutin"><div class="ci-lines"></div><div class="ci-band"><img id="ciImg" alt=""><div class="ci-txt"><div class="ci-who" id="ciWho"></div><div class="ci-name" id="ciName"></div><div class="ci-kind" id="ciKind"></div></div></div></div>
     <div class="count pe-none" id="count"></div>
     <div class="banner" id="banner"><div class="sub" id="bnSub"></div><div class="big" id="bnBig"></div><div class="pts" id="bnPts"></div></div>
-    <div class="toast" id="toast"></div>
     <div class="launcher panel cut" id="launcher" hidden>
       <div class="eyebrow">拉繩發射器</div>
       <div class="aimrow"><span>中央</span><input type="range" id="aim" min="-100" max="100" value="20" aria-label="發射角度"><span>外圈軌道</span></div>
@@ -1152,12 +1148,14 @@ const KINDS = {
 /* display name of a part */
 function partName(kind, p) { const sfx = p.base && p.base !== p.id ? `・${p.series}` : ''; return kind === 'ratchet' ? p.code + sfx : kind === 'bit' ? `${p.name} ${p.code}${sfx}` : p.name; }
 
-const STARTERS = {
-  atk: { b: 'wolf', r: '3-60', t: 'F' },
-  def: { b: 'silver', r: '5-60', t: 'N' },
-  sta: { b: 'moon', r: '5-60', t: 'B' },
-  bal: { b: 'phoenix', r: '4-60', t: 'T' },
+// every starter pack: three common blades of the chosen type, with common ratchets and bits that suit it
+const STARTER_PACKS = {
+  atk: [{ b: 'wolf', r: '3-60', t: 'F' }, { b: 'hawk', r: '4-60', t: 'W' }, { b: 'viper', r: '5-60', t: 'F' }],
+  def: [{ b: 'silver', r: '5-60', t: 'N' }, { b: 'golem', r: '4-60', t: 'N' }, { b: 'rhino', r: '3-60', t: 'N' }],
+  sta: [{ b: 'moon', r: '5-60', t: 'B' }, { b: 'crane', r: '4-60', t: 'O' }, { b: 'dragonfly', r: '3-60', t: 'D' }],
+  bal: [{ b: 'phoenix', r: '4-60', t: 'T' }, { b: 'mantis', r: '3-60', t: 'HT' }, { b: 'mantis@ob', r: '5-60', t: 'T' }],
 };
+const STARTERS = Object.fromEntries(Object.entries(STARTER_PACKS).map(([k, v]) => [k, v[0]]));
 
 /* Stadiums: physics + look. pockets: kind 'rift' (3 pts) / 'out' (2 pts). */
 const STADIUMS = {
@@ -1444,20 +1442,8 @@ const Store = {
 };
 function newProfile(name, starter) {
   const inv = { blade: {}, ratchet: {}, bit: {} };
-  const s = STARTERS[starter];
-  const blades = new Set([s.b, 'wolf', 'silver', 'moon', 'phoenix'].filter((x) => x !== s.b).slice(0, 2));
-  blades.add(s.b);
-  blades.forEach((b) => (inv.blade[b] = 1));
-  ['3-60', '4-60', '5-60'].forEach((r) => (inv.ratchet[r] = 1));
-  ['F', 'T', 'B', s.t].forEach((t) => (inv.bit[t] = 1));
-  const otherBlades = [...blades].filter((b) => b !== s.b);
-  const rs = ['3-60', '4-60', '5-60'].filter((r) => r !== s.r);
-  const ts = ['F', 'T', 'B', 'N'].filter((t) => t !== s.t && inv.bit[t]);
-  const decks = [
-    { b: s.b, r: s.r, t: s.t },
-    { b: otherBlades[0], r: rs[0], t: ts[0] },
-    { b: otherBlades[1], r: rs[1], t: ts[1] },
-  ];
+  const decks = (STARTER_PACKS[starter] || STARTER_PACKS.atk).map((d) => ({ ...d }));
+  for (const d of decks) { inv.blade[d.b] = 1; inv.ratchet[d.r] = 1; inv.bit[d.t] = 1; }
   return { v: 2, name, starter, coins: 200, inv, decks, builds: decks.map((d, i) => ({ id: 'b' + (i + 1), ...d })), deckIds: ['b1', 'b2', 'b3'], ladder: 0, stats: { w: 0, l: 0, spin: 0, out: 0, burst: 0, rift: 0, pulls: 0 }, createdAt: Date.now(), updatedAt: Date.now() };
 }
 function migrate(p) {
@@ -1520,7 +1506,9 @@ const owns = (kind, id) => ((Store.profile.inv[kind] || {})[id] | 0) > 0;
 const SFX = {
   ctx: null, master: null, noiseBuf: null, grind: null, hums: [],
   vol: (() => { try { return Object.assign({ master: 0.8, sfx: 0.8, voice: 0.9 }, JSON.parse(localStorage.getItem('spinx-vol') || '{}')); } catch (e) { return { master: 0.8, sfx: 0.8, voice: 0.9 }; } })(),
-  setVol(k, v) { this.vol[k] = v; try { localStorage.setItem('spinx-vol', JSON.stringify(this.vol)); } catch (e) {} if (this.master) this.master.gain.value = 0.7 * this.vol.master * this.vol.sfx; },
+  muted: false,
+  setMuted(m) { this.muted = m; if (this.master) this.master.gain.value = m ? 0 : 0.7 * this.vol.master * this.vol.sfx; },
+  setVol(k, v) { this.vol[k] = v; try { localStorage.setItem('spinx-vol', JSON.stringify(this.vol)); } catch (e) {} if (this.master) this.master.gain.value = this.muted ? 0 : 0.7 * this.vol.master * this.vol.sfx; },
   /* Announcer: recorded clips in assets/voice/ win if present; otherwise an English browser voice tuned for hype,
      layered with a synthesized stinger so it hits harder than plain text-to-speech. */
   clips: {}, clipsTried: false,
@@ -1585,7 +1573,7 @@ const SFX = {
     if (!AC) return false;
     try {
       this.ctx = new AC();
-      this.master = this.ctx.createGain(); this.master.gain.value = 0.7 * this.vol.master * this.vol.sfx;
+      this.master = this.ctx.createGain(); this.master.gain.value = this.muted ? 0 : 0.7 * this.vol.master * this.vol.sfx;
       const comp = this.ctx.createDynamicsCompressor();
       this.master.connect(comp); comp.connect(this.ctx.destination);
       const len = this.ctx.sampleRate * 1.5;
@@ -3602,6 +3590,7 @@ class BattleScene {
     if (this.scene.fog) { this.scene.fog.near = 14 * k; this.scene.fog.far = 30 * k; }
   }
   setStadium(id) {
+    this.stadiumId = id;
     applyStadium(id);
     if (this.stadium) { this.scene.remove(this.stadium); disposeTree(this.stadium); this.stadium.traverse((n) => n.geometry && n.geometry.dispose()); }
     const T = STADIUMS[AR.stadium].theme;
@@ -3849,6 +3838,11 @@ class BattleScene {
       const z = this.zoomTo;
       base.set(z.x * 0.55, 4.2, z.z * 0.55 + 4.6);
       lookT.set(z.x, 0.4, z.z);
+    } else if (this.follow && this.demoCam) {
+      const f = this.follow; this.demoA = (this.demoA || 0) + dt * 0.22;
+      const r = GL.w < GL.h ? 5.4 : 4.3;
+      base.set(f.x * 0.7 + Math.sin(this.demoA) * r, 2.2, f.z * 0.7 + Math.cos(this.demoA) * r);
+      lookT.set(f.x * 0.85, 0.3, f.z * 0.85);
     } else if (this.follow) {
       const f = this.follow;
       lookT.set(f.x * 0.25, 0, f.z * 0.25 + 0.4);
@@ -3862,6 +3856,11 @@ class BattleScene {
       this.shake = Math.max(0, this.shake - dt * 2.5);
     }
     this.cam.lookAt(this.look);
+    if (this.demoCam) {
+      const ox = this.demoCentered ? 0 : GL.w > 820 ? GL.w * 0.2 : 0, oy = this.demoCentered || GL.w > 820 ? 0 : GL.h * 0.3;   // keep the fight clear of the form
+      if (!this.cam.view || !this.cam.view.enabled || this.cam.view.offsetX !== ox || this.cam.view.offsetY !== oy) this.cam.setViewOffset(GL.w, GL.h, ox, oy, GL.w, GL.h);
+    }
+    else if (this.cam.view && this.cam.view.enabled) this.cam.clearViewOffset();
     this.fovKick = Math.max(0, (this.fovKick || 0) - dt * 30);
     const fov = 42 - (this.dashFx || 0) * 4 - (this.zoomTo ? 6 : 0) - (this.cine ? 8 : 0) + this.fovKick;
     if (Math.abs(this.cam.fov - fov) > 0.01) { this.cam.fov = lerp(this.cam.fov, fov, 1 - Math.exp(-dt * 5)); this.cam.updateProjectionMatrix(); }
@@ -3901,6 +3900,47 @@ const Battle = {
     SFX.ensure(); SFX.startGrind();
     this.renderPips();
     this.nextRound();
+  },
+  /* background demo: two AI tops fight on random stadiums, specials included, no HUD, muted */
+  startDemo() {
+    if (this.demo) return;
+    this.demo = true; this.active = true; this.survival = false; this.winPts = 99; this.mode = '1v1';
+    this.score = [0, 0]; this.round = 0; this.errors = [0, 0]; this.finishes = []; this.slotRes = [[], []];
+    SFX.setMuted(true);
+    document.body.classList.add('demo');
+    const cine = $('#cine'); this._cineHome = cine.parentElement; $('#s-auth').appendChild(cine);
+    GL.battle.demoCam = true;
+    GL.setMode('battle');
+    this.demoNext();
+  },
+  demoNext() {
+    if (!this.demo) return;
+    const pool = BLADES.filter((b) => b.rarity === 'sr' || b.rarity === 'ur' || (!b.base && b.rarity === 'rare'));
+    const pick = () => pool[Math.floor(Math.random() * pool.length)].id;
+    const bitFor = (id) => ({ atk: 'F', def: 'N', sta: 'B', bal: 'T' })[BLADE[id].type];
+    let a = pick(), b = pick();
+    // at least one attacker so rounds are short and full of contact
+    while (baseOf(b) === baseOf(a) || (BLADE[a].type !== 'atk' && BLADE[b].type !== 'atk')) { a = pick(); b = pick(); }
+    if (Math.random() < 0.5) [a, b] = [b, a];
+    const opps = OPPONENTS.slice().sort(() => Math.random() - 0.5);
+    this.demoP = opps[0]; this.opp = Object.assign({}, opps[1], { boss: 0 });
+    this.pDeck = [{ b: a, r: '3-60', t: bitFor(a) }]; this.oDeck = [{ b, r: '4-60', t: bitFor(b) }];
+    const st = Object.keys(STADIUMS); GL.battle.setStadium(st[Math.floor(Math.random() * st.length)]);
+    this.demoPlan = aiLaunch(this.opp, this.oDeck[0], this.pDeck[0]);
+    this.demoAt = [rand(0.8, 2.5), rand(0.8, 2.5)];
+    const vs = $('#demoVs');
+    if (vs) vs.innerHTML = `<b style="color:#ff8a4a">${esc(BLADE[a].name)}</b><i>VS</i><b style="color:#5ac8ff">${esc(BLADE[b].name)}</b><small>● LIVE 示範對戰・${esc(STADIUMS[GL.battle.stadiumId] ? STADIUMS[GL.battle.stadiumId].name : '')}</small>`;
+    this.nextRound();
+  },
+  stopDemo() {
+    if (!this.demo) return;
+    this.demo = false; this.active = false; this._cd = null;
+    if (this.cine) { this.cine.timers.forEach(clearTimeout); this.cine = null; }
+    const cine = $('#cine'); cine.className = 'cine'; if (this._cineHome) this._cineHome.appendChild(cine);
+    GL.battle.cine = null; GL.battle.demoCam = false; GL.battle.zoomTo = null; GL.battle.follow = null;
+    SFX.stopGrind(); SFX.setMuted(false);
+    document.body.classList.remove('demo');
+    GL.setMode('show');
   },
   cfgFor(side) { const d = side ? this.oDeck : this.pDeck; return d[this.round % d.length]; },
   nextRound(replay = false) {
@@ -4043,14 +4083,17 @@ const Battle = {
     if (this.slowT > 0) { this.slowT -= dtReal; if (this.slowT <= 0) this.timeScale = 1; }
     let dt = dtReal * this.timeScale * SIM_SPEED;
     if (this.hitStop > 0) { this.hitStop -= dtReal; dt = 0; }
-    if (this.phase === 'ready' || this.phase === 'go') {
+    if ((this.phase === 'ready' || this.phase === 'go') && !this.demo) {
       if (!this.playerLaunched) sc.showAim(0, Launcher.aim);
+    }
+    if (this.phase === 'go' && this.demo && !this.playerLaunched && (performance.now() - this.goAt) / 1000 >= this.demoPlan.delay * 0.8) {
+      this.playerLaunched = true; this.doLaunch(0, this.demoPlan.power, -this.demoPlan.aim);
     }
     if (this.phase === 'go') {
       const since = (performance.now() - this.goAt) / 1000;
       if (!this.aiLaunched && since >= this.aiPlan.delay) { this.aiLaunched = true; this.doLaunch(1, this.aiPlan.power, this.aiPlan.aim); }
-      if (!this.playerLaunched && since > 2.6 && !Launcher.holding) return this.launchError(0, '太晚發射！');
-      if (!this.playerLaunched && since > 3.6) return this.launchError(0, '太晚發射！');
+      if (!this.demo && !this.playerLaunched && since > 2.6 && !Launcher.holding) return this.launchError(0, '太晚發射！');
+      if (!this.demo && !this.playerLaunched && since > 3.6) return this.launchError(0, '太晚發射！');
       if (this.playerLaunched && this.aiLaunched) this.setPhase('fight');
     }
     if (this.phase === 'fight' || this.phase === 'go' || this.phase === 'finish') {
@@ -4078,7 +4121,17 @@ const Battle = {
     SFX.setGrind(dash);
     SFX.setHum(0, A.s, A.state === 'spin'); SFX.setHum(1, B.s, B.state === 'spin');
     this.renderGauges();
-    if (this.phase === 'fight') {
+    if (this.phase === 'fight' && this.demo && this.phaseT > 26 && !this.cine) { this.setPhase('finish'); setTimeout(() => this.demoNext(), 800); }
+    if (this.phase === 'fight' && this.demo) {
+      for (const side of [0, 1]) {
+        const me = this.arena.beys[side], other = this.arena.beys[1 - side];
+        if (this.phaseT > 3.5 + side * 2 && !me.usedSpecial && me.state === 'spin') me.charge = Math.max(me.charge || 0, 1);
+        if (me.usedSpecial || (me.charge || 0) < 1 || me.state !== 'spin' || this.cine) continue;
+        this.demoAt[side] -= dtReal;
+        const near = Math.hypot(me.x - other.x, me.z - other.z) < 2.4;
+        if (this.demoAt[side] <= 0 && (near || me.s < 0.4)) this.useSpecial(side);
+      }
+    } else if (this.phase === 'fight') {
       const ai = this.arena.beys[1];
       if (!ai.usedSpecial && (ai.charge || 0) >= 1 && ai.state === 'spin') {
         this.aiSpecialAt -= dtReal;
@@ -4110,9 +4163,9 @@ const Battle = {
     const el = $('#cine');
     el.className = 'cine ' + (side ? 'right' : 'left');
     el.style.setProperty('--sc', col);
-    $('#cnPortrait').innerHTML = side ? oppAvatar(this.opp, 300) : playerAvatar(300);
+    $('#cnPortrait').innerHTML = side ? oppAvatar(this.opp, 300) : this.demo ? oppAvatar(this.demoP, 300) : playerAvatar(300);
     $('#cnBlade').src = Thumbs.get('blade', cfg.b);
-    $('#cnWho').textContent = `${side ? this.opp.name : Store.profile.name}・${BLADE[cfg.b].name}`;
+    $('#cnWho').textContent = `${side ? this.opp.name : this.demo ? this.demoP.name : Store.profile.name}・${BLADE[cfg.b].name}`;
     $('#cnKind').textContent = SPECIAL_KIND[sp.kind];
     $('#cnName').innerHTML = [...sp.name].map((ch, k) => `<span style="--d:${(k * 0.07).toFixed(2)}s">${ch === '・' ? '<i class="dot"></i>' : esc(ch)}</span>`).join('');
     $('#cnInk').innerHTML = Array.from({ length: 14 }, () => `<i style="left:${rand(5, 95).toFixed(1)}%;top:${rand(15, 85).toFixed(1)}%;--s:${rand(0.4, 1.6).toFixed(2)};--d:${rand(0, 0.25).toFixed(2)}s"></i>`).join('');
@@ -4195,6 +4248,7 @@ const Battle = {
     sc.fx.ring(lb.x, fy, lb.z, winner ? 0x36d3ff : 0xff6a1a, 3, 0.7);
     sc.blurAt = new THREE.Vector3(lb.x, fy, lb.z); sc.blurKick = 1.1;
     if (ev.type === 'rift' || ev.type === 'out') { sc.fx.star(lb.x, fy + 0.3, lb.z, 4, ev.type === 'rift' ? 0xff3b1a : 0xffb347, 0.4); sc.fx.spark(lb.x, fy, lb.z, 80, 5, ev.type === 'rift' ? 0xff5a2a : 0xffc060, 0.8, 1.3); if (sc.fx.post) { sc.fx.post.uFlash.value = 0.35; sc.fx.post.uFlashCol.value.set(ev.type === 'rift' ? 0xff6a3a : 0xffd090); } }
+    if (this.demo) { const tok = this.arena; setTimeout(() => { if (this.demo && this.arena === tok) this.demoNext(); }, 2600); return; }
     setTimeout(() => {
       SFX.finish();
       UI.banner(F.en, F.name, `${winner === 0 ? Store.profile.name : this.opp.name} +${F.pts}`, winner === 1);
@@ -4208,6 +4262,7 @@ const Battle = {
   },
   roundDraw() {
     this.setPhase('finish');
+    if (this.demo) { setTimeout(() => this.demoNext(), 1500); return; }
     UI.banner('DRAW', '同時終結', '平手・本回合不計分', false);
     setTimeout(() => { if (this.active) this.nextRound(true); }, 2800);
   },
@@ -4346,7 +4401,7 @@ const Launcher = {
     const aim = $('#aim');
     aim.addEventListener('input', () => { this.aim = aim.value / 100; });
     window.addEventListener('keydown', (e) => {
-      if (!Battle.active || this.done) return;
+      if (!Battle.active || Battle.demo || this.done) return;
       if (e.key === 'a' || e.key === 'ArrowLeft') { aim.value = Math.max(-100, +aim.value - 10); this.aim = aim.value / 100; }
       if (e.key === 'd' || e.key === 'ArrowRight') { aim.value = Math.min(100, +aim.value + 10); this.aim = aim.value / 100; }
     });
@@ -4509,26 +4564,15 @@ const UI = {
       warn.textContent = e.msg || (e.code === 'busy' ? '目前流量過大，請稍後再試。' : '連線失敗，請稍後再試。');
     } finally { btn.disabled = false; }
   },
-  startAuthCycle() {
-    const show = ['flame@rb', 'kirin@sy', 'wolf@lv', 'jelly@cr', 'bull@gd', 'fox@sk', 'darkstar@rb', 'phoenix@gd'];
-    let k = 0;
-    const step = () => {
-      if (this.cur !== 'auth') return this.stopAuthCycle();
-      const b = show[k++ % show.length];
-      GL.show.showBey({ b, r: '3-60', t: 'F' }); this.authPose();
-      const el = $('#ahBey'); if (el) el.textContent = BLADE[b].name;
-    };
-    this.stopAuthCycle(); step();
-    this._authCycle = setInterval(step, 3200);
-  },
-  authPose() { const sh = GL.show; sh.lookY = -0.42; sh.zoom = GL.w < 820 ? 0.95 : 0.88; },
-  stopAuthCycle() { clearInterval(this._authCycle); this._authCycle = null; },
+  startAuthCycle() { Battle.startDemo(); },
+  stopAuthCycle() { Battle.stopDemo(); },
   renderAuth() {
     const grid = $('#starterGrid');
-    grid.innerHTML = Object.entries(TYPES).map(([k, t]) => `<button type="button" class="starter t-${k}" data-starter="${k}" aria-pressed="${k === this.starter}">${t.name}<small>${esc(beyName(STARTERS[k]))}</small></button>`).join('');
-    $('#starterDesc').textContent = `${TYPES[this.starter].desc} 起始陀螺：${beyName(STARTERS[this.starter])} ${beyCode(STARTERS[this.starter])}`;
-    GL.show.setOffset(-0.2);
-    if (this._authCycle) { GL.show.showBey(STARTERS[this.starter]); this.authPose(); $('#ahBey').textContent = beyName(STARTERS[this.starter]); }
+    grid.innerHTML = Object.entries(TYPES).map(([k, t]) => {
+      const pack = STARTER_PACKS[k];
+      return `<button type="button" class="starter t-${k}" data-starter="${k}" aria-pressed="${k === this.starter}"><img class="sbig" src="${Thumbs.get('blade', pack[0].b)}" alt=""><b>${t.name}</b><span class="smini">${pack.map((d) => `<img src="${Thumbs.get('blade', d.b)}" alt="" title="${esc(beyName(d))}">`).join('')}</span></button>`;
+    }).join('');
+    $('#starterDesc').textContent = `${TYPES[this.starter].desc} 起始陀螺：${STARTER_PACKS[this.starter].map((d) => BLADE[d.b].name).join('・')}`;
   },
   acctLine() {
     const el = $('#acctLine');
@@ -4840,7 +4884,7 @@ function bindEvents() {
   $('#startBattle').addEventListener('click', () => Battle.start(OPPONENTS[UI.oppSel], UI.mode));
   $('#quitBattle').addEventListener('click', () => Battle.quit());
   $('#spBtn').addEventListener('click', () => Battle.useSpecial(0));
-  window.addEventListener('keydown', (e) => { if (!Battle.active) return; if (Battle.cine) { e.preventDefault(); return Battle.skipCine(); } if (e.code === 'Space') { e.preventDefault(); Battle.useSpecial(0); } });
+  window.addEventListener('keydown', (e) => { if (!Battle.active || Battle.demo) return; if (Battle.cine) { e.preventDefault(); return Battle.skipCine(); } if (e.code === 'Space') { e.preventDefault(); Battle.useSpecial(0); } });
   $('#cine').addEventListener('pointerdown', () => Battle.skipCine());
   $('#resAgain').addEventListener('click', () => Battle.again());
   $('#resHome').addEventListener('click', () => UI.go('hub'));
@@ -4894,17 +4938,17 @@ function loop(now) {
 }
 async function boot() {
   const tips = ['組裝鋒輪、鎖芯、旋尖，打造你的專屬陀螺', '拉繩越快，陀螺的初始轉速越高', '攻擊型擅長擊出，持久型靠轉速取勝，防禦型最耐撞', '把對手撞進裂界區可以一次拿 3 分', '必殺技集滿後按空白鍵（手機點按鈕）施放', '扭蛋連續 60 抽一定出傳說零件', '每位頭目都有自己的戰鬥盤，地形會改變戰術'];
-  let ti = 0; const tipTimer = setInterval(() => { const el = $('#ldTip'); if (!el) return; el.style.opacity = 0; setTimeout(() => { el.textContent = tips[++ti % tips.length]; el.style.opacity = 1; }, 400); }, 2600);
+  let ti = 0; const tipTimer = setInterval(() => { const el = $('#ldTip'); if (!el) return; el.style.opacity = 0; setTimeout(() => { el.textContent = '提示：' + tips[++ti % tips.length]; el.style.opacity = 1; }, 400); }, 2600);
   if (!window.THREE) { $('#ldPct').textContent = '3D 引擎載入失敗，請重新整理頁面。'; return; }
   if (THREE.ColorManagement) THREE.ColorManagement.legacyMode = false;
-  await Assets.load((f) => { const pct = Math.min(100, Math.round(f * 100)); $('#ldBar').style.width = pct + '%'; $('#ldPct').textContent = `載入 3D 模型 ${pct}%`; });
-  $('#ldBar').style.width = '100%'; $('#ldPct').textContent = '準備戰鬥盤…';
+  await Assets.load((f) => { const pct = Math.min(100, Math.round(f * 100)); $('#ldBar').style.width = pct + '%'; $('#ldPct').textContent = `遊戲資源載入中… ${pct}%`; });
+  $('#ldBar').style.width = '100%'; $('#ldPct').textContent = '遊戲資源載入中… 100%';
   GL.init();
   bindEvents();
   requestAnimationFrame(loop);
   const p = await Store.init();
   clearInterval(tipTimer);
-  $('#loading').hidden = true;
+  $('#loading').hidden = true; const lv = $('#ldVid'); if (lv) { lv.pause(); lv.removeAttribute('src'); lv.load(); }
   if (p) UI.go('hub');
   else {
     UI.show('auth'); UI.renderAuth(); UI.setAuthTab(Store.mode === 'server' ? 'register' : 'local'); UI.startAuthCycle();

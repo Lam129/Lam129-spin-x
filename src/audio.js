@@ -2,7 +2,9 @@
 const SFX = {
   ctx: null, master: null, noiseBuf: null, grind: null, hums: [],
   vol: (() => { try { return Object.assign({ master: 0.8, sfx: 0.8, voice: 0.9 }, JSON.parse(localStorage.getItem('spinx-vol') || '{}')); } catch (e) { return { master: 0.8, sfx: 0.8, voice: 0.9 }; } })(),
-  setVol(k, v) { this.vol[k] = v; try { localStorage.setItem('spinx-vol', JSON.stringify(this.vol)); } catch (e) {} if (this.master) this.master.gain.value = 0.7 * this.vol.master * this.vol.sfx; },
+  muted: false,
+  setMuted(m) { this.muted = m; if (this.master) this.master.gain.value = m ? 0 : 0.7 * this.vol.master * this.vol.sfx; },
+  setVol(k, v) { this.vol[k] = v; try { localStorage.setItem('spinx-vol', JSON.stringify(this.vol)); } catch (e) {} if (this.master) this.master.gain.value = this.muted ? 0 : 0.7 * this.vol.master * this.vol.sfx; },
   /* Announcer: recorded clips in assets/voice/ win if present; otherwise an English browser voice tuned for hype,
      layered with a synthesized stinger so it hits harder than plain text-to-speech. */
   clips: {}, clipsTried: false,
@@ -67,7 +69,7 @@ const SFX = {
     if (!AC) return false;
     try {
       this.ctx = new AC();
-      this.master = this.ctx.createGain(); this.master.gain.value = 0.7 * this.vol.master * this.vol.sfx;
+      this.master = this.ctx.createGain(); this.master.gain.value = this.muted ? 0 : 0.7 * this.vol.master * this.vol.sfx;
       const comp = this.ctx.createDynamicsCompressor();
       this.master.connect(comp); comp.connect(this.ctx.destination);
       const len = this.ctx.sampleRate * 1.5;
