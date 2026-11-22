@@ -119,7 +119,8 @@ const Battle = {
     this.renderRatchet(); this.renderDecks();
     scene.placeForLaunch(0); scene.placeForLaunch(1);
     this.playerLaunched = false; this.aiLaunched = false; this.ripStarted = false; this.aiSpecialAt = rand(0.5, 3);
-    this.remoteRip = null; this.snapT = 0; this.aiMoAt = rand(1.5, 4);
+    this.remoteRip = null; this.snapT = 0; this.netBuf = []; this.aiMoAt = rand(1.5, 4);
+    this._gk = this._mk = this._sk = null;
     this.renderSpecial(); this.renderMomentum();
     this.aiPlan = this.net ? null : aiLaunch(this.opp, b, a);
     this.timeScale = 1; this.slowT = 0; this.acc = 0;
@@ -174,7 +175,7 @@ const Battle = {
   setPhase(p) { this.phase = p; this.phaseT = 0; },
   async countdown() {
     const el = $('#count');
-    const seq = ['3', '2', '1', 'GET FIGHT!'];
+    const seq = ['3', '2', '1', 'FIGHT!'];
     this.goAt = 0;
     const token = (this._cd = Symbol());
     for (let i = 0; i < seq.length; i++) {
@@ -297,7 +298,7 @@ const Battle = {
     }
     if (this.net && this.net.role === 'host' && this.phase !== 'idle' && this.phase !== 'ready') {
       this.snapT -= dtReal;
-      if (this.snapT <= 0) { this.snapT = 1 / 15; this.net.send({ t: 's', b: this.arena.beys.map(snapOf), ts: this.timeScale }); }
+      if (this.snapT <= 0) { this.snapT = 1 / 20; this.net.send({ t: 's', b: this.arena.beys.map(snapOf), ts: this.timeScale, w: Math.round(performance.now()) }); }
     }
     sc.syncBeys(this.arena, dt);
     const [A, B] = this.arena.beys;
@@ -358,23 +359,36 @@ const Battle = {
   renderMomentum() {
     const btn = $('#moBtn'); if (!btn || !this.arena) return;
     const me = this.arena.beys[this.mySide()], left = MOMENTUM_MAX - (me.mo | 0);
+    const key = left + (this.phase === 'fight' && me.state === 'spin' && !this.cine ? 'a' : 'b');
+    if (key === this._mk) return; this._mk = key;
     $('#moPips').innerHTML = Array.from({ length: MOMENTUM_MAX }, (_, k) => `<i class="${k < left ? 'on' : ''}"></i>`).join('');
     btn.disabled = !(this.phase === 'fight' && left > 0 && me.state === 'spin' && !this.cine);
   },
   /* ---- online: guest side applies the host's snapshots ---- */
+  /* guest: render ~100 ms behind the host and interpolate between the two snapshots around that moment,
+     so network jitter never shows up as stutter */
+  netPush(m) {
+    const now = performance.now(), off = now - m.w;
+    this.netOff = this.netOff == null ? off : Math.min(this.netOff + 0.02, off);   // ~ one-way latency, slowly re-adapting
+    (this.netBuf = this.netBuf || []).push(m);
+    if (this.netBuf.length > 40) this.netBuf.shift();
+    this.timeScale = m.ts || 1;
+  },
   netApply(dt) {
-    const S = this.netSnap;
+    for (const b of this.arena.beys) b.spinAng += (18 + b.s * 40) * dt;
+    const buf = this.netBuf; if (!buf || !buf.length) return;
+    const T = performance.now() - this.netOff - 100;
+    let i = buf.length - 1; while (i > 0 && buf[i - 1].w > T) i--;
+    const A = buf[Math.max(0, i - 1)], B = buf[i];
+    const k = B.w === A.w ? 1 : clamp((T - A.w) / (B.w - A.w), 0, 1.25);
     for (const b of this.arena.beys) {
-      b.spinAng += (18 + b.s * 40) * dt;
-      if (!S) continue;
-      const t = S[b.side]; if (!t) continue;
-      const k = 1 - Math.exp(-dt * 14);
-      t.x += t.vx * dt * (this.timeScale || 1); t.z += t.vz * dt * (this.timeScale || 1);
-      if (b.state !== t.state && (t.state === 'spin' || b.state === 'idle')) { b.x = t.x; b.z = t.z; }
-      b.x = lerp(b.x, t.x, k); b.z = lerp(b.z, t.z, k);
-      b.vx = t.vx; b.vz = t.vz; b.s = t.s; b.state = t.state; b.dash = t.dash; b.tilt = t.tilt; b.prec = t.prec;
-      b.outT = t.outT; b.meter = t.meter; b.charge = t.charge; b.usedSpecial = t.usedSpecial; b.mo = t.mo; b.launched = t.state !== 'idle';
-      b.buff = t.bk ? { kind: t.bk, t: t.bt, fx: specOf(b.cfg.b).fx } : null;
+      const a = A.b[b.side], c = B.b[b.side]; if (!a || !c) continue;
+      const jump = a.state !== c.state;
+      b.x = jump ? c.x : lerp(a.x, c.x, k); b.z = jump ? c.z : lerp(a.z, c.z, k);
+      b.vx = c.vx; b.vz = c.vz; b.s = lerp(a.s, c.s, Math.min(k, 1)); b.state = k < 0.5 ? a.state : c.state;
+      b.dash = c.dash; b.tilt = lerp(a.tilt, c.tilt, Math.min(k, 1)); b.prec = c.prec;
+      b.outT = c.outT; b.meter = c.meter; b.charge = c.charge; b.usedSpecial = c.usedSpecial; b.mo = c.mo; b.launched = c.state !== 'idle';
+      b.buff = c.bk ? { kind: c.bk, t: c.bt, fx: specOf(b.cfg.b).fx } : null;
     }
   },
   netHooks() {
@@ -432,7 +446,8 @@ const Battle = {
     $('#cnInk').innerHTML = Array.from({ length: 14 }, () => `<i style="left:${rand(5, 95).toFixed(1)}%;top:${rand(15, 85).toFixed(1)}%;--s:${rand(0.4, 1.6).toFixed(2)};--d:${rand(0, 0.25).toFixed(2)}s"></i>`).join('');
     void el.offsetWidth; el.classList.add('on', 'charge');
     const T = (ms, fn) => this.cine.timers.push(setTimeout(fn, ms));
-    $('#cnBeast').innerHTML = [3, 2, 1, 0].map((k) => `<div class="cn-bst g${k}">${beastSVG(cfg.b, sp.color)}</div>`).join('');
+    // only the front copy gets the glow; the three trailing ghosts are plain (SVG filters are very expensive)
+    $('#cnBeast').innerHTML = [3, 2, 1, 0].map((k) => `<div class="cn-bst g${k}">${beastSVG(cfg.b, sp.color, k > 0)}</div>`).join('');
     T(450, () => this.cineCut());
     T(1150, () => this.cineBeast());
     T(2150, () => this.cineBurst());
@@ -474,6 +489,8 @@ const Battle = {
   renderSpecial() {
     if (!this.arena) return;
     const F = this.flip ? 1 : 0;
+    const key = this.arena.beys.map((b) => (b.usedSpecial ? 'u' : Math.round(clamp(b.charge || 0, 0, 1) * 50)) + b.state).join() + this.phase;
+    if (key === this._sk) return; this._sk = key;
     this.arena.beys.forEach((b, i) => {
       const bar = $((i ^ F) ? '#g2sp' : '#g1sp'); if (!bar) return;
       const v = b.usedSpecial ? 0 : clamp(b.charge || 0, 0, 1);
@@ -561,6 +578,8 @@ const Battle = {
   },
   renderGauges() {
     const F = this.flip ? 1 : 0, A = this.arena.beys[F], B = this.arena.beys[1 - F];
+    const key = Math.round(A.s * 980) + ':' + Math.round(B.s * 980);
+    if (key === this._gk) return; this._gk = key;
     const fmt = (b) => Math.round(b.s * 9800).toLocaleString('en-US');
     $('#g1rpm').innerHTML = `${fmt(A)}<small>RPM</small>`; $('#g2rpm').innerHTML = `${fmt(B)}<small>RPM</small>`;
     $('#g1bar').style.width = `${clamp(A.s, 0, 1) * 100}%`; $('#g2bar').style.width = `${clamp(B.s, 0, 1) * 100}%`;

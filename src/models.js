@@ -131,6 +131,19 @@ function emblemTexture(bl) {
   });
 }
 /* ---------- Blender-built meshes (assets/parts.bin), with procedural fallback ---------- */
+/* base64 -> ArrayBuffer without blocking the page: let the browser decode a data: URL natively,
+   fall back to a chunked atob that yields between slices so the loading video keeps playing */
+async function b64ToBuffer(b64) {
+  try { const r = await fetch('data:application/octet-stream;base64,' + b64); if (r.ok) return await r.arrayBuffer(); } catch (e) {}
+  const CH = 1 << 20, out = new Uint8Array(Math.floor(b64.length * 3 / 4) - (b64.endsWith('==') ? 2 : b64.endsWith('=') ? 1 : 0));
+  let o = 0;
+  for (let i = 0; i < b64.length; i += CH * 4) {
+    const bin = atob(b64.slice(i, i + CH * 4));
+    for (let k = 0; k < bin.length; k++) out[o++] = bin.charCodeAt(k);
+    await new Promise((r) => setTimeout(r, 0));
+  }
+  return out.buffer;
+}
 const Assets = {
   ok: false, idx: null, cache: {},
   bufs: {},
@@ -153,9 +166,7 @@ const Assets = {
           }
           bytes = new Uint8Array(got); let o = 0; for (const p of parts) { bytes.set(p, o); o += p.length; }
         } else bytes = new Uint8Array(await res.arrayBuffer());
-        const bin = atob(new TextDecoder().decode(bytes).trim()), buf = new ArrayBuffer(bin.length), u8 = new Uint8Array(buf);
-        for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
-        this.bufs[g] = buf;
+        this.bufs[g] = await b64ToBuffer(new TextDecoder().decode(bytes).trim());
       };
       await Promise.all(groups.map(one));
       this.idx = j; this.ok = true;
@@ -439,9 +450,9 @@ function buildPart(kind, id) {
   if (kind === 'ratchet') return buildRatchet(RATCHET[id]);
   const b = buildBit(BIT[id]); b.position.y = b.userData.len; const g = new THREE.Group(); g.add(b); return g;
 }
-function disposeTree(o) {
-  o.traverse((n) => { if (n.material) { (Array.isArray(n.material) ? n.material : [n.material]).forEach((m) => m.dispose()); } });
-}
+/* Materials are NOT disposed on purpose: disposing the last material of a kind makes three.js delete its
+   shader program, and the next round / special move then stalls while it recompiles. Programs are few and shared. */
+function disposeTree(o) { void o; }
 /* Studio environment for metal reflections: softboxes + coloured rims */
 function makeEnv(renderer) {
   const pm = new THREE.PMREMGenerator(renderer);

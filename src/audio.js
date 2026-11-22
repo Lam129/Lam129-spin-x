@@ -10,7 +10,7 @@ const SFX = {
   clips: {}, clipsTried: false,
   async loadClips() {
     if (this.clipsTried || !this.ctx) return; this.clipsTried = true;
-    for (const k of ['3', '2', '1', 'getfight']) {
+    for (const k of ['3', '2', '1', 'fight']) {
       try {
         const r = await fetch(`assets/voice/${k}.mp3`); if (!r.ok) continue;
         this.clips[k] = await this.ctx.decodeAudioData(await r.arrayBuffer());
@@ -45,21 +45,20 @@ const SFX = {
   },
   /* countdown call: i = 0..3 */
   announce(i) {
-    const key = ['3', '2', '1', 'getfight'][i];
+    const key = ['3', '2', '1', 'fight'][i];
     const clip = this.playClip(key);
     if (!clip) {
       if (i < 3) this.say(['Three!', 'Two!', 'One!'][i], { rate: 1.25, pitch: 0.85 });
-      else this.say('Get... FIGHT!', { rate: 1.05, pitch: 1.25 });
+      else this.say('FIGHT!', { rate: 0.8, pitch: 0.7 });
     }
-    // stinger lands on the word FIGHT (≈0.5 s into the recorded clip)
-    if (i === 3) setTimeout(() => this.hype(), clip ? 500 : 0);
+    // crowd roar under the referee's FIGHT (the recorded clip carries the boxing bell itself)
+    if (i === 3) setTimeout(() => this.hype(), clip ? 120 : 0);
   },
-  /* stinger under GET FIGHT: drum hit, power chord, crowd swell */
+  /* under FIGHT: a deep hit and an arena crowd swell */
   hype() {
     if (!this.ctx) return;
     this.tone(55, 0.5, 0.45, 'sine', 0, 35);
     this.noise(0.18, 180, 0.7, 0.5, 'lowpass');
-    [[110, 165, 220], [147, 220, 294]].forEach((ch, k) => ch.forEach((f) => this.tone(f, 0.55, 0.06, 'sawtooth', 0.05 + k * 0.28)));
     const n = this.noise(1.4, 900, 0.4, 0.0001, 'bandpass', 0.1);
     if (n) { const t = this.ctx.currentTime + 0.1; n.g.gain.cancelScheduledValues(t); n.g.gain.setValueAtTime(0.0001, t); n.g.gain.exponentialRampToValueAtTime(0.18, t + 0.35); n.g.gain.exponentialRampToValueAtTime(0.0001, t + 1.4); }
   },

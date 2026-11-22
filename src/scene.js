@@ -4,45 +4,76 @@ const GL = {
   show: null, battle: null, w: 1, h: 1,
   init() {
     const canvas = $('#gl');
-    const r = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
-    this.mobile = Math.min(window.innerWidth, window.innerHeight) < 600 || /Mobi|Android/i.test(navigator.userAgent);
-    r.setPixelRatio(Math.min(window.devicePixelRatio || 1, this.mobile ? 1.5 : 2));
+    // the scene is drawn through the post-processing composer, so canvas MSAA would only cost time
+    const r = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance', stencil: false });
+    this.mobile = Math.min(window.innerWidth, window.innerHeight) < 600 || /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+    this.q0 = this.mobile ? 1 : 0; this.q = this.q0;
+    r.setPixelRatio(this.dpr());
     r.outputEncoding = THREE.sRGBEncoding;
     r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = 1.1;
-    r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap;
+    r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFShadowMap;
     this.renderer = r;
     this.env = makeEnv(r);
     this.show = new Showcase(this.env);
     this.battle = new BattleScene(this.env);
     this.resize();
     window.addEventListener('resize', () => this.resize());
+    this.battle.prewarm(r);
+  },
+  /* quality levels: 0 = sharp desktop, 1 = default phone, 2 = 1x, 3 = 1x without bloom */
+  dpr() { const d = window.devicePixelRatio || 1; return [Math.min(d, 1.5), Math.min(d, 1.25), 1, 0.85][this.q]; },
+  setQuality(q) {
+    this.q = clamp(q, 0, 3); this.renderer.setPixelRatio(this.dpr());
+    this.disposeComposers(); this.resize();
+  },
+  watchFps(dt) {
+    // adapt to the device: step quality down when frames are slow, back up once if there is headroom
+    this.ft = this.ft == null ? 1 / 60 : this.ft * 0.94 + dt * 0.06;
+    this.qT = (this.qT || 0) + dt;
+    if (this.qT < 2.5) return;
+    this.qT = 0;
+    if (this.ft > 1 / 42 && this.q < 3) this.setQuality(this.q + 1);
+    else if (this.ft < 1 / 58 && this.q > this.q0 && !this.qUp) { this.qUp = true; this.setQuality(this.q - 1); }
+  },
+  disposeComposers() {
+    for (const k of ['show', 'battle']) { const c = this.composers && this.composers[k]; if (c) { c.renderTarget1.dispose(); c.renderTarget2.dispose(); c.passes.forEach((p) => p.dispose && p.dispose()); } }
+    this.composers = {};
   },
   resize() {
     this.w = window.innerWidth; this.h = window.innerHeight;
     this.renderer.setSize(this.w, this.h, false);
     for (const s of [this.show, this.battle]) { s.cam.aspect = this.w / this.h; s.cam.updateProjectionMatrix(); s.layout && s.layout(); }
+    for (const k in (this.composers || {})) { const c = this.composers[k]; if (c) { c.setPixelRatio(this.dpr()); c.setSize(this.w, this.h); } }
     this.buildComposer();
   },
+  /* one composer per scene, built once and reused (rebuilding on every screen change leaked render targets) */
   buildComposer() {
+    this.composers = this.composers || {};
     if (!THREE.EffectComposer || !THREE.UnrealBloomPass) { this.composer = null; return; }
-    const scene = this.mode === 'battle' ? this.battle : this.show;
-    this.composer = new THREE.EffectComposer(this.renderer);
-    this.composer.setPixelRatio(Math.min(window.devicePixelRatio || 1, this.mobile ? 1 : 2));
-    this.composer.setSize(this.w, this.h);
-    this.composer.addPass(new THREE.RenderPass(scene.scene, scene.cam));
-    this.bloom = new THREE.UnrealBloomPass(new THREE.Vector2(this.w, this.h), this.mode === 'battle' ? 0.85 : 0.55, 0.5, this.mode === 'battle' ? 0.8 : 0.9);
-    this.composer.addPass(this.bloom);
-    if (THREE.GammaCorrectionShader) this.composer.addPass(new THREE.ShaderPass(THREE.GammaCorrectionShader));
-    this.postPass = new THREE.ShaderPass(PostShader);
-    this.composer.addPass(this.postPass);
-    this.battle.fx.post = this.mode === 'battle' ? this.postPass.uniforms : null;
-    if (this.mode !== 'battle') this.postPass.uniforms.uVig.value = 0.45;
+    const key = this.mode === 'battle' ? 'battle' : 'show', scene = key === 'battle' ? this.battle : this.show;
+    let c = this.composers[key];
+    if (!c) {
+      c = this.composers[key] = new THREE.EffectComposer(this.renderer);
+      c.setPixelRatio(this.dpr());
+      c.setSize(this.w, this.h);
+      c.addPass(new THREE.RenderPass(scene.scene, scene.cam));
+      c.bloom = new THREE.UnrealBloomPass(new THREE.Vector2(this.w, this.h), key === 'battle' ? 0.85 : 0.55, 0.5, key === 'battle' ? 0.8 : 0.9);
+      c.bloom.enabled = this.q < 3;
+      c.addPass(c.bloom);
+      if (THREE.GammaCorrectionShader) c.addPass(new THREE.ShaderPass(THREE.GammaCorrectionShader));
+      c.post = new THREE.ShaderPass(PostShader);
+      c.addPass(c.post);
+      if (key !== 'battle') c.post.uniforms.uVig.value = 0.45;
+    }
+    this.composer = c; this.bloom = c.bloom; this.postPass = c.post;
+    this.battle.fx.post = key === 'battle' ? c.post.uniforms : null;
   },
-  setMode(m) { if (this.mode !== m) { this.mode = m; this.buildComposer(); } },
+  setMode(m) { if (this.mode !== m) { this.mode = m; this.qT = -1.5; this.buildComposer(); } },
   render(dt) {
     const s = this.mode === 'battle' ? this.battle : this.show;
     s.update(dt);
     if (this.composer) this.composer.render(); else this.renderer.render(s.scene, s.cam);
+    if (!document.hidden) this.watchFps(dt);
   },
 };
 
@@ -164,7 +195,7 @@ class BattleScene {
     this.shake = 0; this.t = 0; this.zoomTo = null;
     sc.add(new THREE.HemisphereLight(0xa9c4ff, 0x14101a, 0.55));
     const key = new THREE.DirectionalLight(0xffffff, 1.5); key.position.set(4, 12, 6); key.castShadow = true;
-    key.shadow.mapSize.set(2048, 2048); Object.assign(key.shadow.camera, { left: -7, right: 7, top: 7, bottom: -7, near: 1, far: 30 });
+    key.shadow.mapSize.set(1024, 1024); Object.assign(key.shadow.camera, { left: -7, right: 7, top: 7, bottom: -7, near: 1, far: 30 });
     key.shadow.bias = -0.0005; sc.add(key);
     const s1 = new THREE.SpotLight(0xff7a2a, 1.4, 30, 0.5, 0.6); s1.position.set(-9, 7, -4); sc.add(s1);
     const s2 = new THREE.SpotLight(0x36d3ff, 1.2, 30, 0.5, 0.6); s2.position.set(9, 7, -4); sc.add(s2);
@@ -178,6 +209,20 @@ class BattleScene {
     this.baseCols = [0xff6a1a, 0x36d3ff];
     this.arrow = this.makeArrow(); sc.add(this.arrow);
     this.ghost = null;
+  }
+  /* compile every effect's shader once at start-up so the first special move does not stall */
+  prewarm(renderer) {
+    const fx = this.fx, x = 0, y = 0.3, z = 0, c = 0xff8040;
+    try {
+      fx.sigil(x, y, z, c); fx.dome(x, y, z, c); fx.cracks(x, y, z, c); fx.specialBurst(x, y, z, c); fx.pillar(x, y, z, c);
+      fx.bolt(x, y + 3, z, x, y, z, c); fx.star(x, y, z, 2, c); fx.ring(x, y, z, c); fx.impact(x, y, z, 1, c, 0x36d3ff, 1, 0);
+      fx.burstFlash(new THREE.Vector3(x, y, z), c); fx.spark(x, y, z, 4, 2, c);
+      for (const k of ['fire', 'phoenix', 'thunder', 'wind', 'moon', 'dark', 'steel', 'water']) fx.element(k, x, y, z, c, 0.016);
+      this.shields.forEach((s) => s.update(true, x, y, z, c, 0, 0));
+      renderer.compile(this.scene, this.cam);
+      this.shields.forEach((s) => { s.mat.uniforms.uAlpha.value = 0; s.mesh.visible = false; });
+      fx.update(10);   // expire everything immediately
+    } catch (e) { /* prewarm is best-effort */ }
   }
   layout() {
     const a = GL.w / Math.max(1, GL.h);

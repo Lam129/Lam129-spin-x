@@ -82,7 +82,7 @@ const Online = {
   cur: null, st: 'training', again: [null, null], lostT: null, inMatch: false, emoAt: 0,
 
   available() { return Store.mode === 'server' && Api.cred && Api.cred.email; },
-  newbie(p) { return ((p ? p.online : (Store.profile.stats.online | 0)) | 0) < NEWBIE_MATCHES; },
+  newbie() { return false; },   // newbie protection removed on request
   open(code) {
     if (Store.mode !== 'server') return UI.toast('線上對戰需要在公開網站上遊玩。');
     if (!this.available()) { UI.toast('線上對戰需要先註冊 Email 帳號。'); UI.show('auth'); UI.renderAuth(); UI.setAuthTab('register'); UI.startAuthCycle(); return; }
@@ -138,8 +138,8 @@ const Online = {
       case 'sp': if (this.role === 'host') Battle.useSpecial(1); break;
       case 'mo': if (this.role === 'host') Battle.useMomentum(1); else if (Battle.arena) { Battle.arena.beys[m.side].mo = (Battle.arena.beys[m.side].mo | 0) + 1; Battle.momentumFx(m.side); } break;
       case 'ph': if (this.role === 'guest' && Battle.active) Battle.setPhase(m.p); break;
-      case 'L': if (this.role === 'guest' && Battle.arena) { const b = Battle.arena.beys[m.side]; Object.assign(b, { x: m.x, z: m.z, state: 'spin', launched: true }); Battle.netSnap = null; Battle.launchFx(m.side, m.power); } break;
-      case 's': if (this.role === 'guest') { Battle.netSnap = m.b; Battle.timeScale = m.ts || 1; } break;
+      case 'L': if (this.role === 'guest' && Battle.arena) { const b = Battle.arena.beys[m.side]; Object.assign(b, { x: m.x, z: m.z, state: 'spin', launched: true }); Battle.launchFx(m.side, m.power); } break;
+      case 's': if (this.role === 'guest') Battle.netPush(m); break;
       case 'e': if (this.role === 'guest' && Battle.arena) Battle.netEvent(m.n, m.a); break;
       case 'cine': if (this.role === 'guest' && Battle.cur) Battle.presentSpecial(m.side, specOf(Battle.cur[m.side].b)); break;
       case 'res': if (this.role === 'guest') Battle.showResult(m.side, m.type); break;

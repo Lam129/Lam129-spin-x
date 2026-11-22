@@ -5,7 +5,7 @@
 /* Layout: one full-screen WebGL stage behind angular esports HUD panels. Deliberately single dark theme (arena at night). */
 :root{
   color-scheme: dark;
-  --bg:#06080e; --panel:rgba(13,17,28,.86); --panel2:rgba(22,28,44,.92); --line:#27324d; --line2:#3a4868;
+  --bg:#06080e; --panel:rgba(13,17,28,.92); --panel2:rgba(22,28,44,.92); --line:#27324d; --line2:#3a4868;
   --fg:#e9edf7; --dim:#8d98b4; --mute:#5b6683;
   --hot:#ff6a1a; --hot2:#ffb347; --ice:#36d3ff;
   --atk:#ff4141; --def:#3d8bff; --sta:#2fd27a; --bal:#f6c632;
@@ -20,6 +20,8 @@ body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15
 #ui{position:fixed;inset:0;z-index:2;pointer-events:none}
 #ui .screen{position:absolute;inset:0;pointer-events:none}
 #ui .screen > *{pointer-events:auto}
+/* menus take touches themselves so empty areas can be dragged to scroll (the 3D canvas has no input) */
+#ui .screen:not(#s-battle){pointer-events:auto;overscroll-behavior:contain}
 #ui .screen .pe-none{pointer-events:none}
 /* full-screen overlays must never swallow clicks unless active */
 #ui .screen > .cine,#ui .screen > .cutin,#ui .screen > .banner,#ui .screen > .toast,#ui .screen > .count,#ui .screen > .hud-top,#ui .screen > .gauge{pointer-events:none}
@@ -28,7 +30,7 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0;background:none
 button:focus-visible,input:focus-visible{outline:2px solid var(--ice);outline-offset:2px}
 .num{font-family:var(--f-disp);font-variant-numeric:tabular-nums}
 .cut{clip-path:polygon(var(--cut) 0,100% 0,100% calc(100% - var(--cut)),calc(100% - var(--cut)) 100%,0 100%,0 var(--cut))}
-.panel{background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(6px)}
+.panel{background:var(--panel);border:1px solid var(--line)}
 .eyebrow{font-family:var(--f-disp);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
 h1,h2,h3{margin:0;text-wrap:balance}
 .btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 22px;font-weight:700;font-size:15px;background:var(--panel2);border:1px solid var(--line2);transition:transform .12s,background .15s,border-color .15s}
@@ -342,7 +344,8 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .cine.beast .cn-who,.cine.beast .cn-kind{display:none}
 .cn-beast{position:absolute;inset:0;pointer-events:none}
 .cn-bst{position:absolute;left:50%;top:46%;width:min(78vw,980px);translate:-50% -50%;opacity:0}
-.cn-bst .beast{width:100%;height:auto;overflow:visible;filter:drop-shadow(0 0 18px var(--sc)) drop-shadow(0 0 4px #fff)}
+.cn-bst .beast{width:100%;height:auto;overflow:visible;filter:drop-shadow(0 0 14px var(--sc))}
+.cn-bst .beast.lite{filter:none}
 .cine.right .cn-bst .beast{transform:scaleX(-1)}
 .cine.beast .cn-bst{animation:bstRun 1s cubic-bezier(.25,.8,.3,1) forwards}
 .cine.right.beast .cn-bst{animation-name:bstRunR}
@@ -498,7 +501,7 @@ img.lz{background:linear-gradient(90deg,#0b0f1a,#151b2a,#0b0f1a);background-size
 .ah-vs b{font-size:22px;font-weight:900}.ah-vs i{font:900 italic 30px var(--f-disp);color:#fff}
 .ah-vs small{flex-basis:100%;font-style:normal;font-size:12px;color:#c9d0e2}
 #s-auth::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(5,6,10,0) 0,rgba(5,6,10,.15) 45%,rgba(5,6,10,.8) 72%);pointer-events:none}
-#s-auth .auth-card{position:relative;z-index:5;background:rgba(9,12,20,.84);backdrop-filter:blur(8px)}
+#s-auth .auth-card{position:relative;z-index:5;background:rgba(9,12,20,.9)}
 #s-auth .cine{z-index:3}
 #s-auth .inp{width:100%;box-sizing:border-box;min-width:0}
 body.demo .cine .cn-panel.cn-a{display:none}
@@ -519,7 +522,7 @@ body.demo .cine .cn-panel.cn-a{display:none}
   .ftable{grid-template-columns:1fr 1fr}
 }
 /* ================= phones & small tablets (portrait or narrow) ================= */
-@media (max-width:820px){
+@media (max-width:820px), (max-height:500px) and (orientation:landscape){
   body{font-size:14px}
   #ui .screen{overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
   .topbar{position:sticky;top:0;z-index:3;gap:8px;padding:10px max(12px,env(safe-area-inset-left,0px)) 10px max(12px,env(safe-area-inset-right,0px));flex-wrap:wrap}
@@ -579,6 +582,7 @@ body.demo .cine .cn-panel.cn-a{display:none}
   .rules{position:static;margin:0 12px 18px;padding:18px 16px;inset:auto}
   /* result & auth */
   .res-title{font-size:44px}.res-score{font-size:28px}
+  .res-card{box-sizing:border-box;padding:22px 16px;max-height:calc(100% - 24px);overflow:auto}
   .starter-grid{grid-template-columns:repeat(2,1fr)}
   #s-auth{display:flex;flex-direction:column;align-items:stretch;gap:12px;padding:14px max(14px,env(safe-area-inset-left,0px)) 24px}
   #s-auth::before{background:linear-gradient(180deg,rgba(5,6,10,0) 0,rgba(5,6,10,0) 30vh,rgba(5,6,10,.92) 44vh)}
@@ -606,7 +610,7 @@ body.demo .cine .cn-panel.cn-a{display:none}
   .track{height:min(34vh,220px);width:52px}
   .handle{left:-12px;right:-12px;height:30px}
   .powread{font-size:14px;min-height:16px}
-  .spbtn{left:8px;bottom:calc(max(8px,env(safe-area-inset-bottom,0px)) + 118px);padding:8px 10px}
+  .spbtn{left:8px;bottom:calc(max(8px,env(safe-area-inset-bottom,0px)) + 178px);padding:8px 10px}
   .spbtn small{display:none}.spbtn .k{display:none}
   .quit{bottom:auto;top:calc(max(8px,env(safe-area-inset-top,0px)) + 56px);left:auto;right:8px;transform:none;padding:6px 10px;font-size:12px}
   .count{font-size:clamp(56px,18vw,110px);top:26%}
@@ -634,12 +638,24 @@ body.demo .cine .cn-panel.cn-a{display:none}
   .launcher{top:50%;bottom:auto;transform:translateY(-50%);width:130px;padding:8px}
   .launcher .hint,.launcher .eyebrow{display:none}
   .track{height:46vh}
-  .spbtn{bottom:auto;top:36%}
-  .lb-menu{top:70px}.mi{height:70px}.m1{height:84px}
-  .lb-board{display:none}
+  .spbtn{bottom:auto;top:24%}
+  .mobtn{left:max(6px,env(safe-area-inset-left,0px));bottom:auto;top:calc(24% + 64px)}
+  .lb-player{max-width:440px}
 }
 
 /* ---------- online ---------- */
+.on-menu-wrap{align-items:center;justify-content:center}
+.on-hero{box-sizing:border-box;width:min(560px,100%);padding:34px 34px 28px;display:grid;gap:14px;text-align:center;justify-items:center}
+.on-hero h2{margin:0;font:900 italic clamp(30px,4vw,44px) var(--f-body)}
+.on-cta{box-sizing:border-box;width:100%;display:grid;gap:4px;padding:22px 18px;margin-top:6px;border:0;color:#111;background:linear-gradient(90deg,#ff5a10,#ff9a2a);box-shadow:0 0 0 1px rgba(255,170,90,.5),0 10px 40px rgba(255,90,16,.45);cursor:pointer;animation:ctaPulse 2.4s ease-in-out infinite}
+.on-cta b{font-size:26px;font-weight:900;letter-spacing:.08em}.on-cta small{font-size:13px;color:#3a1a06;font-weight:700}
+.on-cta:hover{filter:brightness(1.08)}
+@keyframes ctaPulse{50%{box-shadow:0 0 0 1px rgba(255,170,90,.7),0 10px 60px rgba(255,90,16,.7)}}
+.on-or{width:100%;display:flex;align-items:center;gap:10px;color:var(--dim);font-size:13px;margin-top:6px}
+.on-or::before,.on-or::after{content:"";flex:1;height:1px;background:var(--line)}
+.on-join{width:100%;display:flex;gap:8px}
+.on-join .inp{flex:1;min-width:0;text-transform:uppercase;letter-spacing:.2em;font-size:18px;text-align:center}
+
 .net-only{display:none!important}
 body.online .net-only{display:flex!important}
 .ctr{font-style:normal;color:var(--atk);margin-left:4px}.ctr.up{color:var(--sta)}
@@ -657,7 +673,7 @@ body.online .net-only{display:flex!important}
 .emo-bubble.on{opacity:1;transform:scale(1)}
 .net-lost{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);padding:18px 26px;display:grid;gap:6px;text-align:center;z-index:6}
 .net-lost b{font-size:22px;color:var(--atk)}.net-lost em{font-style:normal;color:var(--bal);font-weight:900}
-.pick-ov{position:absolute;inset:0;z-index:7;background:rgba(5,6,10,.82);backdrop-filter:blur(6px);display:flex;flex-direction:column;align-items:center;gap:18px;padding:84px 24px 24px;pointer-events:auto;overflow:auto}
+.pick-ov{position:absolute;inset:0;z-index:7;background:rgba(5,6,10,.9);display:flex;flex-direction:column;align-items:center;gap:18px;padding:84px 24px 24px;pointer-events:auto;overflow:auto}
 .pk-head{text-align:center}.pk-head h2{margin:2px 0;font:900 italic 34px var(--f-body)}
 .pk-timer{font:900 40px var(--f-disp);color:var(--bal)}
 .pk-body{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:36px;width:min(1180px,100%)}
@@ -707,15 +723,16 @@ body.online .net-only{display:flex!important}
 .or-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .or-dbl{background:linear-gradient(90deg,#ffd23a,#ffb020)!important;color:#111!important;border:0!important}
 .or-dbl:disabled{opacity:.45}
-@media (max-width:820px){
+@media (max-width:820px), (max-height:500px) and (orientation:landscape){
   .on-wrap{position:static;padding:0 12px 18px}
   .on-menu,.on-grid{grid-template-columns:1fr}
+  .on-menu-wrap{justify-content:flex-start;padding-top:12px}.on-hero{padding:24px 18px}
   .wg-row{grid-template-columns:repeat(2,1fr)}
   .on-code-row{flex-direction:column}.on-copy{grid-template-columns:1fr 1fr}
   .pick-ov{padding:64px 12px 16px;gap:10px}
   .pk-body{grid-template-columns:1fr;gap:14px}.pk-side.op{justify-items:start;text-align:left}
   .pk-card{min-height:130px;padding:8px 4px}.pk-card img{width:64px;height:64px}.pk-card b{font-size:12px}
-  .mobtn{left:8px;bottom:calc(max(8px,env(safe-area-inset-bottom,0px)) + 170px);padding:6px 10px}.mobtn small,.mobtn .k{display:none}
+  .mobtn{left:8px;bottom:calc(max(8px,env(safe-area-inset-bottom,0px)) + 232px);padding:6px 10px}.mobtn small,.mobtn .k{display:none}
   .emo-bar{bottom:auto;top:calc(max(8px,env(safe-area-inset-top,0px)) + 56px);left:8px;transform:none;padding:4px}
   .emo-bar button{font-size:18px;padding:2px 3px}
   .emo-bubble{top:110px;font-size:22px}.emo-bubble.me{left:12px}.emo-bubble.op{right:12px}
@@ -743,7 +760,7 @@ body.online .net-only{display:flex!important}
   <label for="vol-voice">語音（倒數口號）</label><input type="range" id="vol-voice" min="0" max="100" data-vol="voice">
   <button class="btn cut" id="voiceTest">試聽語音</button>
   <div id="setAcct" style="display:grid;gap:6px;border-top:1px solid var(--line);padding-top:10px"></div>
-  <div class="desc" style="font-size:12px">倒數語音預設使用瀏覽器內建的英文語音，聲音會依電腦和瀏覽器而不同。若在 assets/voice/ 放入真人錄音（3.mp3、2.mp3、1.mp3、getfight.mp3），會自動改用錄音。</div>
+  <div class="desc" style="font-size:12px">倒數語音預設使用瀏覽器內建的英文語音，聲音會依電腦和瀏覽器而不同。若在 assets/voice/ 放入真人錄音（3.mp3、2.mp3、1.mp3、fight.mp3），會自動改用錄音。</div>
 </div>
 <div id="ui">
   <!-- AUTH -->
@@ -910,7 +927,7 @@ body.online .net-only{display:flex!important}
       <div class="aimrow"><span>中央</span><input type="range" id="aim" min="-100" max="100" value="20" aria-label="發射角度"><span>外圈軌道</span></div>
       <div class="track" id="track"><div class="fill" id="tfill"></div><div class="handle" id="handle">PULL</div></div>
       <div class="powread" id="powread"></div>
-      <div class="hint" id="lhint">按住拉柄，聽到「GET FIGHT!」後<br>快速往下拉到底！越快轉速越高</div>
+      <div class="hint" id="lhint">按住拉柄，聽到「FIGHT!」後<br>快速往下拉到底！越快轉速越高</div>
     </div>
     <button class="btn quit cut" id="quitBattle">退出對戰</button>
   </section>
@@ -918,11 +935,14 @@ body.online .net-only{display:flex!important}
   <!-- RESULT -->
   <section class="screen" id="s-online" hidden>
     <div class="topbar" data-topbar></div>
-    <div class="on-wrap" data-ov="menu">
-      <div class="on-head"><div class="eyebrow">Online Battle · 線上對戰</div><h2>邀請好友對戰</h2><p class="desc">3 對 3 盲選・先拿 4 分勝・可以下注金幣，贏家全拿。</p></div>
-      <div class="on-menu">
-        <div class="panel cut on-box"><div class="eyebrow">建立房間</div><p class="desc">建立後把房號或邀請連結傳給好友。</p><button class="btn primary cut" id="onCreate">建立房間</button></div>
-        <div class="panel cut on-box"><div class="eyebrow">加入房間</div><input class="inp" id="onJoinCode" maxlength="7" placeholder="輸入 6 碼房號" autocomplete="off" style="text-transform:uppercase;letter-spacing:.2em;font-size:20px"><button class="btn cut" id="onJoinBtn">加入</button></div>
+    <div class="on-wrap on-menu-wrap" data-ov="menu">
+      <div class="on-hero panel cut">
+        <div class="eyebrow">Online Battle · 線上對戰</div>
+        <h2>和好友一決勝負</h2>
+        <p class="desc">3 對 3 盲選・先拿 4 分勝・可以下注金幣，贏家全拿</p>
+        <button class="on-cta cut" id="onCreate"><b>建立房間</b><small>產生房號和邀請連結，傳給好友就能開打</small></button>
+        <div class="on-or"><span>已經有房號了？</span></div>
+        <div class="on-join"><input class="inp" id="onJoinCode" maxlength="7" placeholder="輸入 6 碼房號" autocomplete="off"><button class="btn cut" id="onJoinBtn">加入</button></div>
       </div>
     </div>
     <div class="on-wrap" data-ov="room" hidden>
@@ -1046,7 +1066,7 @@ body.online .net-only{display:flex!important}
       </ul>
       <h3>發射規範</h3>
       <ul>
-        <li>倒數「3、2、1、GET FIGHT!」喊到「GET FIGHT!」時才可以拉繩發射。</li>
+        <li>倒數「3、2、1、FIGHT!」喊到「FIGHT!」時才可以拉繩發射。</li>
         <li>太早或太晚發射都算<b>發射失誤</b>。同一場比賽第一次失誤為警告，<b>第二次失誤對手得 1 分</b>，然後重新發射。</li>
         <li>拉繩的速度越快，陀螺的初始轉速越高。發射角度可以選擇往中央或往外圈軌道。</li>
       </ul>
@@ -1070,7 +1090,7 @@ body.online .net-only{display:flex!important}
         <li>建立房間後把房號或邀請連結傳給好友。需要註冊 Email 帳號才能進行線上對戰。</li>
         <li>房主設定下注金幣（可自訂，最少 10），雙方都接受才開打。下注在開打時先扣除，贏家拿走雙方的下注，輸家拿 20 金幣安慰獎。</li>
         <li>每回合雙方<b>同時暗選</b>出戰陀螺，用過的要等 3 顆都出戰後才能再選。先拿 4 分獲勝。</li>
-        <li>中途離開判輸；對手斷線 30 秒沒回來，判你勝利。新手前 5 場線上對戰不下注。</li>
+        <li>中途離開判輸；對手斷線 30 秒沒回來，判你勝利。</li>
       </ul>
     </article>
   </section>

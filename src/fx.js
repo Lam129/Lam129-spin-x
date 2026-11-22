@@ -161,6 +161,10 @@ class FX {
     this.lines = new THREE.LineSegments(lg, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
     this.lines.frustumCulled = false; scene.add(this.lines);
     this.cursor = 0; this.sprites = []; this.rings = []; this.debris = []; this.flashes = []; this.rays = [];
+    // a fixed pool of flash lights: adding/removing lights changes the light count and forces three.js
+    // to recompile every material in the scene, which froze the game on each collision
+    this.lightPool = [0, 1].map(() => { const l = new THREE.PointLight(0xffffff, 0, 6); scene.add(l); return l; });
+    this.lightNext = 0;
     for (let i = 0; i < N; i++) this.pos[i * 3 + 1] = -99;
     this.starMat = new THREE.SpriteMaterial({ map: starTex(), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
     this.ringMatBase = new THREE.MeshBasicMaterial({ map: ringTex(), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
@@ -201,8 +205,7 @@ class FX {
     this.spark(x, y, z, Math.round(8 + p * 30), 4 + p * 6, colB, 0.3 + p * 0.3, 0.6, dir - Math.PI / 2, 1.2);
     if (p > 0.3) this.ring(x, y - 0.15, z, 0xffe0a0, 1.2 + p * 2.6, 0.32 + p * 0.15);
     if (p > 0.6) this.ring(x, y - 0.12, z, colA, 2 + p * 2, 0.5);
-    const l = new THREE.PointLight(0xffd090, 3 + p * 10, 5); l.position.set(x, y + 0.4, z); this.scene.add(l);
-    this.flashes.push({ l, t: 0 });
+    this.flashLight(0xffd090, 3 + p * 10, 5, x, y + 0.4, z);
     if (this.post) { if (p > 0.4) this.post.uAb.value = Math.max(this.post.uAb.value, p * 1.0); if (p > 0.6) { this.post.uFlash.value = Math.max(this.post.uFlash.value, p * 0.16); this.post.uFlashCol.value.set(0xfff0d0); } }
   }
   burstFlash(p, color) {
@@ -221,9 +224,14 @@ class FX {
       rays.add(piv);
     }
     rays.position.copy(p); this.scene.add(rays); this.rays.push({ g: rays, t: 0 });
-    const l = new THREE.PointLight(0xffa050, 14, 10); l.position.copy(p).add(new THREE.Vector3(0, 0.6, 0)); this.scene.add(l);
-    this.flashes.push({ l, t: 0 });
+    this.flashLight(0xffa050, 14, 10, p.x, p.y + 0.6, p.z);
     if (this.post) { this.post.uFlash.value = 0.6; this.post.uFlashCol.value.set(0xffffff); this.post.uAb.value = 1.6; }
+  }
+  flashLight(color, intensity, dist, x, y, z) {
+    // reuse the dimmest pooled light
+    let l = this.lightPool[0]; for (const c of this.lightPool) if (c.intensity < l.intensity) l = c;
+    if (l.intensity > intensity) return;
+    l.color.set(color); l.intensity = intensity; l.distance = dist; l.position.set(x, y, z);
   }
   addDebris(obj, v, w, color) { this.scene.add(obj); this.debris.push({ obj, v, w, t: 0, color }); }
   clearDebris() { this.debris.forEach((d) => this.scene.remove(d.obj)); this.debris = []; }
@@ -252,11 +260,10 @@ class FX {
     this.pts.geometry.attributes.position.needsUpdate = true; this.pts.geometry.attributes.color.needsUpdate = true;
     this.lines.geometry.attributes.position.needsUpdate = true; this.lines.geometry.attributes.color.needsUpdate = true;
     for (const s of this.sprites) { s.t += dt; const k = s.t / s.dur; if (!s.line) s.s.scale.setScalar(s.size * (0.3 + 0.9 * Math.sqrt(k))); s.s.material.opacity = Math.max(0, 1 - k * k); }
-    this.sprites = this.sprites.filter((s) => { if (s.t >= s.dur) { this.scene.remove(s.s); s.s.material.dispose(); if (s.line) s.s.geometry.dispose(); return false; } return true; });
+    this.sprites = this.sprites.filter((s) => { if (s.t >= s.dur) { this.scene.remove(s.s); if (s.line) s.s.geometry.dispose(); return false; } return true; });
     for (const r of this.rings) { r.t += dt; const k = r.t / r.dur; r.m.scale.setScalar(0.4 + (1 - Math.pow(1 - k, 2.2)) * r.size * 2); r.m.material.opacity = Math.max(0, 1 - k); }
-    this.rings = this.rings.filter((r) => { if (r.t >= r.dur) { this.scene.remove(r.m); r.m.geometry.dispose(); r.m.material.dispose(); return false; } return true; });
-    for (const f of this.flashes) { f.t += dt; f.l.intensity *= Math.exp(-dt * 8); }
-    this.flashes = this.flashes.filter((f) => { if (f.t > 0.7) { this.scene.remove(f.l); return false; } return true; });
+    this.rings = this.rings.filter((r) => { if (r.t >= r.dur) { this.scene.remove(r.m); r.m.geometry.dispose(); return false; } return true; });
+    for (const l of this.lightPool) { l.intensity *= Math.exp(-dt * 8); if (l.intensity < 0.02) l.intensity = 0; }
     for (const r of this.rays) {
       r.t += dt;
       if (r.sigil) { r.g.material.opacity = Math.min(0.9, r.t * 3) * Math.max(0, 1 - Math.max(0, r.t - 1.6) * 2); r.g.rotation.z += dt * 1.4; r.g.scale.setScalar(0.6 + Math.min(r.t, 0.5) * 0.8); continue; }
@@ -303,7 +310,7 @@ Object.assign(FX.prototype, {
     this.star(x, y + 0.4, z, 6, color, 0.5); this.star(x, y + 0.4, z, 4, 0xffffff, 0.3);
     this.ring(x, y + 0.05, z, color, 4, 0.7); this.ring(x, y + 0.05, z, 0xffffff, 2.5, 0.5);
     this.spark(x, y + 0.3, z, 140, 6, color, 0.9, 1.6);
-    const l = new THREE.PointLight(color, 12, 9); l.position.set(x, y + 1, z); this.scene.add(l); this.flashes.push({ l, t: 0 });
+    this.flashLight(color, 12, 9, x, y + 1, z);
     if (this.post) { this.post.uFlash.value = 0.45; this.post.uFlashCol.value.set(color); this.post.uAb.value = 1.2; }
   },
   bolt(x0, y0, z0, x1, y1, z1, color) {

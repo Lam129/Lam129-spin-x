@@ -5,7 +5,7 @@
 /* Layout: one full-screen WebGL stage behind angular esports HUD panels. Deliberately single dark theme (arena at night). */
 :root{
   color-scheme: dark;
-  --bg:#06080e; --panel:rgba(13,17,28,.86); --panel2:rgba(22,28,44,.92); --line:#27324d; --line2:#3a4868;
+  --bg:#06080e; --panel:rgba(13,17,28,.92); --panel2:rgba(22,28,44,.92); --line:#27324d; --line2:#3a4868;
   --fg:#e9edf7; --dim:#8d98b4; --mute:#5b6683;
   --hot:#ff6a1a; --hot2:#ffb347; --ice:#36d3ff;
   --atk:#ff4141; --def:#3d8bff; --sta:#2fd27a; --bal:#f6c632;
@@ -20,6 +20,8 @@ body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15
 #ui{position:fixed;inset:0;z-index:2;pointer-events:none}
 #ui .screen{position:absolute;inset:0;pointer-events:none}
 #ui .screen > *{pointer-events:auto}
+/* menus take touches themselves so empty areas can be dragged to scroll (the 3D canvas has no input) */
+#ui .screen:not(#s-battle){pointer-events:auto;overscroll-behavior:contain}
 #ui .screen .pe-none{pointer-events:none}
 /* full-screen overlays must never swallow clicks unless active */
 #ui .screen > .cine,#ui .screen > .cutin,#ui .screen > .banner,#ui .screen > .toast,#ui .screen > .count,#ui .screen > .hud-top,#ui .screen > .gauge{pointer-events:none}
@@ -28,7 +30,7 @@ button{font-family:inherit;color:inherit;cursor:pointer;border:0;background:none
 button:focus-visible,input:focus-visible{outline:2px solid var(--ice);outline-offset:2px}
 .num{font-family:var(--f-disp);font-variant-numeric:tabular-nums}
 .cut{clip-path:polygon(var(--cut) 0,100% 0,100% calc(100% - var(--cut)),calc(100% - var(--cut)) 100%,0 100%,0 var(--cut))}
-.panel{background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(6px)}
+.panel{background:var(--panel);border:1px solid var(--line)}
 .eyebrow{font-family:var(--f-disp);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
 h1,h2,h3{margin:0;text-wrap:balance}
 .btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 22px;font-weight:700;font-size:15px;background:var(--panel2);border:1px solid var(--line2);transition:transform .12s,background .15s,border-color .15s}
@@ -342,7 +344,8 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .cine.beast .cn-who,.cine.beast .cn-kind{display:none}
 .cn-beast{position:absolute;inset:0;pointer-events:none}
 .cn-bst{position:absolute;left:50%;top:46%;width:min(78vw,980px);translate:-50% -50%;opacity:0}
-.cn-bst .beast{width:100%;height:auto;overflow:visible;filter:drop-shadow(0 0 18px var(--sc)) drop-shadow(0 0 4px #fff)}
+.cn-bst .beast{width:100%;height:auto;overflow:visible;filter:drop-shadow(0 0 14px var(--sc))}
+.cn-bst .beast.lite{filter:none}
 .cine.right .cn-bst .beast{transform:scaleX(-1)}
 .cine.beast .cn-bst{animation:bstRun 1s cubic-bezier(.25,.8,.3,1) forwards}
 .cine.right.beast .cn-bst{animation-name:bstRunR}
@@ -498,7 +501,7 @@ img.lz{background:linear-gradient(90deg,#0b0f1a,#151b2a,#0b0f1a);background-size
 .ah-vs b{font-size:22px;font-weight:900}.ah-vs i{font:900 italic 30px var(--f-disp);color:#fff}
 .ah-vs small{flex-basis:100%;font-style:normal;font-size:12px;color:#c9d0e2}
 #s-auth::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(5,6,10,0) 0,rgba(5,6,10,.15) 45%,rgba(5,6,10,.8) 72%);pointer-events:none}
-#s-auth .auth-card{position:relative;z-index:5;background:rgba(9,12,20,.84);backdrop-filter:blur(8px)}
+#s-auth .auth-card{position:relative;z-index:5;background:rgba(9,12,20,.9)}
 #s-auth .cine{z-index:3}
 #s-auth .inp{width:100%;box-sizing:border-box;min-width:0}
 body.demo .cine .cn-panel.cn-a{display:none}
@@ -519,7 +522,7 @@ body.demo .cine .cn-panel.cn-a{display:none}
   .ftable{grid-template-columns:1fr 1fr}
 }
 /* ================= phones & small tablets (portrait or narrow) ================= */
-@media (max-width:820px){
+@media (max-width:820px), (max-height:500px) and (orientation:landscape){
   body{font-size:14px}
   #ui .screen{overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
   .topbar{position:sticky;top:0;z-index:3;gap:8px;padding:10px max(12px,env(safe-area-inset-left,0px)) 10px max(12px,env(safe-area-inset-right,0px));flex-wrap:wrap}
@@ -579,6 +582,7 @@ body.demo .cine .cn-panel.cn-a{display:none}
   .rules{position:static;margin:0 12px 18px;padding:18px 16px;inset:auto}
   /* result & auth */
   .res-title{font-size:44px}.res-score{font-size:28px}
+  .res-card{box-sizing:border-box;padding:22px 16px;max-height:calc(100% - 24px);overflow:auto}
   .starter-grid{grid-template-columns:repeat(2,1fr)}
   #s-auth{display:flex;flex-direction:column;align-items:stretch;gap:12px;padding:14px max(14px,env(safe-area-inset-left,0px)) 24px}
   #s-auth::before{background:linear-gradient(180deg,rgba(5,6,10,0) 0,rgba(5,6,10,0) 30vh,rgba(5,6,10,.92) 44vh)}
@@ -606,7 +610,7 @@ body.demo .cine .cn-panel.cn-a{display:none}
   .track{height:min(34vh,220px);width:52px}
   .handle{left:-12px;right:-12px;height:30px}
   .powread{font-size:14px;min-height:16px}
-  .spbtn{left:8px;bottom:calc(max(8px,env(safe-area-inset-bottom,0px)) + 118px);padding:8px 10px}
+  .spbtn{left:8px;bottom:calc(max(8px,env(safe-area-inset-bottom,0px)) + 178px);padding:8px 10px}
   .spbtn small{display:none}.spbtn .k{display:none}
   .quit{bottom:auto;top:calc(max(8px,env(safe-area-inset-top,0px)) + 56px);left:auto;right:8px;transform:none;padding:6px 10px;font-size:12px}
   .count{font-size:clamp(56px,18vw,110px);top:26%}
@@ -634,12 +638,24 @@ body.demo .cine .cn-panel.cn-a{display:none}
   .launcher{top:50%;bottom:auto;transform:translateY(-50%);width:130px;padding:8px}
   .launcher .hint,.launcher .eyebrow{display:none}
   .track{height:46vh}
-  .spbtn{bottom:auto;top:36%}
-  .lb-menu{top:70px}.mi{height:70px}.m1{height:84px}
-  .lb-board{display:none}
+  .spbtn{bottom:auto;top:24%}
+  .mobtn{left:max(6px,env(safe-area-inset-left,0px));bottom:auto;top:calc(24% + 64px)}
+  .lb-player{max-width:440px}
 }
 
 /* ---------- online ---------- */
+.on-menu-wrap{align-items:center;justify-content:center}
+.on-hero{box-sizing:border-box;width:min(560px,100%);padding:34px 34px 28px;display:grid;gap:14px;text-align:center;justify-items:center}
+.on-hero h2{margin:0;font:900 italic clamp(30px,4vw,44px) var(--f-body)}
+.on-cta{box-sizing:border-box;width:100%;display:grid;gap:4px;padding:22px 18px;margin-top:6px;border:0;color:#111;background:linear-gradient(90deg,#ff5a10,#ff9a2a);box-shadow:0 0 0 1px rgba(255,170,90,.5),0 10px 40px rgba(255,90,16,.45);cursor:pointer;animation:ctaPulse 2.4s ease-in-out infinite}
+.on-cta b{font-size:26px;font-weight:900;letter-spacing:.08em}.on-cta small{font-size:13px;color:#3a1a06;font-weight:700}
+.on-cta:hover{filter:brightness(1.08)}
+@keyframes ctaPulse{50%{box-shadow:0 0 0 1px rgba(255,170,90,.7),0 10px 60px rgba(255,90,16,.7)}}
+.on-or{width:100%;display:flex;align-items:center;gap:10px;color:var(--dim);font-size:13px;margin-top:6px}
+.on-or::before,.on-or::after{content:"";flex:1;height:1px;background:var(--line)}
+.on-join{width:100%;display:flex;gap:8px}
+.on-join .inp{flex:1;min-width:0;text-transform:uppercase;letter-spacing:.2em;font-size:18px;text-align:center}
+
 .net-only{display:none!important}
 body.online .net-only{display:flex!important}
 .ctr{font-style:normal;color:var(--atk);margin-left:4px}.ctr.up{color:var(--sta)}
@@ -657,7 +673,7 @@ body.online .net-only{display:flex!important}
 .emo-bubble.on{opacity:1;transform:scale(1)}
 .net-lost{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);padding:18px 26px;display:grid;gap:6px;text-align:center;z-index:6}
 .net-lost b{font-size:22px;color:var(--atk)}.net-lost em{font-style:normal;color:var(--bal);font-weight:900}
-.pick-ov{position:absolute;inset:0;z-index:7;background:rgba(5,6,10,.82);backdrop-filter:blur(6px);display:flex;flex-direction:column;align-items:center;gap:18px;padding:84px 24px 24px;pointer-events:auto;overflow:auto}
+.pick-ov{position:absolute;inset:0;z-index:7;background:rgba(5,6,10,.9);display:flex;flex-direction:column;align-items:center;gap:18px;padding:84px 24px 24px;pointer-events:auto;overflow:auto}
 .pk-head{text-align:center}.pk-head h2{margin:2px 0;font:900 italic 34px var(--f-body)}
 .pk-timer{font:900 40px var(--f-disp);color:var(--bal)}
 .pk-body{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:36px;width:min(1180px,100%)}
@@ -707,15 +723,16 @@ body.online .net-only{display:flex!important}
 .or-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .or-dbl{background:linear-gradient(90deg,#ffd23a,#ffb020)!important;color:#111!important;border:0!important}
 .or-dbl:disabled{opacity:.45}
-@media (max-width:820px){
+@media (max-width:820px), (max-height:500px) and (orientation:landscape){
   .on-wrap{position:static;padding:0 12px 18px}
   .on-menu,.on-grid{grid-template-columns:1fr}
+  .on-menu-wrap{justify-content:flex-start;padding-top:12px}.on-hero{padding:24px 18px}
   .wg-row{grid-template-columns:repeat(2,1fr)}
   .on-code-row{flex-direction:column}.on-copy{grid-template-columns:1fr 1fr}
   .pick-ov{padding:64px 12px 16px;gap:10px}
   .pk-body{grid-template-columns:1fr;gap:14px}.pk-side.op{justify-items:start;text-align:left}
   .pk-card{min-height:130px;padding:8px 4px}.pk-card img{width:64px;height:64px}.pk-card b{font-size:12px}
-  .mobtn{left:8px;bottom:calc(max(8px,env(safe-area-inset-bottom,0px)) + 170px);padding:6px 10px}.mobtn small,.mobtn .k{display:none}
+  .mobtn{left:8px;bottom:calc(max(8px,env(safe-area-inset-bottom,0px)) + 232px);padding:6px 10px}.mobtn small,.mobtn .k{display:none}
   .emo-bar{bottom:auto;top:calc(max(8px,env(safe-area-inset-top,0px)) + 56px);left:8px;transform:none;padding:4px}
   .emo-bar button{font-size:18px;padding:2px 3px}
   .emo-bubble{top:110px;font-size:22px}.emo-bubble.me{left:12px}.emo-bubble.op{right:12px}
@@ -743,7 +760,7 @@ body.online .net-only{display:flex!important}
   <label for="vol-voice">語音（倒數口號）</label><input type="range" id="vol-voice" min="0" max="100" data-vol="voice">
   <button class="btn cut" id="voiceTest">試聽語音</button>
   <div id="setAcct" style="display:grid;gap:6px;border-top:1px solid var(--line);padding-top:10px"></div>
-  <div class="desc" style="font-size:12px">倒數語音預設使用瀏覽器內建的英文語音，聲音會依電腦和瀏覽器而不同。若在 assets/voice/ 放入真人錄音（3.mp3、2.mp3、1.mp3、getfight.mp3），會自動改用錄音。</div>
+  <div class="desc" style="font-size:12px">倒數語音預設使用瀏覽器內建的英文語音，聲音會依電腦和瀏覽器而不同。若在 assets/voice/ 放入真人錄音（3.mp3、2.mp3、1.mp3、fight.mp3），會自動改用錄音。</div>
 </div>
 <div id="ui">
   <!-- AUTH -->
@@ -910,7 +927,7 @@ body.online .net-only{display:flex!important}
       <div class="aimrow"><span>中央</span><input type="range" id="aim" min="-100" max="100" value="20" aria-label="發射角度"><span>外圈軌道</span></div>
       <div class="track" id="track"><div class="fill" id="tfill"></div><div class="handle" id="handle">PULL</div></div>
       <div class="powread" id="powread"></div>
-      <div class="hint" id="lhint">按住拉柄，聽到「GET FIGHT!」後<br>快速往下拉到底！越快轉速越高</div>
+      <div class="hint" id="lhint">按住拉柄，聽到「FIGHT!」後<br>快速往下拉到底！越快轉速越高</div>
     </div>
     <button class="btn quit cut" id="quitBattle">退出對戰</button>
   </section>
@@ -918,11 +935,14 @@ body.online .net-only{display:flex!important}
   <!-- RESULT -->
   <section class="screen" id="s-online" hidden>
     <div class="topbar" data-topbar></div>
-    <div class="on-wrap" data-ov="menu">
-      <div class="on-head"><div class="eyebrow">Online Battle · 線上對戰</div><h2>邀請好友對戰</h2><p class="desc">3 對 3 盲選・先拿 4 分勝・可以下注金幣，贏家全拿。</p></div>
-      <div class="on-menu">
-        <div class="panel cut on-box"><div class="eyebrow">建立房間</div><p class="desc">建立後把房號或邀請連結傳給好友。</p><button class="btn primary cut" id="onCreate">建立房間</button></div>
-        <div class="panel cut on-box"><div class="eyebrow">加入房間</div><input class="inp" id="onJoinCode" maxlength="7" placeholder="輸入 6 碼房號" autocomplete="off" style="text-transform:uppercase;letter-spacing:.2em;font-size:20px"><button class="btn cut" id="onJoinBtn">加入</button></div>
+    <div class="on-wrap on-menu-wrap" data-ov="menu">
+      <div class="on-hero panel cut">
+        <div class="eyebrow">Online Battle · 線上對戰</div>
+        <h2>和好友一決勝負</h2>
+        <p class="desc">3 對 3 盲選・先拿 4 分勝・可以下注金幣，贏家全拿</p>
+        <button class="on-cta cut" id="onCreate"><b>建立房間</b><small>產生房號和邀請連結，傳給好友就能開打</small></button>
+        <div class="on-or"><span>已經有房號了？</span></div>
+        <div class="on-join"><input class="inp" id="onJoinCode" maxlength="7" placeholder="輸入 6 碼房號" autocomplete="off"><button class="btn cut" id="onJoinBtn">加入</button></div>
       </div>
     </div>
     <div class="on-wrap" data-ov="room" hidden>
@@ -1046,7 +1066,7 @@ body.online .net-only{display:flex!important}
       </ul>
       <h3>發射規範</h3>
       <ul>
-        <li>倒數「3、2、1、GET FIGHT!」喊到「GET FIGHT!」時才可以拉繩發射。</li>
+        <li>倒數「3、2、1、FIGHT!」喊到「FIGHT!」時才可以拉繩發射。</li>
         <li>太早或太晚發射都算<b>發射失誤</b>。同一場比賽第一次失誤為警告，<b>第二次失誤對手得 1 分</b>，然後重新發射。</li>
         <li>拉繩的速度越快，陀螺的初始轉速越高。發射角度可以選擇往中央或往外圈軌道。</li>
       </ul>
@@ -1070,7 +1090,7 @@ body.online .net-only{display:flex!important}
         <li>建立房間後把房號或邀請連結傳給好友。需要註冊 Email 帳號才能進行線上對戰。</li>
         <li>房主設定下注金幣（可自訂，最少 10），雙方都接受才開打。下注在開打時先扣除，贏家拿走雙方的下注，輸家拿 20 金幣安慰獎。</li>
         <li>每回合雙方<b>同時暗選</b>出戰陀螺，用過的要等 3 顆都出戰後才能再選。先拿 4 分獲勝。</li>
-        <li>中途離開判輸；對手斷線 30 秒沒回來，判你勝利。新手前 5 場線上對戰不下注。</li>
+        <li>中途離開判輸；對手斷線 30 秒沒回來，判你勝利。</li>
       </ul>
     </article>
   </section>
@@ -1666,7 +1686,7 @@ const SFX = {
   clips: {}, clipsTried: false,
   async loadClips() {
     if (this.clipsTried || !this.ctx) return; this.clipsTried = true;
-    for (const k of ['3', '2', '1', 'getfight']) {
+    for (const k of ['3', '2', '1', 'fight']) {
       try {
         const r = await fetch(`assets/voice/${k}.mp3`); if (!r.ok) continue;
         this.clips[k] = await this.ctx.decodeAudioData(await r.arrayBuffer());
@@ -1701,21 +1721,20 @@ const SFX = {
   },
   /* countdown call: i = 0..3 */
   announce(i) {
-    const key = ['3', '2', '1', 'getfight'][i];
+    const key = ['3', '2', '1', 'fight'][i];
     const clip = this.playClip(key);
     if (!clip) {
       if (i < 3) this.say(['Three!', 'Two!', 'One!'][i], { rate: 1.25, pitch: 0.85 });
-      else this.say('Get... FIGHT!', { rate: 1.05, pitch: 1.25 });
+      else this.say('FIGHT!', { rate: 0.8, pitch: 0.7 });
     }
-    // stinger lands on the word FIGHT (≈0.5 s into the recorded clip)
-    if (i === 3) setTimeout(() => this.hype(), clip ? 500 : 0);
+    // crowd roar under the referee's FIGHT (the recorded clip carries the boxing bell itself)
+    if (i === 3) setTimeout(() => this.hype(), clip ? 120 : 0);
   },
-  /* stinger under GET FIGHT: drum hit, power chord, crowd swell */
+  /* under FIGHT: a deep hit and an arena crowd swell */
   hype() {
     if (!this.ctx) return;
     this.tone(55, 0.5, 0.45, 'sine', 0, 35);
     this.noise(0.18, 180, 0.7, 0.5, 'lowpass');
-    [[110, 165, 220], [147, 220, 294]].forEach((ch, k) => ch.forEach((f) => this.tone(f, 0.55, 0.06, 'sawtooth', 0.05 + k * 0.28)));
     const n = this.noise(1.4, 900, 0.4, 0.0001, 'bandpass', 0.1);
     if (n) { const t = this.ctx.currentTime + 0.1; n.g.gain.cancelScheduledValues(t); n.g.gain.setValueAtTime(0.0001, t); n.g.gain.exponentialRampToValueAtTime(0.18, t + 0.35); n.g.gain.exponentialRampToValueAtTime(0.0001, t + 1.4); }
   },
@@ -1997,6 +2016,19 @@ function emblemTexture(bl) {
   });
 }
 /* ---------- Blender-built meshes (assets/parts.bin), with procedural fallback ---------- */
+/* base64 -> ArrayBuffer without blocking the page: let the browser decode a data: URL natively,
+   fall back to a chunked atob that yields between slices so the loading video keeps playing */
+async function b64ToBuffer(b64) {
+  try { const r = await fetch('data:application/octet-stream;base64,' + b64); if (r.ok) return await r.arrayBuffer(); } catch (e) {}
+  const CH = 1 << 20, out = new Uint8Array(Math.floor(b64.length * 3 / 4) - (b64.endsWith('==') ? 2 : b64.endsWith('=') ? 1 : 0));
+  let o = 0;
+  for (let i = 0; i < b64.length; i += CH * 4) {
+    const bin = atob(b64.slice(i, i + CH * 4));
+    for (let k = 0; k < bin.length; k++) out[o++] = bin.charCodeAt(k);
+    await new Promise((r) => setTimeout(r, 0));
+  }
+  return out.buffer;
+}
 const Assets = {
   ok: false, idx: null, cache: {},
   bufs: {},
@@ -2019,9 +2051,7 @@ const Assets = {
           }
           bytes = new Uint8Array(got); let o = 0; for (const p of parts) { bytes.set(p, o); o += p.length; }
         } else bytes = new Uint8Array(await res.arrayBuffer());
-        const bin = atob(new TextDecoder().decode(bytes).trim()), buf = new ArrayBuffer(bin.length), u8 = new Uint8Array(buf);
-        for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
-        this.bufs[g] = buf;
+        this.bufs[g] = await b64ToBuffer(new TextDecoder().decode(bytes).trim());
       };
       await Promise.all(groups.map(one));
       this.idx = j; this.ok = true;
@@ -2305,9 +2335,9 @@ function buildPart(kind, id) {
   if (kind === 'ratchet') return buildRatchet(RATCHET[id]);
   const b = buildBit(BIT[id]); b.position.y = b.userData.len; const g = new THREE.Group(); g.add(b); return g;
 }
-function disposeTree(o) {
-  o.traverse((n) => { if (n.material) { (Array.isArray(n.material) ? n.material : [n.material]).forEach((m) => m.dispose()); } });
-}
+/* Materials are NOT disposed on purpose: disposing the last material of a kind makes three.js delete its
+   shader program, and the next round / special move then stalls while it recompiles. Programs are few and shared. */
+function disposeTree(o) { void o; }
 /* Studio environment for metal reflections: softboxes + coloured rims */
 function makeEnv(renderer) {
   const pm = new THREE.PMREMGenerator(renderer);
@@ -3146,7 +3176,7 @@ const BEAST_OF = {
   phoenix: 'phoenix', tiger: 'tiger', mantis: 'mantis', darkstar: 'star',
   viper: 'dragon', falcon: 'bird', bull: 'rhino', golem: 'castle', beetle: 'turtle', dragonfly: 'crane', lotus: 'jelly', kirin: 'tiger', fox: 'wolf', raven: 'bird',
 };
-function beastSVG(bladeId, color) {
+function beastSVG(bladeId, color, lite) {
   const key = BEAST_OF[baseOf(bladeId)] || 'wolf', B = BEASTS[key];
   const c = '#' + new THREE.Color(color).getHexString();
   const id = 'b' + Math.random().toString(36).slice(2, 7);
@@ -3155,20 +3185,18 @@ function beastSVG(bladeId, color) {
   const wings = B.wings ? `<g class="bw-back" style="transform-origin:250px 118px"><path d="${B.wings2 || B.wings}" fill="url(#${id}g)" stroke="#fff" stroke-width="2" opacity="0.7"/></g><g class="bw" style="transform-origin:250px 118px"><path d="${B.wings}" fill="url(#${id}g)" stroke="#fff" stroke-width="3" stroke-linejoin="round"/></g>` : '';
   const rig = typeof rigMarkup === 'function' ? rigMarkup(key, color, id) : null;
   if (rig) {
-    return `<svg class="beast rigged" viewBox="-20 -30 440 300" aria-hidden="true">
-    <defs><linearGradient id="${id}g" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="0.35" stop-color="${c}"/><stop offset="1" stop-color="${new THREE.Color(color).multiplyScalar(0.35).getStyle()}"/></linearGradient>
-    <filter id="${id}f" x="-20%" y="-20%" width="140%" height="140%"><feMorphology in="SourceAlpha" operator="dilate" radius="5" result="d"/><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="5"><animate attributeName="baseFrequency" dur="0.5s" values="0.03;0.055;0.03" repeatCount="indefinite"/></feTurbulence><feDisplacementMap in="d" scale="20" result="w"/><feFlood flood-color="${c}"/><feComposite in2="w" operator="in" result="aura"/><feGaussianBlur in="aura" stdDeviation="3" result="ab"/><feMerge><feMergeNode in="ab"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-    <g filter="url(#${id}f)">${rig}</g></svg>`;
+    return `<svg class="beast rigged${lite ? ' lite' : ''}" viewBox="-20 -30 440 300" aria-hidden="true">
+    <defs><linearGradient id="${id}g" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="0.35" stop-color="${c}"/><stop offset="1" stop-color="${new THREE.Color(color).multiplyScalar(0.35).getStyle()}"/></linearGradient></defs>
+    <g>${rig}</g></svg>`;
   }
-  return `<svg class="beast mode-${B.mode}" viewBox="-20 -30 440 300" aria-hidden="true">
+  return `<svg class="beast mode-${B.mode}${lite ? ' lite' : ''}" viewBox="-20 -30 440 300" aria-hidden="true">
     <defs>
       <linearGradient id="${id}g" x1="1" y1="0" x2="0" y2="1">
         <stop offset="0" stop-color="#ffffff"/><stop offset="0.35" stop-color="${c}"/><stop offset="1" stop-color="${new THREE.Color(color).multiplyScalar(0.35).getStyle()}"/>
       </linearGradient>
     </defs>
     ${B.mode === 'fly' ? `<g class="bw-back-wrap">${wings.split('</g>')[0]}</g></g>` : ''}
-    <filter id="${id}f" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="3"><animate attributeName="baseFrequency" dur="0.6s" values="0.03;0.05;0.03" repeatCount="indefinite"/></feTurbulence><feDisplacementMap in="SourceGraphic" scale="22"/><feGaussianBlur stdDeviation="2"/></filter>
-    <g class="baura" filter="url(#${id}f)"><path d="${B.body}" fill="none" stroke="${c}" stroke-width="16" stroke-linejoin="round" opacity="0.75"/><path d="${B.body}" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round" opacity="0.6"/></g>
+    <g class="baura"><path d="${B.body}" fill="none" stroke="${c}" stroke-width="16" stroke-linejoin="round" opacity="0.75"/><path d="${B.body}" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round" opacity="0.6"/></g>
     <g class="bb">${body()}<path d="${B.detail || ''}" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="2.2" stroke-linecap="round"/>${eyes}</g>
     ${B.mode === 'fly' ? wings.slice(wings.indexOf('<g class="bw"')) : ''}
   </svg>`;
@@ -3336,6 +3364,10 @@ class FX {
     this.lines = new THREE.LineSegments(lg, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
     this.lines.frustumCulled = false; scene.add(this.lines);
     this.cursor = 0; this.sprites = []; this.rings = []; this.debris = []; this.flashes = []; this.rays = [];
+    // a fixed pool of flash lights: adding/removing lights changes the light count and forces three.js
+    // to recompile every material in the scene, which froze the game on each collision
+    this.lightPool = [0, 1].map(() => { const l = new THREE.PointLight(0xffffff, 0, 6); scene.add(l); return l; });
+    this.lightNext = 0;
     for (let i = 0; i < N; i++) this.pos[i * 3 + 1] = -99;
     this.starMat = new THREE.SpriteMaterial({ map: starTex(), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
     this.ringMatBase = new THREE.MeshBasicMaterial({ map: ringTex(), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
@@ -3376,8 +3408,7 @@ class FX {
     this.spark(x, y, z, Math.round(8 + p * 30), 4 + p * 6, colB, 0.3 + p * 0.3, 0.6, dir - Math.PI / 2, 1.2);
     if (p > 0.3) this.ring(x, y - 0.15, z, 0xffe0a0, 1.2 + p * 2.6, 0.32 + p * 0.15);
     if (p > 0.6) this.ring(x, y - 0.12, z, colA, 2 + p * 2, 0.5);
-    const l = new THREE.PointLight(0xffd090, 3 + p * 10, 5); l.position.set(x, y + 0.4, z); this.scene.add(l);
-    this.flashes.push({ l, t: 0 });
+    this.flashLight(0xffd090, 3 + p * 10, 5, x, y + 0.4, z);
     if (this.post) { if (p > 0.4) this.post.uAb.value = Math.max(this.post.uAb.value, p * 1.0); if (p > 0.6) { this.post.uFlash.value = Math.max(this.post.uFlash.value, p * 0.16); this.post.uFlashCol.value.set(0xfff0d0); } }
   }
   burstFlash(p, color) {
@@ -3396,9 +3427,14 @@ class FX {
       rays.add(piv);
     }
     rays.position.copy(p); this.scene.add(rays); this.rays.push({ g: rays, t: 0 });
-    const l = new THREE.PointLight(0xffa050, 14, 10); l.position.copy(p).add(new THREE.Vector3(0, 0.6, 0)); this.scene.add(l);
-    this.flashes.push({ l, t: 0 });
+    this.flashLight(0xffa050, 14, 10, p.x, p.y + 0.6, p.z);
     if (this.post) { this.post.uFlash.value = 0.6; this.post.uFlashCol.value.set(0xffffff); this.post.uAb.value = 1.6; }
+  }
+  flashLight(color, intensity, dist, x, y, z) {
+    // reuse the dimmest pooled light
+    let l = this.lightPool[0]; for (const c of this.lightPool) if (c.intensity < l.intensity) l = c;
+    if (l.intensity > intensity) return;
+    l.color.set(color); l.intensity = intensity; l.distance = dist; l.position.set(x, y, z);
   }
   addDebris(obj, v, w, color) { this.scene.add(obj); this.debris.push({ obj, v, w, t: 0, color }); }
   clearDebris() { this.debris.forEach((d) => this.scene.remove(d.obj)); this.debris = []; }
@@ -3427,11 +3463,10 @@ class FX {
     this.pts.geometry.attributes.position.needsUpdate = true; this.pts.geometry.attributes.color.needsUpdate = true;
     this.lines.geometry.attributes.position.needsUpdate = true; this.lines.geometry.attributes.color.needsUpdate = true;
     for (const s of this.sprites) { s.t += dt; const k = s.t / s.dur; if (!s.line) s.s.scale.setScalar(s.size * (0.3 + 0.9 * Math.sqrt(k))); s.s.material.opacity = Math.max(0, 1 - k * k); }
-    this.sprites = this.sprites.filter((s) => { if (s.t >= s.dur) { this.scene.remove(s.s); s.s.material.dispose(); if (s.line) s.s.geometry.dispose(); return false; } return true; });
+    this.sprites = this.sprites.filter((s) => { if (s.t >= s.dur) { this.scene.remove(s.s); if (s.line) s.s.geometry.dispose(); return false; } return true; });
     for (const r of this.rings) { r.t += dt; const k = r.t / r.dur; r.m.scale.setScalar(0.4 + (1 - Math.pow(1 - k, 2.2)) * r.size * 2); r.m.material.opacity = Math.max(0, 1 - k); }
-    this.rings = this.rings.filter((r) => { if (r.t >= r.dur) { this.scene.remove(r.m); r.m.geometry.dispose(); r.m.material.dispose(); return false; } return true; });
-    for (const f of this.flashes) { f.t += dt; f.l.intensity *= Math.exp(-dt * 8); }
-    this.flashes = this.flashes.filter((f) => { if (f.t > 0.7) { this.scene.remove(f.l); return false; } return true; });
+    this.rings = this.rings.filter((r) => { if (r.t >= r.dur) { this.scene.remove(r.m); r.m.geometry.dispose(); return false; } return true; });
+    for (const l of this.lightPool) { l.intensity *= Math.exp(-dt * 8); if (l.intensity < 0.02) l.intensity = 0; }
     for (const r of this.rays) {
       r.t += dt;
       if (r.sigil) { r.g.material.opacity = Math.min(0.9, r.t * 3) * Math.max(0, 1 - Math.max(0, r.t - 1.6) * 2); r.g.rotation.z += dt * 1.4; r.g.scale.setScalar(0.6 + Math.min(r.t, 0.5) * 0.8); continue; }
@@ -3478,7 +3513,7 @@ Object.assign(FX.prototype, {
     this.star(x, y + 0.4, z, 6, color, 0.5); this.star(x, y + 0.4, z, 4, 0xffffff, 0.3);
     this.ring(x, y + 0.05, z, color, 4, 0.7); this.ring(x, y + 0.05, z, 0xffffff, 2.5, 0.5);
     this.spark(x, y + 0.3, z, 140, 6, color, 0.9, 1.6);
-    const l = new THREE.PointLight(color, 12, 9); l.position.set(x, y + 1, z); this.scene.add(l); this.flashes.push({ l, t: 0 });
+    this.flashLight(color, 12, 9, x, y + 1, z);
     if (this.post) { this.post.uFlash.value = 0.45; this.post.uFlashCol.value.set(color); this.post.uAb.value = 1.2; }
   },
   bolt(x0, y0, z0, x1, y1, z1, color) {
@@ -3573,45 +3608,76 @@ const GL = {
   show: null, battle: null, w: 1, h: 1,
   init() {
     const canvas = $('#gl');
-    const r = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
-    this.mobile = Math.min(window.innerWidth, window.innerHeight) < 600 || /Mobi|Android/i.test(navigator.userAgent);
-    r.setPixelRatio(Math.min(window.devicePixelRatio || 1, this.mobile ? 1.5 : 2));
+    // the scene is drawn through the post-processing composer, so canvas MSAA would only cost time
+    const r = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance', stencil: false });
+    this.mobile = Math.min(window.innerWidth, window.innerHeight) < 600 || /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+    this.q0 = this.mobile ? 1 : 0; this.q = this.q0;
+    r.setPixelRatio(this.dpr());
     r.outputEncoding = THREE.sRGBEncoding;
     r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = 1.1;
-    r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap;
+    r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFShadowMap;
     this.renderer = r;
     this.env = makeEnv(r);
     this.show = new Showcase(this.env);
     this.battle = new BattleScene(this.env);
     this.resize();
     window.addEventListener('resize', () => this.resize());
+    this.battle.prewarm(r);
+  },
+  /* quality levels: 0 = sharp desktop, 1 = default phone, 2 = 1x, 3 = 1x without bloom */
+  dpr() { const d = window.devicePixelRatio || 1; return [Math.min(d, 1.5), Math.min(d, 1.25), 1, 0.85][this.q]; },
+  setQuality(q) {
+    this.q = clamp(q, 0, 3); this.renderer.setPixelRatio(this.dpr());
+    this.disposeComposers(); this.resize();
+  },
+  watchFps(dt) {
+    // adapt to the device: step quality down when frames are slow, back up once if there is headroom
+    this.ft = this.ft == null ? 1 / 60 : this.ft * 0.94 + dt * 0.06;
+    this.qT = (this.qT || 0) + dt;
+    if (this.qT < 2.5) return;
+    this.qT = 0;
+    if (this.ft > 1 / 42 && this.q < 3) this.setQuality(this.q + 1);
+    else if (this.ft < 1 / 58 && this.q > this.q0 && !this.qUp) { this.qUp = true; this.setQuality(this.q - 1); }
+  },
+  disposeComposers() {
+    for (const k of ['show', 'battle']) { const c = this.composers && this.composers[k]; if (c) { c.renderTarget1.dispose(); c.renderTarget2.dispose(); c.passes.forEach((p) => p.dispose && p.dispose()); } }
+    this.composers = {};
   },
   resize() {
     this.w = window.innerWidth; this.h = window.innerHeight;
     this.renderer.setSize(this.w, this.h, false);
     for (const s of [this.show, this.battle]) { s.cam.aspect = this.w / this.h; s.cam.updateProjectionMatrix(); s.layout && s.layout(); }
+    for (const k in (this.composers || {})) { const c = this.composers[k]; if (c) { c.setPixelRatio(this.dpr()); c.setSize(this.w, this.h); } }
     this.buildComposer();
   },
+  /* one composer per scene, built once and reused (rebuilding on every screen change leaked render targets) */
   buildComposer() {
+    this.composers = this.composers || {};
     if (!THREE.EffectComposer || !THREE.UnrealBloomPass) { this.composer = null; return; }
-    const scene = this.mode === 'battle' ? this.battle : this.show;
-    this.composer = new THREE.EffectComposer(this.renderer);
-    this.composer.setPixelRatio(Math.min(window.devicePixelRatio || 1, this.mobile ? 1 : 2));
-    this.composer.setSize(this.w, this.h);
-    this.composer.addPass(new THREE.RenderPass(scene.scene, scene.cam));
-    this.bloom = new THREE.UnrealBloomPass(new THREE.Vector2(this.w, this.h), this.mode === 'battle' ? 0.85 : 0.55, 0.5, this.mode === 'battle' ? 0.8 : 0.9);
-    this.composer.addPass(this.bloom);
-    if (THREE.GammaCorrectionShader) this.composer.addPass(new THREE.ShaderPass(THREE.GammaCorrectionShader));
-    this.postPass = new THREE.ShaderPass(PostShader);
-    this.composer.addPass(this.postPass);
-    this.battle.fx.post = this.mode === 'battle' ? this.postPass.uniforms : null;
-    if (this.mode !== 'battle') this.postPass.uniforms.uVig.value = 0.45;
+    const key = this.mode === 'battle' ? 'battle' : 'show', scene = key === 'battle' ? this.battle : this.show;
+    let c = this.composers[key];
+    if (!c) {
+      c = this.composers[key] = new THREE.EffectComposer(this.renderer);
+      c.setPixelRatio(this.dpr());
+      c.setSize(this.w, this.h);
+      c.addPass(new THREE.RenderPass(scene.scene, scene.cam));
+      c.bloom = new THREE.UnrealBloomPass(new THREE.Vector2(this.w, this.h), key === 'battle' ? 0.85 : 0.55, 0.5, key === 'battle' ? 0.8 : 0.9);
+      c.bloom.enabled = this.q < 3;
+      c.addPass(c.bloom);
+      if (THREE.GammaCorrectionShader) c.addPass(new THREE.ShaderPass(THREE.GammaCorrectionShader));
+      c.post = new THREE.ShaderPass(PostShader);
+      c.addPass(c.post);
+      if (key !== 'battle') c.post.uniforms.uVig.value = 0.45;
+    }
+    this.composer = c; this.bloom = c.bloom; this.postPass = c.post;
+    this.battle.fx.post = key === 'battle' ? c.post.uniforms : null;
   },
-  setMode(m) { if (this.mode !== m) { this.mode = m; this.buildComposer(); } },
+  setMode(m) { if (this.mode !== m) { this.mode = m; this.qT = -1.5; this.buildComposer(); } },
   render(dt) {
     const s = this.mode === 'battle' ? this.battle : this.show;
     s.update(dt);
     if (this.composer) this.composer.render(); else this.renderer.render(s.scene, s.cam);
+    if (!document.hidden) this.watchFps(dt);
   },
 };
 
@@ -3733,7 +3799,7 @@ class BattleScene {
     this.shake = 0; this.t = 0; this.zoomTo = null;
     sc.add(new THREE.HemisphereLight(0xa9c4ff, 0x14101a, 0.55));
     const key = new THREE.DirectionalLight(0xffffff, 1.5); key.position.set(4, 12, 6); key.castShadow = true;
-    key.shadow.mapSize.set(2048, 2048); Object.assign(key.shadow.camera, { left: -7, right: 7, top: 7, bottom: -7, near: 1, far: 30 });
+    key.shadow.mapSize.set(1024, 1024); Object.assign(key.shadow.camera, { left: -7, right: 7, top: 7, bottom: -7, near: 1, far: 30 });
     key.shadow.bias = -0.0005; sc.add(key);
     const s1 = new THREE.SpotLight(0xff7a2a, 1.4, 30, 0.5, 0.6); s1.position.set(-9, 7, -4); sc.add(s1);
     const s2 = new THREE.SpotLight(0x36d3ff, 1.2, 30, 0.5, 0.6); s2.position.set(9, 7, -4); sc.add(s2);
@@ -3747,6 +3813,20 @@ class BattleScene {
     this.baseCols = [0xff6a1a, 0x36d3ff];
     this.arrow = this.makeArrow(); sc.add(this.arrow);
     this.ghost = null;
+  }
+  /* compile every effect's shader once at start-up so the first special move does not stall */
+  prewarm(renderer) {
+    const fx = this.fx, x = 0, y = 0.3, z = 0, c = 0xff8040;
+    try {
+      fx.sigil(x, y, z, c); fx.dome(x, y, z, c); fx.cracks(x, y, z, c); fx.specialBurst(x, y, z, c); fx.pillar(x, y, z, c);
+      fx.bolt(x, y + 3, z, x, y, z, c); fx.star(x, y, z, 2, c); fx.ring(x, y, z, c); fx.impact(x, y, z, 1, c, 0x36d3ff, 1, 0);
+      fx.burstFlash(new THREE.Vector3(x, y, z), c); fx.spark(x, y, z, 4, 2, c);
+      for (const k of ['fire', 'phoenix', 'thunder', 'wind', 'moon', 'dark', 'steel', 'water']) fx.element(k, x, y, z, c, 0.016);
+      this.shields.forEach((s) => s.update(true, x, y, z, c, 0, 0));
+      renderer.compile(this.scene, this.cam);
+      this.shields.forEach((s) => { s.mat.uniforms.uAlpha.value = 0; s.mesh.visible = false; });
+      fx.update(10);   // expire everything immediately
+    } catch (e) { /* prewarm is best-effort */ }
   }
   layout() {
     const a = GL.w / Math.max(1, GL.h);
@@ -4164,7 +4244,8 @@ const Battle = {
     this.renderRatchet(); this.renderDecks();
     scene.placeForLaunch(0); scene.placeForLaunch(1);
     this.playerLaunched = false; this.aiLaunched = false; this.ripStarted = false; this.aiSpecialAt = rand(0.5, 3);
-    this.remoteRip = null; this.snapT = 0; this.aiMoAt = rand(1.5, 4);
+    this.remoteRip = null; this.snapT = 0; this.netBuf = []; this.aiMoAt = rand(1.5, 4);
+    this._gk = this._mk = this._sk = null;
     this.renderSpecial(); this.renderMomentum();
     this.aiPlan = this.net ? null : aiLaunch(this.opp, b, a);
     this.timeScale = 1; this.slowT = 0; this.acc = 0;
@@ -4219,7 +4300,7 @@ const Battle = {
   setPhase(p) { this.phase = p; this.phaseT = 0; },
   async countdown() {
     const el = $('#count');
-    const seq = ['3', '2', '1', 'GET FIGHT!'];
+    const seq = ['3', '2', '1', 'FIGHT!'];
     this.goAt = 0;
     const token = (this._cd = Symbol());
     for (let i = 0; i < seq.length; i++) {
@@ -4342,7 +4423,7 @@ const Battle = {
     }
     if (this.net && this.net.role === 'host' && this.phase !== 'idle' && this.phase !== 'ready') {
       this.snapT -= dtReal;
-      if (this.snapT <= 0) { this.snapT = 1 / 15; this.net.send({ t: 's', b: this.arena.beys.map(snapOf), ts: this.timeScale }); }
+      if (this.snapT <= 0) { this.snapT = 1 / 20; this.net.send({ t: 's', b: this.arena.beys.map(snapOf), ts: this.timeScale, w: Math.round(performance.now()) }); }
     }
     sc.syncBeys(this.arena, dt);
     const [A, B] = this.arena.beys;
@@ -4403,23 +4484,36 @@ const Battle = {
   renderMomentum() {
     const btn = $('#moBtn'); if (!btn || !this.arena) return;
     const me = this.arena.beys[this.mySide()], left = MOMENTUM_MAX - (me.mo | 0);
+    const key = left + (this.phase === 'fight' && me.state === 'spin' && !this.cine ? 'a' : 'b');
+    if (key === this._mk) return; this._mk = key;
     $('#moPips').innerHTML = Array.from({ length: MOMENTUM_MAX }, (_, k) => `<i class="${k < left ? 'on' : ''}"></i>`).join('');
     btn.disabled = !(this.phase === 'fight' && left > 0 && me.state === 'spin' && !this.cine);
   },
   /* ---- online: guest side applies the host's snapshots ---- */
+  /* guest: render ~100 ms behind the host and interpolate between the two snapshots around that moment,
+     so network jitter never shows up as stutter */
+  netPush(m) {
+    const now = performance.now(), off = now - m.w;
+    this.netOff = this.netOff == null ? off : Math.min(this.netOff + 0.02, off);   // ~ one-way latency, slowly re-adapting
+    (this.netBuf = this.netBuf || []).push(m);
+    if (this.netBuf.length > 40) this.netBuf.shift();
+    this.timeScale = m.ts || 1;
+  },
   netApply(dt) {
-    const S = this.netSnap;
+    for (const b of this.arena.beys) b.spinAng += (18 + b.s * 40) * dt;
+    const buf = this.netBuf; if (!buf || !buf.length) return;
+    const T = performance.now() - this.netOff - 100;
+    let i = buf.length - 1; while (i > 0 && buf[i - 1].w > T) i--;
+    const A = buf[Math.max(0, i - 1)], B = buf[i];
+    const k = B.w === A.w ? 1 : clamp((T - A.w) / (B.w - A.w), 0, 1.25);
     for (const b of this.arena.beys) {
-      b.spinAng += (18 + b.s * 40) * dt;
-      if (!S) continue;
-      const t = S[b.side]; if (!t) continue;
-      const k = 1 - Math.exp(-dt * 14);
-      t.x += t.vx * dt * (this.timeScale || 1); t.z += t.vz * dt * (this.timeScale || 1);
-      if (b.state !== t.state && (t.state === 'spin' || b.state === 'idle')) { b.x = t.x; b.z = t.z; }
-      b.x = lerp(b.x, t.x, k); b.z = lerp(b.z, t.z, k);
-      b.vx = t.vx; b.vz = t.vz; b.s = t.s; b.state = t.state; b.dash = t.dash; b.tilt = t.tilt; b.prec = t.prec;
-      b.outT = t.outT; b.meter = t.meter; b.charge = t.charge; b.usedSpecial = t.usedSpecial; b.mo = t.mo; b.launched = t.state !== 'idle';
-      b.buff = t.bk ? { kind: t.bk, t: t.bt, fx: specOf(b.cfg.b).fx } : null;
+      const a = A.b[b.side], c = B.b[b.side]; if (!a || !c) continue;
+      const jump = a.state !== c.state;
+      b.x = jump ? c.x : lerp(a.x, c.x, k); b.z = jump ? c.z : lerp(a.z, c.z, k);
+      b.vx = c.vx; b.vz = c.vz; b.s = lerp(a.s, c.s, Math.min(k, 1)); b.state = k < 0.5 ? a.state : c.state;
+      b.dash = c.dash; b.tilt = lerp(a.tilt, c.tilt, Math.min(k, 1)); b.prec = c.prec;
+      b.outT = c.outT; b.meter = c.meter; b.charge = c.charge; b.usedSpecial = c.usedSpecial; b.mo = c.mo; b.launched = c.state !== 'idle';
+      b.buff = c.bk ? { kind: c.bk, t: c.bt, fx: specOf(b.cfg.b).fx } : null;
     }
   },
   netHooks() {
@@ -4477,7 +4571,8 @@ const Battle = {
     $('#cnInk').innerHTML = Array.from({ length: 14 }, () => `<i style="left:${rand(5, 95).toFixed(1)}%;top:${rand(15, 85).toFixed(1)}%;--s:${rand(0.4, 1.6).toFixed(2)};--d:${rand(0, 0.25).toFixed(2)}s"></i>`).join('');
     void el.offsetWidth; el.classList.add('on', 'charge');
     const T = (ms, fn) => this.cine.timers.push(setTimeout(fn, ms));
-    $('#cnBeast').innerHTML = [3, 2, 1, 0].map((k) => `<div class="cn-bst g${k}">${beastSVG(cfg.b, sp.color)}</div>`).join('');
+    // only the front copy gets the glow; the three trailing ghosts are plain (SVG filters are very expensive)
+    $('#cnBeast').innerHTML = [3, 2, 1, 0].map((k) => `<div class="cn-bst g${k}">${beastSVG(cfg.b, sp.color, k > 0)}</div>`).join('');
     T(450, () => this.cineCut());
     T(1150, () => this.cineBeast());
     T(2150, () => this.cineBurst());
@@ -4519,6 +4614,8 @@ const Battle = {
   renderSpecial() {
     if (!this.arena) return;
     const F = this.flip ? 1 : 0;
+    const key = this.arena.beys.map((b) => (b.usedSpecial ? 'u' : Math.round(clamp(b.charge || 0, 0, 1) * 50)) + b.state).join() + this.phase;
+    if (key === this._sk) return; this._sk = key;
     this.arena.beys.forEach((b, i) => {
       const bar = $((i ^ F) ? '#g2sp' : '#g1sp'); if (!bar) return;
       const v = b.usedSpecial ? 0 : clamp(b.charge || 0, 0, 1);
@@ -4606,6 +4703,8 @@ const Battle = {
   },
   renderGauges() {
     const F = this.flip ? 1 : 0, A = this.arena.beys[F], B = this.arena.beys[1 - F];
+    const key = Math.round(A.s * 980) + ':' + Math.round(B.s * 980);
+    if (key === this._gk) return; this._gk = key;
     const fmt = (b) => Math.round(b.s * 9800).toLocaleString('en-US');
     $('#g1rpm').innerHTML = `${fmt(A)}<small>RPM</small>`; $('#g2rpm').innerHTML = `${fmt(B)}<small>RPM</small>`;
     $('#g1bar').style.width = `${clamp(A.s, 0, 1) * 100}%`; $('#g2bar').style.width = `${clamp(B.s, 0, 1) * 100}%`;
@@ -4846,7 +4945,7 @@ const Online = {
   cur: null, st: 'training', again: [null, null], lostT: null, inMatch: false, emoAt: 0,
 
   available() { return Store.mode === 'server' && Api.cred && Api.cred.email; },
-  newbie(p) { return ((p ? p.online : (Store.profile.stats.online | 0)) | 0) < NEWBIE_MATCHES; },
+  newbie() { return false; },   // newbie protection removed on request
   open(code) {
     if (Store.mode !== 'server') return UI.toast('線上對戰需要在公開網站上遊玩。');
     if (!this.available()) { UI.toast('線上對戰需要先註冊 Email 帳號。'); UI.show('auth'); UI.renderAuth(); UI.setAuthTab('register'); UI.startAuthCycle(); return; }
@@ -4902,8 +5001,8 @@ const Online = {
       case 'sp': if (this.role === 'host') Battle.useSpecial(1); break;
       case 'mo': if (this.role === 'host') Battle.useMomentum(1); else if (Battle.arena) { Battle.arena.beys[m.side].mo = (Battle.arena.beys[m.side].mo | 0) + 1; Battle.momentumFx(m.side); } break;
       case 'ph': if (this.role === 'guest' && Battle.active) Battle.setPhase(m.p); break;
-      case 'L': if (this.role === 'guest' && Battle.arena) { const b = Battle.arena.beys[m.side]; Object.assign(b, { x: m.x, z: m.z, state: 'spin', launched: true }); Battle.netSnap = null; Battle.launchFx(m.side, m.power); } break;
-      case 's': if (this.role === 'guest') { Battle.netSnap = m.b; Battle.timeScale = m.ts || 1; } break;
+      case 'L': if (this.role === 'guest' && Battle.arena) { const b = Battle.arena.beys[m.side]; Object.assign(b, { x: m.x, z: m.z, state: 'spin', launched: true }); Battle.launchFx(m.side, m.power); } break;
+      case 's': if (this.role === 'guest') Battle.netPush(m); break;
       case 'e': if (this.role === 'guest' && Battle.arena) Battle.netEvent(m.n, m.a); break;
       case 'cine': if (this.role === 'guest' && Battle.cur) Battle.presentSpecial(m.side, specOf(Battle.cur[m.side].b)); break;
       case 'res': if (this.role === 'guest') Battle.showResult(m.side, m.type); break;

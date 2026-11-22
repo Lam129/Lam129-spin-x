@@ -158,7 +158,7 @@ const BEAST_OF = {
   phoenix: 'phoenix', tiger: 'tiger', mantis: 'mantis', darkstar: 'star',
   viper: 'dragon', falcon: 'bird', bull: 'rhino', golem: 'castle', beetle: 'turtle', dragonfly: 'crane', lotus: 'jelly', kirin: 'tiger', fox: 'wolf', raven: 'bird',
 };
-function beastSVG(bladeId, color) {
+function beastSVG(bladeId, color, lite) {
   const key = BEAST_OF[baseOf(bladeId)] || 'wolf', B = BEASTS[key];
   const c = '#' + new THREE.Color(color).getHexString();
   const id = 'b' + Math.random().toString(36).slice(2, 7);
@@ -167,20 +167,18 @@ function beastSVG(bladeId, color) {
   const wings = B.wings ? `<g class="bw-back" style="transform-origin:250px 118px"><path d="${B.wings2 || B.wings}" fill="url(#${id}g)" stroke="#fff" stroke-width="2" opacity="0.7"/></g><g class="bw" style="transform-origin:250px 118px"><path d="${B.wings}" fill="url(#${id}g)" stroke="#fff" stroke-width="3" stroke-linejoin="round"/></g>` : '';
   const rig = typeof rigMarkup === 'function' ? rigMarkup(key, color, id) : null;
   if (rig) {
-    return `<svg class="beast rigged" viewBox="-20 -30 440 300" aria-hidden="true">
-    <defs><linearGradient id="${id}g" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="0.35" stop-color="${c}"/><stop offset="1" stop-color="${new THREE.Color(color).multiplyScalar(0.35).getStyle()}"/></linearGradient>
-    <filter id="${id}f" x="-20%" y="-20%" width="140%" height="140%"><feMorphology in="SourceAlpha" operator="dilate" radius="5" result="d"/><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="5"><animate attributeName="baseFrequency" dur="0.5s" values="0.03;0.055;0.03" repeatCount="indefinite"/></feTurbulence><feDisplacementMap in="d" scale="20" result="w"/><feFlood flood-color="${c}"/><feComposite in2="w" operator="in" result="aura"/><feGaussianBlur in="aura" stdDeviation="3" result="ab"/><feMerge><feMergeNode in="ab"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-    <g filter="url(#${id}f)">${rig}</g></svg>`;
+    return `<svg class="beast rigged${lite ? ' lite' : ''}" viewBox="-20 -30 440 300" aria-hidden="true">
+    <defs><linearGradient id="${id}g" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="0.35" stop-color="${c}"/><stop offset="1" stop-color="${new THREE.Color(color).multiplyScalar(0.35).getStyle()}"/></linearGradient></defs>
+    <g>${rig}</g></svg>`;
   }
-  return `<svg class="beast mode-${B.mode}" viewBox="-20 -30 440 300" aria-hidden="true">
+  return `<svg class="beast mode-${B.mode}${lite ? ' lite' : ''}" viewBox="-20 -30 440 300" aria-hidden="true">
     <defs>
       <linearGradient id="${id}g" x1="1" y1="0" x2="0" y2="1">
         <stop offset="0" stop-color="#ffffff"/><stop offset="0.35" stop-color="${c}"/><stop offset="1" stop-color="${new THREE.Color(color).multiplyScalar(0.35).getStyle()}"/>
       </linearGradient>
     </defs>
     ${B.mode === 'fly' ? `<g class="bw-back-wrap">${wings.split('</g>')[0]}</g></g>` : ''}
-    <filter id="${id}f" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="3"><animate attributeName="baseFrequency" dur="0.6s" values="0.03;0.05;0.03" repeatCount="indefinite"/></feTurbulence><feDisplacementMap in="SourceGraphic" scale="22"/><feGaussianBlur stdDeviation="2"/></filter>
-    <g class="baura" filter="url(#${id}f)"><path d="${B.body}" fill="none" stroke="${c}" stroke-width="16" stroke-linejoin="round" opacity="0.75"/><path d="${B.body}" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round" opacity="0.6"/></g>
+    <g class="baura"><path d="${B.body}" fill="none" stroke="${c}" stroke-width="16" stroke-linejoin="round" opacity="0.75"/><path d="${B.body}" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round" opacity="0.6"/></g>
     <g class="bb">${body()}<path d="${B.detail || ''}" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="2.2" stroke-linecap="round"/>${eyes}</g>
     ${B.mode === 'fly' ? wings.slice(wings.indexOf('<g class="bw"')) : ''}
   </svg>`;
