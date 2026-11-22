@@ -19,6 +19,7 @@ const UI = {
     if (name === 'gacha') { sh.setOffset(0); sh.clear(); $('#revName').textContent = ''; $('#revEye').textContent = ''; this.renderDome(); }
     if (name === 'collection') { sh.setOffset(0.31); this.renderCollection(); }
     if (name === 'rules') { sh.setOffset(0); sh.clear(); }
+    if (name === 'online') { sh.setOffset(0); sh.clear(); }
   },
   renderHub() {
     const P = Store.profile;
@@ -56,7 +57,7 @@ const UI = {
   },
   topbar(name) {
     const P = Store.profile; if (!P) return '';
-    const titles = { assembly: '組裝工坊', select: '對戰', gacha: '扭蛋機', collection: '收藏圖鑑', rules: '比賽規則' };
+    const titles = { online: '線上對戰', assembly: '組裝工坊', select: '對戰', gacha: '扭蛋機', collection: '收藏圖鑑', rules: '比賽規則' };
     const back = name !== 'hub' ? `<button class="btn cut" data-go="hub" style="padding:8px 14px" aria-label="返回">‹ 返回</button>` : '';
     return `${back}<div class="brand">陀螺對決<small style="font-family:var(--f-disp);color:var(--hot);margin-left:6px;letter-spacing:.2em">SPIN DUEL</small>${titles[name] ? `<small>／ ${titles[name]}</small>` : ''}</div><div class="spacer"></div>
       <div class="chip"><span class="dot ${Store.mode === 'cloud' || Store.mode === 'server' ? '' : 'off'}"></span><span>${esc(P.name)}</span><span style="color:var(--mute);font-size:12px">${Store.mode === 'cloud' || Store.mode === 'server' ? '雲端存檔' : '本機存檔'}</span></div>
@@ -128,6 +129,7 @@ const UI = {
       SFX.coin();
       this.stopAuthCycle();
       UI.go('hub');
+      if (Online.pendingCode) { const c = Online.pendingCode; Online.pendingCode = ''; setTimeout(() => Online.open(c), 300); }
     } catch (e) {
       warn.textContent = e.msg || (e.code === 'busy' ? '目前流量過大，請稍後再試。' : '連線失敗，請稍後再試。');
     } finally { btn.disabled = false; }
@@ -431,7 +433,22 @@ function bindEvents() {
     if (t.id === 'logoutBtn') return Store.logout();
     if (t.id === 'bindBtn') { UI.toggleSettings(false); UI.show('auth'); UI.renderAuth(); UI.setAuthTab('register'); UI.startAuthCycle(); return; }
     if (t.dataset.go === 'survival') { SFX.click(); return Battle.startSurvival(); }
-    if (t.dataset.go === 'online') { SFX.click(); return UI.toast('線上對戰開發中，敬請期待！'); }
+    if (t.dataset.go === 'online') { SFX.click(); return Online.open(); }
+    if (t.dataset.go === 'hub' && UI.cur === 'online') Online.leave();
+    if (t.id === 'onCreate') return Online.create();
+    if (t.id === 'onJoinBtn') return Online.join(($('#onJoinCode').value || '').replace(/\s/g, '').toUpperCase(), 'guest');
+    if (t.dataset.wg != null) { SFX.click(); return Online.setWager(+t.dataset.wg); }
+    if (t.id === 'wgSet') return Online.setWager($('#wgCustom').value);
+    if (t.id === 'onAccept') { SFX.click(); return Online.accept(); }
+    if (t.id === 'onCopyCode') { navigator.clipboard && navigator.clipboard.writeText(Online.code).catch(() => {}); return UI.toast('已複製房號'); }
+    if (t.id === 'onCopyLink') { navigator.clipboard && navigator.clipboard.writeText(Online.inviteUrl()).catch(() => {}); return UI.toast('已複製邀請連結'); }
+    if (t.dataset.pick != null) return Online.select(+t.dataset.pick);
+    if (t.id === 'pkLock') return Online.lock();
+    if (t.id === 'moBtn') return Battle.useMomentum(Battle.mySide());
+    if (t.dataset.emo != null) return Online.emote(+t.dataset.emo);
+    if (t.id === 'orAgain') return Online.playAgain(Online.amt);
+    if (t.id === 'orDouble') return Online.playAgain(Online.amt * 2);
+    if (t.id === 'orHome') { Online.leave(); return UI.go('hub'); }
     if (t.dataset.showbey) { SFX.click(); UI.hubBey = +t.dataset.showbey; return UI.renderHubBey(); }
     if (t.dataset.go) return UI.go(t.dataset.go);
     if (t.hasAttribute('data-settings')) return UI.toggleSettings();
@@ -451,9 +468,17 @@ function bindEvents() {
   $('#authForm').addEventListener('submit', (e) => { e.preventDefault(); UI.submitAuth(); });
   $('#startBattle').addEventListener('click', () => Battle.start(OPPONENTS[UI.oppSel], UI.mode));
   $('#quitBattle').addEventListener('click', () => Battle.quit());
-  $('#spBtn').addEventListener('click', () => Battle.useSpecial(0));
-  window.addEventListener('keydown', (e) => { if (!Battle.active || Battle.demo) return; if (Battle.cine) { e.preventDefault(); return Battle.skipCine(); } if (e.code === 'Space') { e.preventDefault(); Battle.useSpecial(0); } });
-  $('#cine').addEventListener('pointerdown', () => Battle.skipCine());
+  $('#spBtn').addEventListener('click', () => Battle.useSpecial(Battle.mySide()));
+  window.addEventListener('keydown', (e) => {
+    if (!Battle.active || Battle.demo || /INPUT|TEXTAREA/.test((e.target && e.target.tagName) || '')) return;
+    if (Battle.cine) { e.preventDefault(); if (!Battle.net) Battle.skipCine(); return; }
+    if (e.code === 'Space') { e.preventDefault(); Battle.useSpecial(Battle.mySide()); }
+    if (e.code === 'KeyQ') { e.preventDefault(); Battle.useMomentum(Battle.mySide()); }
+    if (Battle.net && /^Digit[1-4]$/.test(e.code)) Online.emote(+e.code.slice(5) - 1);
+  });
+  $('#wgCustom').addEventListener('keydown', (e) => { if (e.key === 'Enter') Online.setWager(e.target.value); });
+  $('#onJoinCode').addEventListener('keydown', (e) => { if (e.key === 'Enter') Online.join(e.target.value.replace(/\s/g, '').toUpperCase(), 'guest'); });
+  $('#cine').addEventListener('pointerdown', () => { if (!Battle.net) Battle.skipCine(); });
   $('#resAgain').addEventListener('click', () => Battle.again());
   $('#resHome').addEventListener('click', () => UI.go('hub'));
   // drag a build card (or a filled slot) onto one of the 3 deck slots
@@ -517,7 +542,9 @@ async function boot() {
   const p = await Store.init();
   clearInterval(tipTimer);
   $('#loading').hidden = true; const lv = $('#ldVid'); if (lv) { lv.pause(); lv.removeAttribute('src'); lv.load(); }
-  if (p) UI.go('hub');
+  const roomParam = (new URLSearchParams(location.search).get('room') || '').toUpperCase();
+  if (roomParam) Online.pendingCode = roomParam;
+  if (p) { UI.go('hub'); if (Online.pendingCode) { const c = Online.pendingCode; Online.pendingCode = ''; Online.open(c); } }
   else {
     UI.show('auth'); UI.renderAuth(); UI.setAuthTab(Store.mode === 'server' ? 'register' : 'local'); UI.startAuthCycle();
     if (Store.accountName) $('#nick').value = Store.accountName.slice(0, 12);

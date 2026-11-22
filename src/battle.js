@@ -65,21 +65,53 @@ const Battle = {
     document.body.classList.remove('demo');
     GL.setMode('show');
   },
+  /* online match: Online drives the rounds; the guest sees the bowl from the other side */
+  startNet(peer) {
+    const P = Store.profile;
+    this.net = Online; this.flip = Online.role === 'guest'; GL.battle.flip = this.flip;
+    this.opp = { name: peer.name, av: remoteAvatar(peer.name), type: peer.starter };
+    this.mode = '3v3'; this.survival = false; this.winPts = WIN_POINTS; this.demo = false;
+    this.score = [0, 0]; this.round = 0; this.errors = [0, 0]; this.finishes = []; this.slotRes = [[], []];
+    this.arena = null; this.cur = null; this.netSnap = null; this.active = true;
+    GL.battle.setStadium('training');
+    GL.setMode('battle');
+    UI.show('battle');
+    document.body.classList.add('online');
+    $('#p1n').textContent = P.name; $('#p2n').textContent = peer.name;
+    $('#p1av').innerHTML = playerAvatar(40); $('#p2av').innerHTML = oppAvatar(this.opp, 40);
+    $('#p1b').textContent = ''; $('#p2b').textContent = '';
+    SFX.ensure(); SFX.startGrind();
+    this.renderPips(); this.setPhase('idle');
+    Online.renderPing();
+  },
+  endNet() {
+    this.active = false; this._cd = null;
+    if (this.cine) { this.cine.timers.forEach(clearTimeout); this.cine = null; }
+    $('#cine').className = 'cine'; $('#count').textContent = '';
+    GL.battle.cine = null; GL.battle.flip = false; this.flip = false; this.net = null;
+    document.body.classList.remove('online');
+    SFX.stopGrind();
+  },
   cfgFor(side) { const d = side ? this.oDeck : this.pDeck; return d[this.round % d.length]; },
   nextRound(replay = false) {
     if (!replay) this.round++;
     const rIdx = this.round - 1;
-    const a = this.pDeck[rIdx % this.pDeck.length], b = this.oDeck[rIdx % this.oDeck.length];
+    const a = this.net ? this.net.cur[0] : this.pDeck[rIdx % this.pDeck.length], b = this.net ? this.net.cur[1] : this.oDeck[rIdx % this.oDeck.length];
     this.cur = [a, b];
     $('#roundNo').textContent = this.round;
-    $('#p1b').textContent = `${beyName(a)} ${beyCode(a)}`;
-    $('#p2b').textContent = `${beyName(b)} ${beyCode(b)}`;
+    const edge = counterOf(a, b);
+    this.edge = [edge, -edge];
+    const tag = (i) => this.edge[i] < 0 ? ' <em class="ctr">被剋 −10%</em>' : this.edge[i] > 0 ? ' <em class="ctr up">相剋優勢</em>' : '';
+    const F = this.flip ? 1 : 0;
+    $('#p1b').innerHTML = `${esc(beyName(this.cur[F]))} ${beyCode(this.cur[F])}${tag(F)}`;
+    $('#p2b').innerHTML = `${esc(beyName(this.cur[1 - F]))} ${beyCode(this.cur[1 - F])}${tag(1 - F)}`;
     const scene = GL.battle;
     scene.setBeys(a, b);
     scene.zoomTo = null; scene.follow = null;
-    this.arena = new Arena(a, b, this.hooks());
+    this.arena = new Arena(a, b, this.net && this.net.role === 'host' ? this.netHooks() : this.hooks());
+    if (edge > 0) weaken(this.arena.beys[1].c); else if (edge < 0) weaken(this.arena.beys[0].c);
     // boss aura: later opponents hit harder, resist more and keep spinning longer
-    const boss = (this.opp && this.opp.boss) || 0;
+    const boss = (!this.net && this.opp && this.opp.boss) || 0;
     if (boss) {
       const c = this.arena.beys[1].c;
       applyBoss(c, boss); this.arena.beys[1].chargeRate = 1 + Math.max(0, boss) * 3;
@@ -87,8 +119,9 @@ const Battle = {
     this.renderRatchet(); this.renderDecks();
     scene.placeForLaunch(0); scene.placeForLaunch(1);
     this.playerLaunched = false; this.aiLaunched = false; this.ripStarted = false; this.aiSpecialAt = rand(0.5, 3);
-    this.renderSpecial();
-    this.aiPlan = aiLaunch(this.opp, b, a);
+    this.remoteRip = null; this.snapT = 0; this.aiMoAt = rand(1.5, 4);
+    this.renderSpecial(); this.renderMomentum();
+    this.aiPlan = this.net ? null : aiLaunch(this.opp, b, a);
     this.timeScale = 1; this.slowT = 0; this.acc = 0;
     this.setPhase('ready');
     Launcher.reset();
@@ -155,36 +188,51 @@ const Battle = {
   },
   /* called by launcher when the cord is ripped */
   playerRip(power) {
-    if (this.playerLaunched || !this.active) return;
+    if (this.playerLaunched || !this.active || this.demo) return;
+    const guest = this.net && this.net.role === 'guest';
     if (this.phase === 'ready') { // early launch
+      if (guest) { this.playerLaunched = true; this.net.send({ t: 'rip', early: 1 }); return; }
       this.launchError(0, '太早發射！');
       return;
     }
     if (this.phase !== 'go' && this.phase !== 'fight') return;
     this.playerLaunched = true;
     const aim = Launcher.aim;
-    this.doLaunch(0, power, aim);
+    if (guest) this.net.send({ t: 'rip', power, aim });
+    else this.doLaunch(0, power, aim);
     $('#powread').textContent = power >= 0.9 ? `完美發射！ ${Math.round(power * 100)}%` : `${Math.round(power * 100)}%`;
     setTimeout(() => { if (this.playerLaunched) $('#launcher').hidden = true; }, 600);
   },
   doLaunch(side, power, aim) {
-    const sc = GL.battle;
-    sc.beyObjs[side].userData.hover = false;
     this.arena.launch(side, power, aim);
     const b = this.arena.beys[side];
+    if (this.net) this.net.send({ t: 'L', side, power, x: b.x, z: b.z });
+    this.launchFx(side, power);
+  },
+  launchFx(side, power) {
+    const sc = GL.battle;
+    sc.beyObjs[side].userData.hover = false;
+    const b = this.arena.beys[side];
+    if (this.net && power >= 0.9) UI.toast(`${this.nameOf(side)} 完美發射！`);
     const col = side ? 0x36d3ff : 0xff6a1a, gy = surfH(Math.hypot(b.x, b.z));
     sc.fx.spark(b.x, gy + 0.1, b.z, 50, 4, col, 0.6);
     sc.fx.star(b.x, gy + 0.3, b.z, 2.5, col, 0.25);
     sc.fx.ring(b.x, gy + 0.04, b.z, col, 1.6, 0.45);
     sc.fx.ring(b.x, gy + 0.04, b.z, 0xffffff, 0.9, 0.3);
     sc.shake = 0.3;
-    if (side === 0) { SFX.launch(); sc.hideAim(); }
+    if (side === this.mySide()) { SFX.launch(); sc.hideAim(); }
   },
   launchError(side, msg) {
+    if (this.net && this.net.role === 'guest') return;
+    if (this.net) this.net.send({ t: 'lerr', side, msg });
+    this.showLaunchError(side, msg);
+  },
+  showLaunchError(side, msg) {
     this._cd = null;
     this.errors[side]++;
     const second = this.errors[side] >= 2;
-    UI.toast(second ? `${msg} 第 2 次發射失誤，對手得 1 分` : `${msg} 發射失誤（警告）`);
+    const who = this.net ? `${this.nameOf(side)}：` : '';
+    UI.toast(second ? `${who}${msg} 第 2 次發射失誤，對手得 1 分` : `${who}${msg} 發射失誤（警告）`);
     $('#count').textContent = '';
     this.setPhase('error');
     setTimeout(() => {
@@ -193,13 +241,14 @@ const Battle = {
         this.errors[side] = 0;
         this.score[1 - side] += 1; this.renderPips();
         this.finishes.push({ round: this.round, winner: 1 - side, type: 'error' });
-        if (this.score[1 - side] >= this.winPts) return this.endMatch();
+        if (this.score[1 - side] >= this.winPts) return this.net ? this.net.role === 'host' && Online.hostMatchEnd() : this.endMatch();
       }
+      if (this.net) { if (this.net.role === 'host') Online.hostReplayRound(); return; }
       this.nextRound(true);
     }, 1600);
   },
   update(dtReal) {
-    if (!this.active) return;
+    if (!this.active || !this.arena) return;
     this.phaseT += dtReal;
     const sc = GL.battle;
     // slow motion
@@ -207,19 +256,33 @@ const Battle = {
     let dt = dtReal * this.timeScale * SIM_SPEED;
     if (this.hitStop > 0) { this.hitStop -= dtReal; dt = 0; }
     if ((this.phase === 'ready' || this.phase === 'go') && !this.demo) {
-      if (!this.playerLaunched) sc.showAim(0, Launcher.aim);
+      if (!this.playerLaunched) sc.showAim(this.mySide(), Launcher.aim);
     }
+    const guest = this.net && this.net.role === 'guest';
+    if (guest && this.phase === 'go' && !this.playerLaunched && (performance.now() - this.goAt) / 1000 > 3.6) { this.playerLaunched = true; this.net.send({ t: 'rip', late: 1 }); }
     if (this.phase === 'go' && this.demo && !this.playerLaunched && (performance.now() - this.goAt) / 1000 >= this.demoPlan.delay * 0.8) {
       this.playerLaunched = true; this.doLaunch(0, this.demoPlan.power, -this.demoPlan.aim);
     }
-    if (this.phase === 'go') {
+    if (this.phase === 'go' && this.net && this.net.role === 'host') {
+      const since = (performance.now() - this.goAt) / 1000, r = this.remoteRip;
+      if (!this.aiLaunched && r) {
+        this.aiLaunched = true;
+        if (r.early) return this.launchError(1, '太早發射！');
+        if (r.late) return this.launchError(1, '太晚發射！');
+        this.doLaunch(1, clamp(+r.power || 0.12, 0.12, 1), clamp(+r.aim || 0, -1, 1));
+      }
+      if (!this.aiLaunched && since > 5) { this.aiLaunched = true; return this.launchError(1, '太晚發射！'); }
+    }
+    if (guest) {
+      if (this.phase !== 'idle') this.netApply(dtReal);
+    } else if (this.phase === 'go') {
       const since = (performance.now() - this.goAt) / 1000;
-      if (!this.aiLaunched && since >= this.aiPlan.delay) { this.aiLaunched = true; this.doLaunch(1, this.aiPlan.power, this.aiPlan.aim); }
+      if (!this.net && !this.aiLaunched && since >= this.aiPlan.delay) { this.aiLaunched = true; this.doLaunch(1, this.aiPlan.power, this.aiPlan.aim); }
       if (!this.demo && !this.playerLaunched && since > 2.6 && !Launcher.holding) return this.launchError(0, '太晚發射！');
       if (!this.demo && !this.playerLaunched && since > 3.6) return this.launchError(0, '太晚發射！');
-      if (this.playerLaunched && this.aiLaunched) this.setPhase('fight');
+      if (this.playerLaunched && this.aiLaunched && this.arena.beys[0].launched && this.arena.beys[1].launched) { this.setPhase('fight'); if (this.net) this.net.send({ t: 'ph', p: 'fight' }); }
     }
-    if (this.phase === 'fight' || this.phase === 'go' || this.phase === 'finish') {
+    if (!guest && (this.phase === 'fight' || this.phase === 'go' || this.phase === 'finish')) {
       this.acc += dt;
       const step = 1 / 120;
       let guard = 0;
@@ -231,6 +294,10 @@ const Battle = {
         if (this.phase !== 'fight') evs.length = 0;
       }
       if (guard >= 12) this.acc = 0;
+    }
+    if (this.net && this.net.role === 'host' && this.phase !== 'idle' && this.phase !== 'ready') {
+      this.snapT -= dtReal;
+      if (this.snapT <= 0) { this.snapT = 1 / 15; this.net.send({ t: 's', b: this.arena.beys.map(snapOf), ts: this.timeScale }); }
     }
     sc.syncBeys(this.arena, dt);
     const [A, B] = this.arena.beys;
@@ -254,8 +321,12 @@ const Battle = {
         const near = Math.hypot(me.x - other.x, me.z - other.z) < 2.4;
         if (this.demoAt[side] <= 0 && (near || me.s < 0.4)) this.useSpecial(side);
       }
-    } else if (this.phase === 'fight') {
-      const ai = this.arena.beys[1];
+    } else if (this.phase === 'fight' && !this.net) {
+      const ai = this.arena.beys[1], pl = this.arena.beys[0];
+      if (ai.state === 'spin' && (ai.mo | 0) < MOMENTUM_MAX && BLADE[ai.cfg.b].type !== 'sta') {
+        this.aiMoAt -= dtReal;
+        if (this.aiMoAt <= 0 && Math.hypot(ai.x - pl.x, ai.z - pl.z) < 2.6) { this.useMomentum(1); this.aiMoAt = rand(2, 5); }
+      }
       if (!ai.usedSpecial && (ai.charge || 0) >= 1 && ai.state === 'spin') {
         this.aiSpecialAt -= dtReal;
         // AI fires when it's useful: attackers near the opponent, others when low or under pressure
@@ -266,11 +337,77 @@ const Battle = {
       }
       this.renderSpecial();
     }
+    if (this.phase === 'fight') this.renderMomentum();
+  },
+  mySide() { return this.flip ? 1 : 0; },
+  nameOf(side) { return side === this.mySide() ? Store.profile.name : this.opp.name; },
+  useMomentum(side) {
+    if (!this.active || this.phase !== 'fight' || this.cine) return;
+    if (this.net && this.net.role === 'guest') { if (side === 1) this.net.send({ t: 'mo' }); return; }
+    if (!this.arena.momentum(side)) return;
+    if (this.net) this.net.send({ t: 'mo', side });
+    this.momentumFx(side);
+  },
+  momentumFx(side) {
+    const b = this.arena.beys[side], sc = GL.battle, y = surfH(Math.hypot(b.x, b.z)) + 0.05;
+    const col = side ? 0x36d3ff : 0xff6a1a;
+    sc.fx.ring(b.x, y, b.z, col, 1.3, 0.3); sc.fx.spark(b.x, y + 0.1, b.z, 18, 3, col, 0.4);
+    SFX.tone(520, 0.08, 0.06, 'sawtooth'); SFX.tone(780, 0.1, 0.05, 'square', 0.05);
+    this.renderMomentum();
+  },
+  renderMomentum() {
+    const btn = $('#moBtn'); if (!btn || !this.arena) return;
+    const me = this.arena.beys[this.mySide()], left = MOMENTUM_MAX - (me.mo | 0);
+    $('#moPips').innerHTML = Array.from({ length: MOMENTUM_MAX }, (_, k) => `<i class="${k < left ? 'on' : ''}"></i>`).join('');
+    btn.disabled = !(this.phase === 'fight' && left > 0 && me.state === 'spin' && !this.cine);
+  },
+  /* ---- online: guest side applies the host's snapshots ---- */
+  netApply(dt) {
+    const S = this.netSnap;
+    for (const b of this.arena.beys) {
+      b.spinAng += (18 + b.s * 40) * dt;
+      if (!S) continue;
+      const t = S[b.side]; if (!t) continue;
+      const k = 1 - Math.exp(-dt * 14);
+      t.x += t.vx * dt * (this.timeScale || 1); t.z += t.vz * dt * (this.timeScale || 1);
+      if (b.state !== t.state && (t.state === 'spin' || b.state === 'idle')) { b.x = t.x; b.z = t.z; }
+      b.x = lerp(b.x, t.x, k); b.z = lerp(b.z, t.z, k);
+      b.vx = t.vx; b.vz = t.vz; b.s = t.s; b.state = t.state; b.dash = t.dash; b.tilt = t.tilt; b.prec = t.prec;
+      b.outT = t.outT; b.meter = t.meter; b.charge = t.charge; b.usedSpecial = t.usedSpecial; b.mo = t.mo; b.launched = t.state !== 'idle';
+      b.buff = t.bk ? { kind: t.bk, t: t.bt, fx: specOf(b.cfg.b).fx } : null;
+    }
+  },
+  netHooks() {
+    const h = this.hooks(), net = () => this.net;
+    const send = (n, args) => { if (net()) net().send({ t: 'e', n, a: args }); };
+    return {
+      onHit: (x, z, impact, a, b) => { send('onHit', [x, z, impact, a.side, b.side]); h.onHit(x, z, impact, a, b); },
+      onWall: (b, vr) => { send('onWall', [b.side, vr]); h.onWall(b, vr); },
+      onDash: h.onDash,
+      onOut: (b, pk) => { send('onOut', [b.side, pk.kind]); h.onOut(b, pk); },
+      onBurst: (b, nx, nz) => { send('onBurst', [b.side, nx, nz]); h.onBurst(b, nx, nz); },
+      onStop: h.onStop,
+      onSpecialHit: (a, b, ka, kb) => { send('onSpecialHit', [a.side, b.side, ka, kb]); h.onSpecialHit(a, b, ka, kb); },
+    };
+  },
+  netEvent(n, a) {
+    const B = this.arena.beys, h = this.arena.hooks;
+    if (n === 'onHit') h.onHit(a[0], a[1], a[2], B[a[3]], B[a[4]]);
+    else if (n === 'onWall') h.onWall(B[a[0]], a[1]);
+    else if (n === 'onOut') h.onOut(B[a[0]], { kind: a[1] });
+    else if (n === 'onBurst') h.onBurst(B[a[0]], a[1], a[2]);
+    else if (n === 'onSpecialHit') h.onSpecialHit(B[a[0]], B[a[1]], a[2], a[3]);
   },
   /* Cinematic signature move: charge -> cut-in -> burst -> resume (~2.4s, skippable) */
   useSpecial(side) {
     if (!this.active || this.phase !== 'fight' || this.cine) return;
+    if (this.net && this.net.role === 'guest') { if (side === 1) this.net.send({ t: 'sp' }); return; }
     const sp = this.arena.special(side); if (!sp) return;
+    if (this.net) this.net.send({ t: 'cine', side });
+    this.presentSpecial(side, sp);
+  },
+  presentSpecial(side, sp) {
+    if (this.cine) return;
     const b = this.arena.beys[side], sc = GL.battle, y = surfH(Math.hypot(b.x, b.z));
     const col = '#' + sp.color.toString(16).padStart(6, '0');
     const cfg = side ? this.cur[1] : this.cur[0];
@@ -284,11 +421,12 @@ const Battle = {
     if (sc.fx.post) { sc.fx.post.uVig.value = 0.9; }
     // DOM overlay
     const el = $('#cine');
-    el.className = 'cine ' + (side ? 'right' : 'left');
+    el.className = 'cine ' + ((side ^ (this.flip ? 1 : 0)) ? 'right' : 'left');
     el.style.setProperty('--sc', col);
-    $('#cnPortrait').innerHTML = side ? oppAvatar(this.opp, 300) : this.demo ? oppAvatar(this.demoP, 300) : playerAvatar(300);
+    const mine = side === this.mySide();
+    $('#cnPortrait').innerHTML = this.demo ? (side ? oppAvatar(this.opp, 300) : oppAvatar(this.demoP, 300)) : mine ? playerAvatar(300) : oppAvatar(this.opp, 300);
     $('#cnBlade').src = Thumbs.get('blade', cfg.b);
-    $('#cnWho').textContent = `${side ? this.opp.name : this.demo ? this.demoP.name : Store.profile.name}・${BLADE[cfg.b].name}`;
+    $('#cnWho').textContent = `${this.demo ? (side ? this.opp.name : this.demoP.name) : this.nameOf(side)}・${BLADE[cfg.b].name}`;
     $('#cnKind').textContent = SPECIAL_KIND[sp.kind];
     $('#cnName').innerHTML = [...sp.name].map((ch, k) => `<span style="--d:${(k * 0.07).toFixed(2)}s">${ch === '・' ? '<i class="dot"></i>' : esc(ch)}</span>`).join('');
     $('#cnInk').innerHTML = Array.from({ length: 14 }, () => `<i style="left:${rand(5, 95).toFixed(1)}%;top:${rand(15, 85).toFixed(1)}%;--s:${rand(0.4, 1.6).toFixed(2)};--d:${rand(0, 0.25).toFixed(2)}s"></i>`).join('');
@@ -335,20 +473,22 @@ const Battle = {
   skipCine() { if (this.cine) this.cineBurst(); },
   renderSpecial() {
     if (!this.arena) return;
+    const F = this.flip ? 1 : 0;
     this.arena.beys.forEach((b, i) => {
-      const bar = $(i ? '#g2sp' : '#g1sp'); if (!bar) return;
+      const bar = $((i ^ F) ? '#g2sp' : '#g1sp'); if (!bar) return;
       const v = b.usedSpecial ? 0 : clamp(b.charge || 0, 0, 1);
       bar.style.width = `${v * 100}%`;
       bar.parentElement.classList.toggle('ready', v >= 1);
       bar.parentElement.classList.toggle('used', !!b.usedSpecial);
     });
-    const me = this.arena.beys[0], btn = $('#spBtn');
+    const me = this.arena.beys[F], btn = $('#spBtn');
     const ready = this.phase === 'fight' && !me.usedSpecial && (me.charge || 0) >= 1 && me.state === 'spin';
     btn.disabled = !ready; btn.classList.toggle('ready', ready);
-    const sp = specOf((this.cur && this.cur[0].b) || 'wolf');
+    const sp = specOf((this.cur && this.cur[F].b) || 'wolf');
     $('#spName').textContent = me.usedSpecial ? '本回合已使用' : sp.name;
   },
   resolve(evs) {
+    if (this.net && this.net.role === 'guest') return;
     let ev;
     if (evs.length > 1 && evs[0].side !== evs[1].side) {
       // simultaneous finish: draw (official), unless one is a burst/out and other a spin stop
@@ -356,6 +496,11 @@ const Battle = {
       if (ranks[evs[0].type] === ranks[evs[1].type]) return this.roundDraw();
       ev = ranks[evs[0].type] > ranks[evs[1].type] ? evs[0] : evs[1];
     } else ev = evs[0];
+    if (this.net) { this.net.send({ t: 'res', side: ev.side, type: ev.type }); }
+    this.showResult(ev.side, ev.type);
+  },
+  showResult(loserSide, type) {
+    const ev = { side: loserSide, type };
     const loser = ev.side, winner = 1 - loser;
     const F = FINISH[ev.type];
     this.score[winner] += F.pts;
@@ -372,6 +517,11 @@ const Battle = {
     sc.blurAt = new THREE.Vector3(lb.x, fy, lb.z); sc.blurKick = 1.1;
     if (ev.type === 'rift' || ev.type === 'out') { sc.fx.star(lb.x, fy + 0.3, lb.z, 4, ev.type === 'rift' ? 0xff3b1a : 0xffb347, 0.4); sc.fx.spark(lb.x, fy, lb.z, 80, 5, ev.type === 'rift' ? 0xff5a2a : 0xffc060, 0.8, 1.3); if (sc.fx.post) { sc.fx.post.uFlash.value = 0.35; sc.fx.post.uFlashCol.value.set(ev.type === 'rift' ? 0xff6a3a : 0xffd090); } }
     if (this.demo) { const tok = this.arena; setTimeout(() => { if (this.demo && this.arena === tok) this.demoNext(); }, 2600); return; }
+    if (this.net) {
+      setTimeout(() => { SFX.finish(); UI.banner(F.en, F.name, `${this.nameOf(winner)} +${F.pts}`, winner !== this.mySide()); this.renderPips(); }, 250);
+      setTimeout(() => { if (this.active && this.net && this.net.role === 'host') Online.hostAfterRound(); }, 3200);
+      return;
+    }
     setTimeout(() => {
       SFX.finish();
       UI.banner(F.en, F.name, `${winner === 0 ? Store.profile.name : this.opp.name} +${F.pts}`, winner === 1);
@@ -384,25 +534,33 @@ const Battle = {
     }, 3200);
   },
   roundDraw() {
+    if (this.net && this.net.role === 'guest') return;
+    if (this.net) this.net.send({ t: 'draw' });
+    this.showDraw();
+  },
+  showDraw() {
     this.setPhase('finish');
     if (this.demo) { setTimeout(() => this.demoNext(), 1500); return; }
+    if (this.net) { UI.banner('DRAW', '同時終結', '平手・本回合重賽', false); setTimeout(() => { if (this.active && this.net && this.net.role === 'host') Online.hostReplayRound(); }, 2800); return; }
     UI.banner('DRAW', '同時終結', '平手・本回合不計分', false);
     setTimeout(() => { if (this.active) this.nextRound(true); }, 2800);
   },
   renderDecks() {
     const ri = this.round - 1;
+    if (this.net) { for (const sd of [0, 1]) $((sd ^ (this.flip ? 1 : 0)) ? '#g2deck' : '#g1deck').innerHTML = Online.deckRow(sd); return; }
     for (const sd of [0, 1]) {
       const d = sd ? this.oDeck : this.pDeck, cur = ri % d.length;
       $(sd ? '#g2deck' : '#g1deck').innerHTML = d.map((cfg, k) => `<span class="dk ${k === cur ? 'cur' : ''}" title="${esc(beyName(cfg))}"><img src="${Thumbs.get('blade', cfg.b)}" alt=""><i>${k + 1}</i><em>${(this.slotRes[sd][k] || []).join(' ')}</em></span>`).join('');
     }
   },
   renderPips() {
-    for (const [i, id] of [[0, '#p1pips'], [1, '#p2pips']]) {
+    const F = this.flip ? 1 : 0;
+    for (const [i, id] of [[F, '#p1pips'], [1 - F, '#p2pips']]) {
       $(id).innerHTML = Array.from({ length: this.winPts }, (_, k) => `<span class="pip ${k < this.score[i] ? 'on' : ''}"></span>`).join('');
     }
   },
   renderGauges() {
-    const [A, B] = this.arena.beys;
+    const F = this.flip ? 1 : 0, A = this.arena.beys[F], B = this.arena.beys[1 - F];
     const fmt = (b) => Math.round(b.s * 9800).toLocaleString('en-US');
     $('#g1rpm').innerHTML = `${fmt(A)}<small>RPM</small>`; $('#g2rpm').innerHTML = `${fmt(B)}<small>RPM</small>`;
     $('#g1bar').style.width = `${clamp(A.s, 0, 1) * 100}%`; $('#g2bar').style.width = `${clamp(B.s, 0, 1) * 100}%`;
@@ -411,7 +569,7 @@ const Battle = {
     if (!this.arena) return;
     this.arena.beys.forEach((b, i) => {
       const n = RATCHET[b.cfg.r].prongs, filled = Math.min(n, Math.floor(clamp(b.meter, 0, 1) * n + 0.0001));
-      $(i ? '#g2rat' : '#g1rat').innerHTML = `<span>鎖芯</span>` + Array.from({ length: n }, (_, k) => `<i class="${k < filled ? 'on' : ''}"></i>`).join('');
+      $((i ^ (this.flip ? 1 : 0)) ? '#g2rat' : '#g1rat').innerHTML = `<span>鎖芯</span>` + Array.from({ length: n }, (_, k) => `<i class="${k < filled ? 'on' : ''}"></i>`).join('');
     });
   },
   /* survival run state: streak survives across matches until the first loss */
@@ -481,6 +639,7 @@ const Battle = {
     setTimeout(() => { UI.show('result'); SFX.coin(); }, 400);
   },
   quit() {
+    if (this.net) return Online.confirmForfeit();
     this.active = false; this._cd = null; SFX.stopGrind();
     $('#count').textContent = '';
     if (this.survival) { this.score = [0, 1]; return this.endSurvival(false); }
@@ -553,3 +712,8 @@ const Launcher = {
     $('#tfill').style.height = `${this.y}px`;
   },
 };
+
+function snapOf(b) {
+  const r = (v) => Math.round(v * 1000) / 1000;
+  return { x: r(b.x), z: r(b.z), vx: r(b.vx), vz: r(b.vz), s: r(b.s), state: b.state, dash: r(b.dash), tilt: r(b.tilt), prec: r(b.prec || 0), outT: r(b.outT || 0), meter: r(b.meter), charge: r(b.charge || 0), usedSpecial: !!b.usedSpecial, mo: b.mo | 0, bk: b.buff && b.buff.t > 0 ? b.buff.kind : '', bt: b.buff ? r(b.buff.t) : 0 };
+}

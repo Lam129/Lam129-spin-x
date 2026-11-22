@@ -187,20 +187,32 @@ export default {
 export class Room {
   constructor(state) { this.state = state; }
   async fetch(req) {
-    const sockets = this.state.getWebSockets();
-    if (sockets.length >= 2) return new Response(JSON.stringify(BUSY), { status: 409 });
+    const url = new URL(req.url);
+    const role = url.searchParams.get('role') === 'host' ? 'host' : 'guest';
+    const cid = (url.searchParams.get('cid') || '').replace(/[^a-z0-9]/gi, '').slice(0, 24) || 'x';
     const pair = new WebSocketPair();
-    const role = sockets.length === 0 ? 'host' : 'guest';
-    this.state.acceptWebSocket(pair[1], [role]);
-    pair[1].send(JSON.stringify({ t: 'hello', role, peers: sockets.length + 1 }));
-    for (const s of sockets) s.send(JSON.stringify({ t: 'peer-joined' }));
+    // one host and one guest per room; the same tab reconnecting replaces its old socket, anyone else is turned away
+    const same = this.state.getWebSockets(role);
+    if (same.some((s) => !this.state.getTags(s).includes('c:' + cid))) {
+      this.state.acceptWebSocket(pair[1], ['reject']);
+      pair[1].close(4009, 'full');
+      return new Response(null, { status: 101, webSocket: pair[0] });
+    }
+    for (const s of same) { try { s.close(4000, 'replaced'); } catch (e) {} }
+    const others = this.state.getWebSockets().filter((s) => !same.includes(s) && !this.state.getTags(s).includes('reject'));
+    this.state.acceptWebSocket(pair[1], [role, 'c:' + cid]);
+    pair[1].send(JSON.stringify({ t: 'hello', role, peers: others.length + 1 }));
+    for (const s of others) { try { s.send(JSON.stringify({ t: 'peer-joined' })); } catch (e) {} }
     return new Response(null, { status: 101, webSocket: pair[0] });
   }
   webSocketMessage(ws, msg) {
     if (typeof msg !== 'string' || msg.length > 16384) return;
-    for (const s of this.state.getWebSockets()) if (s !== ws) { try { s.send(msg); } catch (e) {} }
+    if (this.state.getTags(ws).includes('reject')) return;
+    for (const s of this.state.getWebSockets()) if (s !== ws && !this.state.getTags(s).includes('reject')) { try { s.send(msg); } catch (e) {} }
   }
-  webSocketClose(ws) {
-    for (const s of this.state.getWebSockets()) if (s !== ws) { try { s.send(JSON.stringify({ t: 'peer-left' })); } catch (e) {} }
+  webSocketClose(ws, code) {
+    const tags = this.state.getTags(ws);
+    if (tags.includes('reject') || code === 4000) return;
+    for (const s of this.state.getWebSockets()) if (s !== ws && !this.state.getTags(s).includes('reject')) { try { s.send(JSON.stringify({ t: 'peer-left' })); } catch (e) {} }
   }
 }

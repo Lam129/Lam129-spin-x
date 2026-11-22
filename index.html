@@ -638,6 +638,88 @@ body.demo .cine .cn-panel.cn-a{display:none}
   .lb-menu{top:70px}.mi{height:70px}.m1{height:84px}
   .lb-board{display:none}
 }
+
+/* ---------- online ---------- */
+.net-only{display:none!important}
+body.online .net-only{display:flex!important}
+.ctr{font-style:normal;color:var(--atk);margin-left:4px}.ctr.up{color:var(--sta)}
+.mobtn{position:absolute;left:22px;bottom:316px;display:flex;gap:10px;align-items:center;padding:8px 14px;background:var(--panel);border:1px solid var(--line2);text-align:left;pointer-events:auto}
+.mobtn .k{font-family:var(--f-disp);font-size:11px;padding:3px 6px;border:1px solid var(--line2);color:var(--dim)}
+.mobtn b{display:block;font-size:15px}.mobtn small{display:block;font-size:11px;color:var(--dim)}
+.mobtn:not(:disabled){border-color:var(--ice);box-shadow:0 0 14px rgba(54,211,255,.25)}
+.mobtn:disabled{opacity:.45}
+.mo-pips{display:flex;gap:3px}.mo-pips i{width:12px;height:6px;background:#1a2236}.mo-pips i.on{background:var(--ice)}
+.emo-bar{position:absolute;left:50%;bottom:74px;transform:translateX(-50%);gap:4px;align-items:center;padding:6px 8px;pointer-events:auto}
+.emo-bar button{font-size:24px;padding:4px 6px;background:none;border:0;cursor:pointer;transition:transform .1s}.emo-bar button:hover{transform:scale(1.2)}
+.emo-bar .ping-txt{font-size:11px;margin-left:6px}
+.emo-bubble{position:absolute;top:84px;padding:6px 12px;background:#fff;color:#111;border-radius:14px;font-size:30px;opacity:0;transform:scale(.6);transition:opacity .2s,transform .2s;pointer-events:none;z-index:5}
+.emo-bubble.me{left:60px}.emo-bubble.op{right:60px}
+.emo-bubble.on{opacity:1;transform:scale(1)}
+.net-lost{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);padding:18px 26px;display:grid;gap:6px;text-align:center;z-index:6}
+.net-lost b{font-size:22px;color:var(--atk)}.net-lost em{font-style:normal;color:var(--bal);font-weight:900}
+.pick-ov{position:absolute;inset:0;z-index:7;background:rgba(5,6,10,.82);backdrop-filter:blur(6px);display:flex;flex-direction:column;align-items:center;gap:18px;padding:84px 24px 24px;pointer-events:auto;overflow:auto}
+.pk-head{text-align:center}.pk-head h2{margin:2px 0;font:900 italic 34px var(--f-body)}
+.pk-timer{font:900 40px var(--f-disp);color:var(--bal)}
+.pk-body{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:36px;width:min(1180px,100%)}
+.pk-side{display:grid;gap:10px;align-content:start}.pk-side.op{justify-items:end;text-align:right}
+.pk-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;width:100%}
+.pk-card{position:relative;display:grid;justify-items:center;gap:6px;padding:14px 8px;border:1px solid var(--line2);background:#0c111d;color:var(--fg);min-height:190px;align-content:center}
+.pk-card img{width:96px;height:96px}.pk-card b{font-size:15px}
+.pk-card small{position:absolute;top:8px;left:8px;font-size:11px;color:var(--dim)}
+.pk-card.pick-on{border-color:var(--hot);box-shadow:0 0 0 1px var(--hot),0 0 22px rgba(255,106,26,.35);background:#1a120c}
+.pk-card.pick-on.op{border-color:var(--ice);box-shadow:0 0 0 1px var(--ice),0 0 22px rgba(54,211,255,.35)}
+.pk-card.used{opacity:.32;filter:grayscale(1)}
+.pk-card.back{background:repeating-linear-gradient(45deg,#11172a 0 10px,#0c111d 10px 20px);font:900 46px var(--f-disp);color:#2a3348}
+.pk-opp{font-weight:700}
+.pk-hint{min-height:1.4em;font-weight:900;color:var(--bal)}
+.pk-legend{display:flex;gap:12px;align-items:center;padding:10px 18px;flex-wrap:wrap;justify-content:center}
+.ty{font:700 11px var(--f-body);padding:2px 8px;color:#111}
+.ty.t-atk{background:var(--atk)}.ty.t-def{background:var(--def)}.ty.t-sta{background:var(--sta)}.ty.t-bal{background:var(--bal)}
+.dk.used{opacity:.3;filter:grayscale(1)}
+.on-wrap{position:absolute;inset:64px max(22px,4vw) 22px;display:flex;flex-direction:column;gap:18px;overflow:auto}
+.on-head h2{margin:2px 0 4px;font:900 italic 34px var(--f-body)}
+.on-menu,.on-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.on-box{padding:22px;display:grid;gap:12px;align-content:start}
+.wg-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.wg{padding:10px 0;font:900 20px var(--f-disp);border:1px solid var(--line2);background:#0c111d;color:var(--fg)}
+.wg.on{border-color:var(--bal);color:var(--bal);box-shadow:0 0 14px rgba(246,198,50,.3)}
+.wg:disabled{opacity:.4}
+.wg-custom{display:flex;gap:8px}.wg-custom .inp{flex:1;min-width:0}
+.on-gw{font:900 26px var(--f-body);color:var(--bal)}
+.on-code-row{display:flex;gap:10px;align-items:stretch}
+.on-code{flex:1;font:900 clamp(30px,4vw,48px)/1 ui-monospace,monospace;letter-spacing:.16em;background:#0b0f1a;border:1px solid var(--line2);padding:14px 16px;display:flex;align-items:center}
+.on-copy{display:grid;gap:8px}
+.on-players{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center}
+.on-pl{display:grid;justify-items:center;gap:6px;text-align:center}
+.on-pl .av{width:72px;height:72px;border-radius:8px;overflow:hidden;border:2px solid var(--line2);background:#0b0f1a}.on-pl .av svg{width:100%;height:100%}
+.on-pl small{color:var(--dim);font-size:12px}.on-pl .ok{color:var(--sta);font-weight:700}.on-pl .wait{color:var(--bal);font-weight:700}
+.on-pl.empty{opacity:.5}
+.on-vs{font:900 italic 34px var(--f-disp)}
+.on-rules{border-top:1px solid var(--line);padding-top:10px}
+.or-top{text-align:center}
+.or-title{font:900 italic clamp(60px,9vw,96px)/1 var(--f-body);color:#fff;text-shadow:6px 6px 0 #ff5a10,0 0 40px rgba(255,90,20,.6)}
+.or-title.lose{text-shadow:6px 6px 0 #3a4256;color:#c9d0e2}
+.or-score{font:900 28px var(--f-body);margin-top:6px}
+.or-row{display:grid;grid-template-columns:44px 1fr auto;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.or-row em{font-style:normal;font-weight:900}
+.or-gain{font:900 46px var(--f-body);color:var(--bal)}.or-gain small{font-size:16px;margin-left:6px}
+.or-peer .bubble{display:inline-block;background:#fff;color:#111;border-radius:12px;padding:6px 12px;font-weight:700}
+.or-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.or-dbl{background:linear-gradient(90deg,#ffd23a,#ffb020)!important;color:#111!important;border:0!important}
+.or-dbl:disabled{opacity:.45}
+@media (max-width:820px){
+  .on-wrap{position:static;padding:0 12px 18px}
+  .on-menu,.on-grid{grid-template-columns:1fr}
+  .wg-row{grid-template-columns:repeat(2,1fr)}
+  .on-code-row{flex-direction:column}.on-copy{grid-template-columns:1fr 1fr}
+  .pick-ov{padding:64px 12px 16px;gap:10px}
+  .pk-body{grid-template-columns:1fr;gap:14px}.pk-side.op{justify-items:start;text-align:left}
+  .pk-card{min-height:130px;padding:8px 4px}.pk-card img{width:64px;height:64px}.pk-card b{font-size:12px}
+  .mobtn{left:8px;bottom:calc(max(8px,env(safe-area-inset-bottom,0px)) + 170px);padding:6px 10px}.mobtn small,.mobtn .k{display:none}
+  .emo-bar{bottom:auto;top:calc(max(8px,env(safe-area-inset-top,0px)) + 56px);left:8px;transform:none;padding:4px}
+  .emo-bar button{font-size:18px;padding:2px 3px}
+  .emo-bubble{top:110px;font-size:22px}.emo-bubble.me{left:12px}.emo-bubble.op{right:12px}
+}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
 
@@ -706,7 +788,7 @@ body.demo .cine .cn-panel.cn-a{display:none}
     <div class="lb-bey"><small id="lbBeySlot"></small><b id="lbBeyName"></b><div class="lb-deck" id="lbDeck"></div></div>
     <nav class="lb-menu">
       <button class="mi m1" data-go="select"><span class="k">01</span><span><h4>挑戰之路</h4><p id="lbStory"></p></span><span class="tag">STORY</span></button>
-      <button class="mi m2" data-go="online"><span class="k">02</span><span><h4>線上對戰</h4><p>邀請玩家・贏走對方下注的金幣</p></span><span class="tag">SOON</span></button>
+      <button class="mi m2" data-go="online"><span class="k">02</span><span><h4>線上對戰</h4><p>邀請玩家・贏走對方下注的金幣</p></span><span class="tag">NEW</span></button>
       <button class="mi m3" data-go="survival"><span class="k">03</span><span><h4>生存模式</h4><p id="lbSurv"></p></span><span class="tag">SURVIVAL</span></button>
     </nav>
     <div class="lb-board panel cut">
@@ -793,6 +875,19 @@ body.demo .cine .cn-panel.cn-a{display:none}
     </div>
     <div class="gauge l panel cut"><div class="deckrow" id="g1deck"></div><div class="eyebrow">你的轉速</div><div class="rpm num" id="g1rpm">0<small>RPM</small></div><div class="gbar"><i id="g1bar"></i></div><div class="ratchet" id="g1rat"></div><div class="spg"><span>必殺</span><div class="spbar"><i id="g1sp"></i></div></div></div>
     <div class="gauge r panel cut"><div class="deckrow" id="g2deck"></div><div class="eyebrow">對手轉速</div><div class="rpm num" id="g2rpm">0<small>RPM</small></div><div class="gbar"><i id="g2bar"></i></div><div class="ratchet" id="g2rat"></div><div class="spg"><span>必殺</span><div class="spbar"><i id="g2sp"></i></div></div></div>
+    <button class="mobtn cut" id="moBtn" disabled><span class="k">Q</span><span><b>氣勢</b><small>衝向對手</small></span><span class="mo-pips" id="moPips"></span></button>
+    <div class="emo-bar panel cut net-only"><button data-emo="0" aria-label="表情 1">😤</button><button data-emo="1" aria-label="表情 2">😱</button><button data-emo="2" aria-label="表情 3">👍</button><button data-emo="3" aria-label="表情 4">😭</button><span class="ping-txt"></span></div>
+    <div class="emo-bubble me" id="emoMe"></div><div class="emo-bubble op" id="emoOp"></div>
+    <div class="net-lost panel cut" id="netLost" hidden><b>對手斷線</b><span>等待重新連線… <em id="netLostN">30</em> 秒後判你勝利</span></div>
+    <div class="pick-ov" id="pickOv" hidden>
+      <div class="pk-head"><div class="eyebrow" id="pkRound">ROUND 1 · BLIND PICK</div><h2>選擇出戰陀螺</h2><div class="pk-timer" id="pkTimer">10</div></div>
+      <div class="pk-body">
+        <div class="pk-side"><div class="eyebrow">你的牌組（暗選，對方看不到）</div><div class="pk-cards" id="pkMine"></div><button class="btn primary cut" id="pkLock">鎖定</button></div>
+        <div class="pk-side op"><div class="eyebrow">對手的牌組</div><div class="pk-cards" id="pkTheirs"></div><div class="pk-opp" id="pkOpp"></div></div>
+      </div>
+      <div class="pk-hint" id="pkHint"></div>
+      <div class="pk-legend panel cut"><span class="eyebrow">類型相剋</span><span class="ty t-atk">攻擊</span>→<span class="ty t-sta">持久</span>→<span class="ty t-def">防禦</span>→<span class="ty t-atk">攻擊</span><small>被剋方能力 −10%・平衡型不剋也不被剋</small></div>
+    </div>
     <button class="spbtn cut" id="spBtn" disabled><span class="k">SPACE</span><span><b>必殺技</b><small id="spName"></small></span></button>
     <div class="cine" id="cine">
       <div class="cn-dark"></div>
@@ -821,6 +916,54 @@ body.demo .cine .cn-panel.cn-a{display:none}
   </section>
 
   <!-- RESULT -->
+  <section class="screen" id="s-online" hidden>
+    <div class="topbar" data-topbar></div>
+    <div class="on-wrap" data-ov="menu">
+      <div class="on-head"><div class="eyebrow">Online Battle · 線上對戰</div><h2>邀請好友對戰</h2><p class="desc">3 對 3 盲選・先拿 4 分勝・可以下注金幣，贏家全拿。</p></div>
+      <div class="on-menu">
+        <div class="panel cut on-box"><div class="eyebrow">建立房間</div><p class="desc">建立後把房號或邀請連結傳給好友。</p><button class="btn primary cut" id="onCreate">建立房間</button></div>
+        <div class="panel cut on-box"><div class="eyebrow">加入房間</div><input class="inp" id="onJoinCode" maxlength="7" placeholder="輸入 6 碼房號" autocomplete="off" style="text-transform:uppercase;letter-spacing:.2em;font-size:20px"><button class="btn cut" id="onJoinBtn">加入</button></div>
+      </div>
+    </div>
+    <div class="on-wrap" data-ov="room" hidden>
+      <div class="on-head"><div class="eyebrow">Online Battle · 線上對戰</div><h2>對戰房間</h2></div>
+      <div class="on-grid">
+        <div class="panel cut on-box">
+          <div id="onHostBox">
+            <div class="eyebrow">1 · 下注金幣</div>
+            <div class="wg-row"><button class="wg" data-wg="0">不下注</button><button class="wg" data-wg="50">50</button><button class="wg" data-wg="100">100</button><button class="wg" data-wg="200">200</button></div>
+            <div class="wg-custom"><input class="inp" id="wgCustom" type="number" inputmode="numeric" min="10" step="10" placeholder="自訂金額（最少 10）"><button class="btn cut" id="wgSet">設定</button></div>
+            <div class="desc" id="wgNote"></div>
+          </div>
+          <div id="onGuestBox" hidden><div class="eyebrow">下注</div><div class="on-gw" id="onGuestWager"></div><div class="desc">下注由房主設定，你可以接受或離開。</div></div>
+          <div class="eyebrow" style="margin-top:6px">2 · 把房號或連結傳給好友</div>
+          <div class="on-code-row"><div class="on-code" id="onCode">------</div><div class="on-copy"><button class="btn cut" id="onCopyCode">複製房號</button><button class="btn cut" id="onCopyLink">複製邀請連結</button></div></div>
+          <div class="desc"><span class="dot"></span> 好友點連結就會直接進房，不用輸入房號</div>
+        </div>
+        <div class="panel cut on-box">
+          <div class="eyebrow">對戰雙方 <span class="ping-txt" style="float:right"></span></div>
+          <div class="on-players" id="onPlayers"></div>
+          <div class="desc" id="onStatus"></div>
+          <div class="on-rules desc">規則：3 對 3 盲選・先拿 4 分勝・戰鬥盤每回合隨機・對方斷線 30 秒判你勝</div>
+          <button class="btn primary cut" id="onAccept" disabled>等待對手加入</button>
+        </div>
+      </div>
+    </div>
+    <div class="on-wrap" data-ov="result" hidden>
+      <div class="or-top"><div class="or-title" id="orTitle">WIN!</div><div class="or-score" id="orScore"></div></div>
+      <div class="on-grid">
+        <div class="panel cut on-box"><div class="eyebrow">對戰紀錄</div><div id="orLog"></div></div>
+        <div class="panel cut on-box">
+          <div class="eyebrow">獎勵</div>
+          <div class="or-gain"><span id="orGain">+0</span><small>金幣</small></div>
+          <div class="desc" id="orGainNote"></div>
+          <div class="or-peer" id="orPeer"></div>
+          <div class="or-btns"><button class="btn primary cut" id="orAgain">再來一局</button><button class="btn cut or-dbl" id="orDouble">雙倍或歸零</button></div>
+          <button class="btn cut" id="orHome">回到大廳</button>
+        </div>
+      </div>
+    </div>
+  </section>
   <section class="screen" id="s-result" hidden>
     <div class="res-card panel cut">
       <div class="res-av" id="resAv"></div><div class="eyebrow" id="resEye">MATCH RESULT</div>
@@ -919,7 +1062,16 @@ body.demo .cine .cn-panel.cn-a{display:none}
         <li>雙方同時終結（例如同時停止）判定為平手，該回合不計分並重新發射。</li>
       </ul>
       <h3>類型相剋</h3>
-      <p><span class="t-atk">攻擊型</span> 擅長擊出持久型・<span class="t-sta">持久型</span> 靠長時間旋轉贏過防禦型・<span class="t-def">防禦型</span> 能承受攻擊型的衝擊・<span class="t-bal">平衡型</span> 攻守兼備，視發射技巧而定。</p>
+      <p><span class="t-atk">攻擊型</span> 剋 <span class="t-sta">持久型</span>・<span class="t-sta">持久型</span> 剋 <span class="t-def">防禦型</span>・<span class="t-def">防禦型</span> 剋 <span class="t-atk">攻擊型</span>。被剋的一方本回合攻擊、防禦各 −10%，轉速也掉得比較快。<span class="t-bal">平衡型</span>不剋也不被剋。</p>
+      <h3>氣勢</h3>
+      <ul><li>對戰中按 <b>Q</b> 或「氣勢」按鈕，讓陀螺朝對手短暫衝刺，每回合限用 2 次，會消耗一點轉速。</li></ul>
+      <h3>線上對戰</h3>
+      <ul>
+        <li>建立房間後把房號或邀請連結傳給好友。需要註冊 Email 帳號才能進行線上對戰。</li>
+        <li>房主設定下注金幣（可自訂，最少 10），雙方都接受才開打。下注在開打時先扣除，贏家拿走雙方的下注，輸家拿 20 金幣安慰獎。</li>
+        <li>每回合雙方<b>同時暗選</b>出戰陀螺，用過的要等 3 顆都出戰後才能再選。先拿 4 分獲勝。</li>
+        <li>中途離開判輸；對手斷線 30 秒沒回來，判你勝利。新手前 5 場線上對戰不下注。</li>
+      </ul>
     </article>
   </section>
 </div>

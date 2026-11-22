@@ -424,8 +424,9 @@ class BattleScene {
   update(dt) {
     this.t += dt;
     // camera
-    const base = this.camBase.clone();
-    let lookT = new THREE.Vector3(0, 0, 0.4);
+    const base = this.camBase.clone(), fz = this.flip ? -1 : 1;
+    base.z *= fz;
+    let lookT = new THREE.Vector3(0, 0, 0.4 * fz);
     if (this.cine) {
       const c = this.cine; c.t += dt; c.a += dt * 1.6;
       const r = 2.6 - Math.min(c.t, 1) * 0.6;
@@ -434,7 +435,7 @@ class BattleScene {
       this.cam.position.lerp(base, 1 - Math.exp(-dt * 10));
     } else if (this.zoomTo) {
       const z = this.zoomTo;
-      base.set(z.x * 0.55, 4.2, z.z * 0.55 + 4.6);
+      base.set(z.x * 0.55, 4.2, z.z * 0.55 + 4.6 * fz);
       lookT.set(z.x, 0.4, z.z);
     } else if (this.follow && this.demoCam) {
       const f = this.follow; this.demoA = (this.demoA || 0) + dt * 0.22;
@@ -443,7 +444,7 @@ class BattleScene {
       lookT.set(f.x * 0.85, 0.3, f.z * 0.85);
     } else if (this.follow) {
       const f = this.follow;
-      lookT.set(f.x * 0.25, 0, f.z * 0.25 + 0.4);
+      lookT.set(f.x * 0.25, 0, f.z * 0.25 + 0.4 * fz);
       base.x += f.x * 0.2; base.z += f.z * 0.12;
     }
     this.cam.position.lerp(base, 1 - Math.exp(-dt * 3));
