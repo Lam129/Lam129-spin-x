@@ -215,10 +215,11 @@ function partName(kind, p) { const sfx = p.base && p.base !== p.id ? `・${p.ser
 
 // every starter pack: three common blades of the chosen type, with common ratchets and bits that suit it
 const STARTER_PACKS = {
-  atk: [{ b: 'wolf', r: '3-60', t: 'F' }, { b: 'hawk', r: '4-60', t: 'W' }, { b: 'viper', r: '5-60', t: 'F' }],
-  def: [{ b: 'silver', r: '5-60', t: 'N' }, { b: 'golem', r: '4-60', t: 'N' }, { b: 'rhino', r: '3-60', t: 'N' }],
+  // a deck may not repeat a part, so each top gets a different (common) ratchet and bit
+  atk: [{ b: 'wolf', r: '3-60', t: 'F' }, { b: 'hawk', r: '4-60', t: 'W' }, { b: 'viper', r: '5-60', t: 'HT' }],
+  def: [{ b: 'silver', r: '5-60', t: 'N' }, { b: 'golem', r: '4-60', t: 'D' }, { b: 'rhino', r: '3-60', t: 'T' }],
   sta: [{ b: 'moon', r: '5-60', t: 'B' }, { b: 'crane', r: '4-60', t: 'O' }, { b: 'dragonfly', r: '3-60', t: 'D' }],
-  bal: [{ b: 'phoenix', r: '4-60', t: 'T' }, { b: 'mantis', r: '3-60', t: 'HT' }, { b: 'mantis@ob', r: '5-60', t: 'T' }],
+  bal: [{ b: 'phoenix', r: '4-60', t: 'T' }, { b: 'mantis', r: '3-60', t: 'HT' }, { b: 'mantis@ob', r: '5-60', t: 'D' }],
 };
 const STARTERS = Object.fromEntries(Object.entries(STARTER_PACKS).map(([k, v]) => [k, v[0]]));
 

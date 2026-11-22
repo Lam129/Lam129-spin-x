@@ -179,8 +179,10 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .pcard .pm{font-size:11px;color:var(--dim);display:flex;justify-content:space-between}
 .pcard .cnt{position:absolute;top:6px;right:8px;font-family:var(--f-disp);font-size:12px;color:var(--dim)}
 .pcard.locked img{filter:brightness(0) opacity(.45)}
-.pcard.used{opacity:.55}
-.pcard .usedby{position:absolute;top:6px;left:8px;font-size:10px;font-weight:700;color:#160700;background:var(--hot2);padding:0 5px}
+.pcard.used{opacity:.5;cursor:not-allowed;background:#0a0d16}
+.pcard.used img{filter:grayscale(1) brightness(.7)}
+.pcard.used:hover{border-color:var(--line);background:#0a0d16}
+.pcard .usedby{position:absolute;top:6px;left:6px;right:6px;font-size:10px;font-weight:700;color:#e8ecf5;background:#3a4256;padding:1px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:1}
 .stage-info{align-self:start;justify-self:center;text-align:center;padding-top:6px;pointer-events:none}
 .stage-info .nm{font-size:30px;font-weight:900;text-shadow:0 2px 14px rgba(0,0,0,.8)}
 .stage-info .code{font-family:var(--f-disp);font-size:16px;color:var(--hot2);letter-spacing:.12em}

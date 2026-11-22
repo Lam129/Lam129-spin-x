@@ -143,7 +143,8 @@ const Store = {
 function newProfile(name, starter) {
   const inv = { blade: {}, ratchet: {}, bit: {} };
   const decks = (STARTER_PACKS[starter] || STARTER_PACKS.atk).map((d) => ({ ...d }));
-  for (const d of decks) { inv.blade[d.b] = 1; inv.ratchet[d.r] = 1; inv.bit[d.t] = 1; }
+  // one physical copy per use: two starter tops sharing a bit means two of that bit
+  for (const d of decks) { inv.blade[d.b] = (inv.blade[d.b] | 0) + 1; inv.ratchet[d.r] = (inv.ratchet[d.r] | 0) + 1; inv.bit[d.t] = (inv.bit[d.t] | 0) + 1; }
   return { v: 2, name, starter, coins: 200, inv, decks, builds: decks.map((d, i) => ({ id: 'b' + (i + 1), ...d })), deckIds: ['b1', 'b2', 'b3'], ladder: 0, stats: { w: 0, l: 0, spin: 0, out: 0, burst: 0, rift: 0, pulls: 0 }, createdAt: Date.now(), updatedAt: Date.now() };
 }
 function migrate(p) {
@@ -161,8 +162,34 @@ function migrate(p) {
   p.builds = p.builds.filter((x) => x && x.id).map((x) => ({ id: x.id, b: BLADE[x.b] ? x.b : 'wolf', r: RATCHET[x.r] ? x.r : '3-60', t: BIT[x.t] ? x.t : 'F' }));
   p.deckIds = (p.deckIds || []).slice(0, 3);
   while (p.deckIds.length < 3) p.deckIds.push(p.builds[p.deckIds.length % p.builds.length].id);
+  // saves made with the earlier starter packs repeated a bit inside the deck (not allowed): swap in the fixed pack's part
+  const pack = STARTER_PACKS[p.starter];
+  if (pack) for (const [k, key] of [['ratchet', 'r'], ['bit', 't']]) {
+    p.deckIds.forEach((id, i) => {
+      const bld = p.builds.find((x) => x.id === id); if (!bld) return;
+      const dupe = p.deckIds.slice(0, i).some((oid) => { const o = p.builds.find((x) => x.id === oid); return o && o[key] === bld[key]; });
+      if (dupe && pack[i] && pack[i][key] !== bld[key]) { bld[key] = pack[i][key]; p.inv[k][bld[key]] = Math.max(1, p.inv[k][bld[key]] | 0); }
+    });
+  }
+  // each part copy can sit on one top only; older saves could share a copy, so top the counts up once
+  for (const [k, key] of [['blade', 'b'], ['ratchet', 'r'], ['bit', 't']]) {
+    const need = {};
+    for (const b of p.builds) need[b[key]] = (need[b[key]] | 0) + 1;
+    for (const id in need) if ((p.inv[k][id] | 0) < need[id]) p.inv[k][id] = need[id];
+  }
   syncDecks(p);
   return p;
+}
+/* how many copies of a part are mounted on builds other than `exceptId`, and on which ones */
+function partUse(p, kind, id, exceptId) {
+  const key = { blade: 'b', ratchet: 'r', bit: 't' }[kind];
+  return p.builds.filter((b) => b.id !== exceptId && b[key] === id);
+}
+function partFree(p, kind, id, exceptId) { return (p.inv[kind][id] | 0) - partUse(p, kind, id, exceptId).length; }
+function buildLabel(p, b, kind) {
+  const k = p.deckIds.indexOf(b.id);
+  if (kind === 'blade') return k >= 0 ? `${k + 1} 號機` : '另一顆陀螺';   // the blade is the top's name already
+  return k >= 0 ? `${k + 1} 號機・${BLADE[b.b].name}` : BLADE[b.b].name;
 }
 function syncDecks(p) {
   p.decks = p.deckIds.map((id, i) => { const b = p.builds.find((x) => x.id === id); return b ? { b: b.b, r: b.r, t: b.t } : p.decks[i]; });

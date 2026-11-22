@@ -163,10 +163,11 @@ const UI = {
     $$('[data-ptab]').forEach((b) => b.setAttribute('aria-selected', b.dataset.ptab === this.asmTab));
     const items = K.list.filter((p) => owns(this.asmTab, p.id));
     $('#plist').innerHTML = items.map((p) => {
-      const sel = d[K.key] === p.id;
+      const sel = d[K.key] === p.id, free = partFree(P, this.asmTab, p.id, d.id), others = partUse(P, this.asmTab, p.id, d.id);
+      const taken = !sel && free <= 0;
       const meta = this.asmTab === 'blade' ? `<span class="t-${p.type}">${TYPES[p.type].name}</span><span>${p.wt}g</span>` : this.asmTab === 'ratchet' ? `<span>抗解體 ${Math.round(p.burst * 52)}</span><span>${p.wt}g</span>` : `<span class="t-${p.type}">${TYPES[p.type].name}</span><span>衝刺 ${p.dash}</span>`;
-      return `<button class="pcard cut" data-part="${p.id}" aria-pressed="${sel}">
-        <span class="cnt">×${P.inv[this.asmTab][p.id]}</span>
+      return `<button class="pcard cut ${taken ? 'used' : ''}" data-part="${p.id}" aria-pressed="${sel}" ${taken ? `aria-disabled="true" title="已裝在「${esc(buildLabel(P, others[0], this.asmTab))}」上"` : ''}>
+        ${taken ? `<span class="usedby">已裝在 ${esc(buildLabel(P, others[0], this.asmTab))}</span>` : ''}<span class="cnt">${others.length && !taken ? `剩 ${free}／` : ''}×${P.inv[this.asmTab][p.id]}</span>
         ${Thumbs.lazy(this.asmTab, p.id)}
         <span class="pn">${esc(partName(this.asmTab, p))}</span>
         <span class="pm"><span class="r-${p.rarity}">${RARITY[p.rarity].name}</span>${meta}</span></button>`;
@@ -209,6 +210,11 @@ const UI = {
   pickPart(id) {
     const P = Store.profile, d = this.curBuild(), K = KINDS[this.asmTab];
     if (d[K.key] === id) return;
+    if (partFree(P, this.asmTab, id, d.id) <= 0) {
+      const o = partUse(P, this.asmTab, id, d.id)[0];
+      SFX.tone(220, 0.12, 0.08, 'square');
+      return this.toast(`「${partName(this.asmTab, K.map[id])}」已經裝在「${buildLabel(P, o, this.asmTab)}」上了，先把它換下來才能使用`);
+    }
     d[K.key] = id;
     syncDecks(P); Store.save();
     GL.show.swapPart(d, this.asmTab);
@@ -217,7 +223,11 @@ const UI = {
   buildAction(act) {
     const P = Store.profile, d = this.curBuild();
     if (act === 'new' || act === 'copy') {
-      const src = act === 'copy' ? d : { b: BLADES.find((x) => owns('blade', x.id)).id, r: RATCHETS.find((x) => owns('ratchet', x.id)).id, t: BITS.find((x) => owns('bit', x.id)).id };
+      // every part copy can be mounted on one top only
+      const pick = (kind, list) => (list.find((x) => partFree(P, kind, x.id) > 0) || {}).id;
+      const src = act === 'copy' ? d : { b: pick('blade', BLADES), r: pick('ratchet', RATCHETS), t: pick('bit', BITS) };
+      const short = [['blade', src.b], ['ratchet', src.r], ['bit', src.t]].filter(([k, id]) => !id || partFree(P, k, id) <= 0).map(([k]) => KINDS[k].name);
+      if (short.length) { SFX.tone(220, 0.12, 0.08, 'square'); return this.toast(act === 'copy' ? `零件不夠複製：${short.join('、')}都已經裝在其他陀螺上了` : `沒有空出來的${short.join('、')}，去扭蛋機抽更多零件吧`); }
       const id = 'b' + Date.now().toString(36);
       P.builds.push({ id, b: src.b, r: src.r, t: src.t });
       this.asmBuild = id;
