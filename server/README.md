@@ -1,5 +1,7 @@
 # 陀螺對決 公開版後端
 
+**目前已部署**：`https://spin-duel-api.spinduel.workers.dev`（D1 資料庫 `spin-duel`，只允許 `https://lam129.github.io` 呼叫）。
+
 Cloudflare Workers + D1（SQLite）+ Durable Objects，全部在 Cloudflare 免費方案內。
 
 | 功能 | 路徑 |

@@ -25,7 +25,7 @@ jobs:
         run: ./build.sh
       - name: Assemble site
         env:
-          SPIN_API_URL: ${{ vars.SPIN_API_URL }}
+          SPIN_API_URL: ${{ vars.SPIN_API_URL || 'https://spin-duel-api.spinduel.workers.dev' }}
         run: |
           mkdir -p site/assets
           cp -r assets/voice site/assets/
