@@ -136,7 +136,6 @@ const Online = {
       // battle traffic
       case 'rip': if (this.role === 'host') Battle.remoteRip = m; break;
       case 'sp': if (this.role === 'host') Battle.useSpecial(1); break;
-      case 'mo': if (this.role === 'host') Battle.useMomentum(1); else if (Battle.arena) { Battle.arena.beys[m.side].mo = (Battle.arena.beys[m.side].mo | 0) + 1; Battle.momentumFx(m.side); } break;
       case 'ph': if (this.role === 'guest' && Battle.active) Battle.setPhase(m.p); break;
       case 'L': if (this.role === 'guest' && Battle.arena) { const b = Battle.arena.beys[m.side]; Object.assign(b, { x: m.x, z: m.z, state: 'spin', launched: true }); Battle.launchFx(m.side, m.power); } break;
       case 's': if (this.role === 'guest') Battle.netPush(m); break;

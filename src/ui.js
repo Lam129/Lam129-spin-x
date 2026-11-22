@@ -454,7 +454,6 @@ function bindEvents() {
     if (t.id === 'onCopyLink') { navigator.clipboard && navigator.clipboard.writeText(Online.inviteUrl()).catch(() => {}); return UI.toast('已複製邀請連結'); }
     if (t.dataset.pick != null) return Online.select(+t.dataset.pick);
     if (t.id === 'pkLock') return Online.lock();
-    if (t.id === 'moBtn') return Battle.useMomentum(Battle.mySide());
     if (t.dataset.emo != null) return Online.emote(+t.dataset.emo);
     if (t.id === 'orAgain') return Online.playAgain(Online.amt);
     if (t.id === 'orDouble') return Online.playAgain(Online.amt * 2);
@@ -483,7 +482,6 @@ function bindEvents() {
     if (!Battle.active || Battle.demo || /INPUT|TEXTAREA/.test((e.target && e.target.tagName) || '')) return;
     if (Battle.cine) { e.preventDefault(); if (!Battle.net) Battle.skipCine(); return; }
     if (e.code === 'Space') { e.preventDefault(); Battle.useSpecial(Battle.mySide()); }
-    if (e.code === 'KeyQ') { e.preventDefault(); Battle.useMomentum(Battle.mySide()); }
     if (Battle.net && /^Digit[1-4]$/.test(e.code)) Online.emote(+e.code.slice(5) - 1);
   });
   $('#wgCustom').addEventListener('keydown', (e) => { if (e.key === 'Enter') Online.setWager(e.target.value); });

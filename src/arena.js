@@ -28,7 +28,6 @@ function applyBoss(c, boss) {
 const COUNTER = { atk: 'sta', sta: 'def', def: 'atk' };
 function counterOf(cfgA, cfgB) { const a = BLADE[cfgA.b].type, b = BLADE[cfgB.b].type; return COUNTER[a] === b ? 1 : COUNTER[b] === a ? -1 : 0; }
 function weaken(c) { c.atk *= 0.9; c.def *= 0.9; c.drain *= 1.1; }
-const MOMENTUM_MAX = 2;
 /* load a stadium's physics into AR */
 function applyStadium(id) {
   const S = STADIUMS[id] || STADIUMS.training;
@@ -83,16 +82,6 @@ class Arena {
     if (sp.kind === 'guard') b.meter = Math.max(0, b.meter - 0.35);
     if (sp.kind === 'rush') { const v = Math.hypot(b.vx, b.vz) || 1; const o = this.beys[1 - side]; const dx = o.x - b.x, dz = o.z - b.z, l = Math.hypot(dx, dz) || 1; b.vx = (dx / l) * Math.max(v, 4.5); b.vz = (dz / l) * Math.max(v, 4.5); }
     return sp;
-  }
-  /* 氣勢: a short burst toward the opponent, twice per round */
-  momentum(side) {
-    const b = this.beys[side], o = this.beys[1 - side];
-    if (b.state !== 'spin' || (b.mo | 0) >= MOMENTUM_MAX) return false;
-    b.mo = (b.mo | 0) + 1;
-    const dx = o.x - b.x, dz = o.z - b.z, l = Math.hypot(dx, dz) || 1;
-    b.vx += (dx / l) * 2.4; b.vz += (dz / l) * 2.4;
-    b.s = Math.max(0.02, b.s - 0.012); b.dash = Math.max(b.dash, 0.6);
-    return true;
   }
   emit(type, side) { this.events.push({ type, side, t: this.t }); }
   stepBey(b, dt) {

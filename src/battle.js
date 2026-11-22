@@ -119,9 +119,9 @@ const Battle = {
     this.renderRatchet(); this.renderDecks();
     scene.placeForLaunch(0); scene.placeForLaunch(1);
     this.playerLaunched = false; this.aiLaunched = false; this.ripStarted = false; this.aiSpecialAt = rand(0.5, 3);
-    this.remoteRip = null; this.snapT = 0; this.netBuf = []; this.aiMoAt = rand(1.5, 4);
-    this._gk = this._mk = this._sk = null;
-    this.renderSpecial(); this.renderMomentum();
+    this.remoteRip = null; this.snapT = 0; this.netBuf = [];
+    this._gk = this._sk = null;
+    this.renderSpecial();
     this.aiPlan = this.net ? null : aiLaunch(this.opp, b, a);
     this.timeScale = 1; this.slowT = 0; this.acc = 0;
     this.setPhase('ready');
@@ -323,11 +323,7 @@ const Battle = {
         if (this.demoAt[side] <= 0 && (near || me.s < 0.4)) this.useSpecial(side);
       }
     } else if (this.phase === 'fight' && !this.net) {
-      const ai = this.arena.beys[1], pl = this.arena.beys[0];
-      if (ai.state === 'spin' && (ai.mo | 0) < MOMENTUM_MAX && BLADE[ai.cfg.b].type !== 'sta') {
-        this.aiMoAt -= dtReal;
-        if (this.aiMoAt <= 0 && Math.hypot(ai.x - pl.x, ai.z - pl.z) < 2.6) { this.useMomentum(1); this.aiMoAt = rand(2, 5); }
-      }
+      const ai = this.arena.beys[1];
       if (!ai.usedSpecial && (ai.charge || 0) >= 1 && ai.state === 'spin') {
         this.aiSpecialAt -= dtReal;
         // AI fires when it's useful: attackers near the opponent, others when low or under pressure
@@ -338,32 +334,9 @@ const Battle = {
       }
       this.renderSpecial();
     }
-    if (this.phase === 'fight') this.renderMomentum();
   },
   mySide() { return this.flip ? 1 : 0; },
   nameOf(side) { return side === this.mySide() ? Store.profile.name : this.opp.name; },
-  useMomentum(side) {
-    if (!this.active || this.phase !== 'fight' || this.cine) return;
-    if (this.net && this.net.role === 'guest') { if (side === 1) this.net.send({ t: 'mo' }); return; }
-    if (!this.arena.momentum(side)) return;
-    if (this.net) this.net.send({ t: 'mo', side });
-    this.momentumFx(side);
-  },
-  momentumFx(side) {
-    const b = this.arena.beys[side], sc = GL.battle, y = surfH(Math.hypot(b.x, b.z)) + 0.05;
-    const col = side ? 0x36d3ff : 0xff6a1a;
-    sc.fx.ring(b.x, y, b.z, col, 1.3, 0.3); sc.fx.spark(b.x, y + 0.1, b.z, 18, 3, col, 0.4);
-    SFX.tone(520, 0.08, 0.06, 'sawtooth'); SFX.tone(780, 0.1, 0.05, 'square', 0.05);
-    this.renderMomentum();
-  },
-  renderMomentum() {
-    const btn = $('#moBtn'); if (!btn || !this.arena) return;
-    const me = this.arena.beys[this.mySide()], left = MOMENTUM_MAX - (me.mo | 0);
-    const key = left + (this.phase === 'fight' && me.state === 'spin' && !this.cine ? 'a' : 'b');
-    if (key === this._mk) return; this._mk = key;
-    $('#moPips').innerHTML = Array.from({ length: MOMENTUM_MAX }, (_, k) => `<i class="${k < left ? 'on' : ''}"></i>`).join('');
-    btn.disabled = !(this.phase === 'fight' && left > 0 && me.state === 'spin' && !this.cine);
-  },
   /* ---- online: guest side applies the host's snapshots ---- */
   /* guest: render ~100 ms behind the host and interpolate between the two snapshots around that moment,
      so network jitter never shows up as stutter */
@@ -387,7 +360,7 @@ const Battle = {
       b.x = jump ? c.x : lerp(a.x, c.x, k); b.z = jump ? c.z : lerp(a.z, c.z, k);
       b.vx = c.vx; b.vz = c.vz; b.s = lerp(a.s, c.s, Math.min(k, 1)); b.state = k < 0.5 ? a.state : c.state;
       b.dash = c.dash; b.tilt = lerp(a.tilt, c.tilt, Math.min(k, 1)); b.prec = c.prec;
-      b.outT = c.outT; b.meter = c.meter; b.charge = c.charge; b.usedSpecial = c.usedSpecial; b.mo = c.mo; b.launched = c.state !== 'idle';
+      b.outT = c.outT; b.meter = c.meter; b.charge = c.charge; b.usedSpecial = c.usedSpecial; b.launched = c.state !== 'idle';
       b.buff = c.bk ? { kind: c.bk, t: c.bt, fx: specOf(b.cfg.b).fx } : null;
     }
   },
@@ -734,5 +707,5 @@ const Launcher = {
 
 function snapOf(b) {
   const r = (v) => Math.round(v * 1000) / 1000;
-  return { x: r(b.x), z: r(b.z), vx: r(b.vx), vz: r(b.vz), s: r(b.s), state: b.state, dash: r(b.dash), tilt: r(b.tilt), prec: r(b.prec || 0), outT: r(b.outT || 0), meter: r(b.meter), charge: r(b.charge || 0), usedSpecial: !!b.usedSpecial, mo: b.mo | 0, bk: b.buff && b.buff.t > 0 ? b.buff.kind : '', bt: b.buff ? r(b.buff.t) : 0 };
+  return { x: r(b.x), z: r(b.z), vx: r(b.vx), vz: r(b.vz), s: r(b.s), state: b.state, dash: r(b.dash), tilt: r(b.tilt), prec: r(b.prec || 0), outT: r(b.outT || 0), meter: r(b.meter), charge: r(b.charge || 0), usedSpecial: !!b.usedSpecial, bk: b.buff && b.buff.t > 0 ? b.buff.kind : '', bt: b.buff ? r(b.buff.t) : 0 };
 }

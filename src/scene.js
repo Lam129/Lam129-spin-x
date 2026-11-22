@@ -272,97 +272,149 @@ class BattleScene {
   }
   buildStadium(T) {
     const sc = this.scene, g = new THREE.Group(); this.stadium = g; sc.add(g);
-    const c = document.createElement('canvas'); c.width = c.height = 1024; const x = c.getContext('2d');
-    this.drawFloor(x, T);
-    const tex = new THREE.CanvasTexture(c); tex.encoding = THREE.sRGBEncoding; tex.anisotropy = 8;
-    // bowl surface as a polar-mapped disc with displaced height
-    const seg = 96, rings = 40, Rf = AR.WALL;
-    const pos = [], uv = [], idx = [];
+    const S = GL.mobile ? 1024 : 2048, k = S / 1024;
+    const acc = new THREE.Color(T.accent), rimC = new THREE.Color(T.rim);
+    // ---------- floor: albedo + engraved relief (bump) + glossy lines (roughness) ----------
+    const mk = (draw) => { const c = document.createElement('canvas'); c.width = c.height = S; const x = c.getContext('2d'); x.scale(k, k); draw(x); return c; };
+    const albedo = mk((x) => this.drawFloor(x, T));
+    const relief = mk((x) => this.drawFloor(x, { ...T, floor: ['#808080', '#808080', '#808080'], line: '#202020', accent: 0x202020, pattern: T.pattern }));
+    const tex = new THREE.CanvasTexture(albedo); tex.encoding = THREE.sRGBEncoding; tex.anisotropy = 8;
+    const bump = new THREE.CanvasTexture(relief); bump.anisotropy = 4;
+    const seg = 128, rings = 48, Rf = AR.WALL;
+    const pos = [], uv = [], col = [], idx = [];
     for (let j = 0; j <= rings; j++) {
       const r = (j / rings) * Rf;
+      // baked-style occlusion: darker where the floor meets the rail band and wall
+      const ao = 1 - 0.38 * smoothstep(AR.RB - 0.5, Rf, r) - 0.08 * (1 - smoothstep(0, 0.6, r));
       for (let i = 0; i <= seg; i++) {
-        const th = (i / seg) * TAU;
-        const px = Math.sin(th) * r, pz = Math.cos(th) * r;
-        pos.push(px, surfH(r), pz);
-        uv.push(0.5 + (px / Rf) * 0.5, 0.5 - (pz / Rf) * 0.5);
+        const th = (i / seg) * TAU, px = Math.sin(th) * r, pz = Math.cos(th) * r;
+        pos.push(px, surfH(r), pz); uv.push(0.5 + (px / Rf) * 0.5, 0.5 - (pz / Rf) * 0.5); col.push(ao, ao, ao);
       }
     }
-    for (let j = 0; j < rings; j++) for (let i = 0; i < seg; i++) {
-      const a = j * (seg + 1) + i, b = a + seg + 1;
-      idx.push(a, b, a + 1, b, b + 1, a + 1);
-    }
+    for (let j = 0; j < rings; j++) for (let i = 0; i < seg; i++) { const a = j * (seg + 1) + i, b = a + seg + 1; idx.push(a, b, a + 1, b, b + 1, a + 1); }
     const bg = new THREE.BufferGeometry();
     bg.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
     bg.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+    bg.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
     bg.setIndex(idx); bg.computeVertexNormals();
-    const bowl = new THREE.Mesh(bg, new THREE.MeshStandardMaterial({ map: tex, metalness: 0.2, roughness: T.pattern === 'crystal' ? 0.5 : T.pattern === 'ripple' ? 0.4 : 0.55, emissive: T.pattern === 'crack' ? 0xffffff : 0x000000, emissiveMap: T.pattern === 'crack' ? tex : null, emissiveIntensity: T.pattern === 'crack' ? 0.35 : 0 }));
+    const crack = T.pattern === 'crack';
+    const bowl = new THREE.Mesh(bg, new THREE.MeshPhysicalMaterial({
+      map: tex, vertexColors: true, bumpMap: bump, bumpScale: 0.02, metalness: 0.05, roughness: T.pattern === 'crystal' ? 0.4 : 0.55,
+      clearcoat: T.pattern === 'crystal' ? 0.35 : 0, clearcoatRoughness: 0.2, envMapIntensity: 0.3,
+      emissive: crack ? 0xffffff : 0x000000, emissiveMap: crack ? tex : null, emissiveIntensity: crack ? 0.35 : 0,
+    }));
     bowl.receiveShadow = true; g.add(bowl);
-    // Xtreme rail: toothed ring
-    const teeth = 160, tg = new THREE.BoxGeometry(0.07, 0.07, 0.12);
-    const railMat = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.85, roughness: 0.3, emissive: 0xff5a10, emissiveIntensity: 0 });
+    // ---------- rail band: brushed metal track under the teeth ----------
+    const band = new THREE.Mesh(new THREE.LatheGeometry([AR.RB + 0.02, AR.RB + 0.25, AR.REDGE, AR.WALL - 0.02].map((r) => new THREE.Vector2(r, surfH(r) + 0.006)), 160),
+      new THREE.MeshPhysicalMaterial({ color: 0x3a4152, metalness: 0.85, roughness: 0.42, side: THREE.DoubleSide }));
+    band.receiveShadow = true; g.add(band);
+    const glow = new THREE.Mesh(new THREE.RingGeometry(AR.RB, AR.WALL, 160, 1), new THREE.MeshBasicMaterial({ color: T.accent, transparent: true, opacity: 0.06, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+    glow.rotation.x = -Math.PI / 2; glow.position.y = surfH(AR.RB) + 0.03; g.add(glow); this.railGlow = glow;
+    // ---------- rail teeth: chamfered gear teeth on a continuous base ring ----------
+    const teeth = 160, rr = AR.REDGE + 0.36;
+    const ts = new THREE.Shape(); ts.moveTo(-0.045, 0); ts.lineTo(0.045, 0); ts.lineTo(0.03, 0.075); ts.lineTo(-0.03, 0.075); ts.closePath();
+    const tg = new THREE.ExtrudeGeometry(ts, { depth: 0.13, bevelEnabled: true, bevelThickness: 0.008, bevelSize: 0.008, bevelSegments: 2 });
+    tg.translate(0, 0, -0.065);
+    const railMat = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.9, roughness: 0.28, emissive: 0xff5a10, emissiveIntensity: 0 });
     const rail = new THREE.InstancedMesh(tg, railMat, teeth);
     const m = new THREE.Matrix4(), q = new THREE.Quaternion(), one = new THREE.Vector3(1, 1, 1);
     for (let i = 0; i < teeth; i++) {
-      const th = (i / teeth) * TAU, rr = AR.REDGE + 0.36;
+      const th = (i / teeth) * TAU;
       q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), th);
-      m.compose(new THREE.Vector3(Math.sin(th) * rr, surfH(rr) + 0.03, Math.cos(th) * rr), q, one);
+      m.compose(new THREE.Vector3(Math.sin(th) * rr, surfH(rr) + 0.006, Math.cos(th) * rr), q, one);
       rail.setMatrixAt(i, m);
     }
-    rail.receiveShadow = true; g.add(rail); this.railMat = railMat; this.rail = rail; this.railTeeth = teeth;
+    rail.castShadow = true; rail.receiveShadow = true; g.add(rail); this.railMat = railMat; this.rail = rail; this.railTeeth = teeth;
     this.railHeat = new Float32Array(teeth);
     for (let i = 0; i < teeth; i++) rail.setColorAt(i, new THREE.Color(0x9aa4b8));
-    const glow = new THREE.Mesh(new THREE.RingGeometry(AR.RB, AR.WALL, 128, 1), new THREE.MeshBasicMaterial({ color: T.accent, transparent: true, opacity: 0.06, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
-    glow.rotation.x = -Math.PI / 2; glow.position.y = surfH(AR.RB) + 0.02; g.add(glow); this.railGlow = glow;
-    // walls with pocket gaps
-    const wallMat = new THREE.MeshPhysicalMaterial({ color: T.wall, metalness: 0, roughness: 0.08, transmission: 0.0, transparent: true, opacity: 0.28, side: THREE.DoubleSide });
-    const wallEdge = new THREE.MeshStandardMaterial({ color: 0x1b2438, metalness: 0.6, roughness: 0.4 });
+    // ---------- walls: thick clear polycarbonate with a rounded top, metal cap, outer ribs and bolts ----------
+    const wallMat = new THREE.MeshPhysicalMaterial({ color: T.wall, metalness: 0, roughness: 0.04, clearcoat: 1, clearcoatRoughness: 0.03, transparent: true, opacity: 0.11, side: THREE.DoubleSide, depthWrite: false });
+    const capMat = new THREE.MeshPhysicalMaterial({ color: rimC.clone().multiplyScalar(0.55), metalness: 0.85, roughness: 0.3, clearcoat: 0.4 });
+    const frameMat = new THREE.MeshStandardMaterial({ color: 0x1a2030, metalness: 0.7, roughness: 0.38 });
+    const boltMat = new THREE.MeshStandardMaterial({ color: 0xc8d0dc, metalness: 1, roughness: 0.25 });
     const gaps = AR.pockets.map((p) => [p.phi - p.half, p.phi + p.half]);
-    const segs = []; // free arcs between gaps
     const sorted = gaps.map(([a, b]) => [((a % TAU) + TAU) % TAU, ((b % TAU) + TAU) % TAU]).sort((u, v) => u[0] - v[0]);
+    const segs = [];
     for (let i = 0; i < sorted.length; i++) {
       const start = sorted[i][1], end = sorted[(i + 1) % sorted.length][0] + (i + 1 === sorted.length ? TAU : 0);
       segs.push([start, end - start]);
     }
-    const yTop = surfH(AR.WALL) + 0.55;
+    const y0 = surfH(AR.WALL) - 0.1, yTop = surfH(AR.WALL) + 0.55, W0 = AR.WALL, W1 = AR.WALL + 0.16;
+    const wallProf = [[W0, y0], [W0, yTop - 0.06], [W0 + 0.02, yTop - 0.015], [W0 + 0.08, yTop], [W1 - 0.02, yTop - 0.015], [W1, yTop - 0.06], [W1, y0]].map(([a, b]) => new THREE.Vector2(a, b));
+    const capProf = [[W0 - 0.015, yTop + 0.005], [W0 + 0.02, yTop + 0.045], [W1 + 0.04, yTop + 0.045], [W1 + 0.06, yTop + 0.01], [W1 + 0.06, yTop - 0.04], [W1 + 0.02, yTop - 0.04]].map(([a, b]) => new THREE.Vector2(a, b));
+    const ribG = new THREE.BoxGeometry(0.07, yTop - 0.05, 0.16);
+    const boltG = new THREE.CylinderGeometry(0.022, 0.024, 0.02, 6);
+    const ribs = [], bolts = [];
     for (const [st, len] of segs) {
-      const prof = [new THREE.Vector2(AR.WALL, surfH(AR.WALL) - 0.1), new THREE.Vector2(AR.WALL, yTop), new THREE.Vector2(AR.WALL + 0.22, yTop), new THREE.Vector2(AR.WALL + 0.22, -0.3)];
-      const w = new THREE.Mesh(new THREE.LatheGeometry(prof, 64, st, len), wallMat); g.add(w);
-      const lip = new THREE.Mesh(new THREE.LatheGeometry([new THREE.Vector2(AR.WALL - 0.01, yTop), new THREE.Vector2(AR.WALL + 0.24, yTop + 0.04)], 64, st, len), wallEdge); g.add(lip);
+      g.add(new THREE.Mesh(new THREE.LatheGeometry(wallProf, Math.max(8, Math.round(len * 40)), st, len), wallMat));
+      const cap = new THREE.Mesh(new THREE.LatheGeometry(capProf, Math.max(8, Math.round(len * 40)), st, len), capMat); cap.castShadow = true; g.add(cap);
+      const nR = Math.max(1, Math.round(len / 0.3));
+      for (let i = 0; i <= nR; i++) { const a = st + (len * i) / nR; ribs.push(a); bolts.push(a); }
     }
-    // pocket trays
+    const ribM = new THREE.InstancedMesh(ribG, frameMat, ribs.length), boltM = new THREE.InstancedMesh(boltG, boltMat, bolts.length);
+    ribs.forEach((a, i) => {
+      q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), a);
+      m.compose(new THREE.Vector3(Math.sin(a) * (W1 + 0.03), (yTop - 0.05) / 2 - 0.02, Math.cos(a) * (W1 + 0.03)), q, one); ribM.setMatrixAt(i, m);
+      m.compose(new THREE.Vector3(Math.sin(a) * (W1 + 0.025), yTop + 0.055, Math.cos(a) * (W1 + 0.025)), q, one); boltM.setMatrixAt(i, m);
+    });
+    ribM.castShadow = true; g.add(ribM, boltM);
+    // ---------- outer housing: stepped, chamfered body with a theme-coloured light groove ----------
+    const shellMat = new THREE.MeshPhysicalMaterial({ color: 0x141a28, metalness: 0.55, roughness: 0.42, clearcoat: 0.5, clearcoatRoughness: 0.3 });
+    const shell = new THREE.Mesh(new THREE.LatheGeometry([[W1 + 0.07, -0.2], [W1 + 0.07, 0.3], [5.15, 0.34], [5.25, 0.3], [5.7, 0.24], [5.8, 0.2], [6.25, 0.14], [6.32, 0.08], [6.32, -0.32]].map(([a, b]) => new THREE.Vector2(a, b)), 192), shellMat);
+    shell.receiveShadow = true; shell.castShadow = true; g.add(shell);
+    const strip = new THREE.Mesh(new THREE.TorusGeometry(5.48, 0.022, 8, 192), new THREE.MeshBasicMaterial({ color: T.accent }));
+    strip.rotation.x = Math.PI / 2; strip.position.y = 0.265; g.add(strip);
+    const strip2 = new THREE.Mesh(new THREE.TorusGeometry(6.28, 0.018, 8, 192), new THREE.MeshBasicMaterial({ color: T.rim }));
+    strip2.rotation.x = Math.PI / 2; strip2.position.y = 0.12; g.add(strip2);
+    // ---------- pocket bays: hazard-striped ramp with grip ribs, chamfered side plates, lit back wall ----------
     this.pocketMeshes = [];
     for (const p of AR.pockets) {
-      const isX = p.kind === 'rift';
-      const col = isX ? 0xff3b1a : 0xffb347;
-      const trayProf = [new THREE.Vector2(AR.WALL, surfH(AR.WALL)), new THREE.Vector2(AR.WALL + 0.5, 0.35), new THREE.Vector2(5.75, 0.3), new THREE.Vector2(5.75, 1.15), new THREE.Vector2(5.95, 1.15), new THREE.Vector2(5.95, -0.3)];
-      const tray = new THREE.Mesh(new THREE.LatheGeometry(trayProf, 24, p.phi - p.half - 0.06, p.half * 2 + 0.12), new THREE.MeshStandardMaterial({ color: isX ? 0x2a0e0a : 0x2a1d0a, metalness: 0.3, roughness: 0.6, side: THREE.DoubleSide, emissive: col, emissiveIntensity: 0.08 }));
-      tray.receiveShadow = true; g.add(tray);
-      // side walls of tray
+      const isX = p.kind === 'rift', pc = isX ? 0xff3b1a : 0xffb347, a0 = p.phi - p.half - 0.06, al = p.half * 2 + 0.12;
+      const hz = document.createElement('canvas'); hz.width = 512; hz.height = 128; const hx = hz.getContext('2d');
+      hx.fillStyle = isX ? '#1d0806' : '#1d1406'; hx.fillRect(0, 0, 512, 128);
+      hx.fillStyle = isX ? 'rgba(255,70,30,0.55)' : 'rgba(255,180,70,0.5)';
+      for (let i = -4; i < 20; i++) { hx.beginPath(); hx.moveTo(i * 32, 128); hx.lineTo(i * 32 + 16, 128); hx.lineTo(i * 32 + 48, 0); hx.lineTo(i * 32 + 32, 0); hx.fill(); }
+      const ht = new THREE.CanvasTexture(hz); ht.encoding = THREE.sRGBEncoding; ht.wrapS = THREE.RepeatWrapping; ht.repeat.set(2, 1);
+      const ramp = new THREE.Mesh(new THREE.LatheGeometry([[W0, surfH(W0)], [W0 + 0.5, 0.33], [5.7, 0.27]].map(([a, b]) => new THREE.Vector2(a, b)), 24, a0, al),
+        new THREE.MeshStandardMaterial({ map: ht, emissive: pc, emissiveMap: ht, emissiveIntensity: 0.25, metalness: 0.3, roughness: 0.55, side: THREE.DoubleSide }));
+      ramp.receiveShadow = true; g.add(ramp);
+      const gripG = new THREE.BoxGeometry(0.035, 0.02, 0.9), grips = new THREE.InstancedMesh(gripG, frameMat, 7);
+      for (let i = 0; i < 7; i++) { const r = 4.95 + i * 0.11; q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), p.phi + Math.PI / 2); m.compose(new THREE.Vector3(Math.sin(p.phi) * r, 0.3 + 0.012, Math.cos(p.phi) * r), q, new THREE.Vector3(1, 1, p.half * 2.3)); grips.setMatrixAt(i, m); }
+      g.add(grips);
+      const back = new THREE.Mesh(new THREE.LatheGeometry([[5.7, 0.26], [5.72, 0.95], [5.8, 1.02], [5.98, 1.02], [6.0, 0.0]].map(([a, b]) => new THREE.Vector2(a, b)), 24, a0, al), frameMat);
+      back.castShadow = true; g.add(back);
+      const lite = new THREE.Mesh(new THREE.LatheGeometry([new THREE.Vector2(5.73, 0.9), new THREE.Vector2(5.73, 0.95)], 24, a0 + 0.02, al - 0.04), new THREE.MeshBasicMaterial({ color: pc, side: THREE.DoubleSide }));
+      g.add(lite);
+      const side = new THREE.Shape(); [[W0 - 0.02, -0.05], [W0 - 0.02, yTop + 0.03], [5.05, yTop + 0.12], [6.0, 1.06], [6.0, -0.05]].forEach(([a, b], i) => (i ? side.lineTo(a, b) : side.moveTo(a, b)));
+      const sg = new THREE.ExtrudeGeometry(side, { depth: 0.07, bevelEnabled: true, bevelThickness: 0.012, bevelSize: 0.012, bevelSegments: 2 }); sg.translate(0, 0, -0.035);
       for (const sgn of [-1, 1]) {
         const a = p.phi + sgn * (p.half + 0.06);
-        const side = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.9, 1.5), wallEdge);
-        side.position.set(Math.sin(a) * 5.2, 0.7, Math.cos(a) * 5.2); side.rotation.y = a; g.add(side);
+        const sm = new THREE.Mesh(sg, shellMat); sm.rotation.y = a - Math.PI / 2; sm.castShadow = true; g.add(sm);
+        const eg = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.018, 0.02), new THREE.MeshBasicMaterial({ color: pc }));
+        eg.position.set(Math.sin(a) * 5.5, 0.98 + 0.02, Math.cos(a) * 5.5); eg.rotation.y = a - Math.PI / 2; eg.rotation.z = -0.06; g.add(eg);
       }
-      // label
       const lc = document.createElement('canvas'); lc.width = 512; lc.height = 128; const lx = lc.getContext('2d');
       lx.fillStyle = isX ? '#ff4a1a' : '#ffb347'; lx.font = '900 64px "Noto Sans TC",sans-serif'; lx.textAlign = 'center'; lx.textBaseline = 'middle';
       lx.fillText(isX ? '裂界區 ×3' : '場外區 ×2', 256, 64);
       const lt = new THREE.CanvasTexture(lc); lt.encoding = THREE.sRGBEncoding;
-      const lbl = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 0.4), new THREE.MeshBasicMaterial({ map: lt, transparent: true, depthWrite: false }));
-      const lr = 5.3; lbl.position.set(Math.sin(p.phi) * lr, 0.36, Math.cos(p.phi) * lr);
-      lbl.rotation.x = -Math.PI / 2; lbl.rotation.z = p.phi + Math.PI;
-      g.add(lbl);
-      const strip = new THREE.Mesh(new THREE.RingGeometry(AR.WALL - 0.02, AR.WALL + 0.06, 24, 1, Math.PI / 2 - p.phi - p.half, p.half * 2), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.85, side: THREE.DoubleSide }));
-      strip.rotation.x = -Math.PI / 2; strip.position.y = surfH(AR.WALL) + 0.025; g.add(strip);
-      this.pocketMeshes.push({ p, tray });
+      const lbl = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 0.375), new THREE.MeshBasicMaterial({ map: lt, transparent: true, depthWrite: false }));
+      const lr = 5.32; lbl.position.set(Math.sin(p.phi) * lr, 0.33, Math.cos(p.phi) * lr);
+      lbl.rotation.x = -Math.PI / 2; lbl.rotation.z = p.phi + Math.PI; g.add(lbl);
+      const mouth = new THREE.Mesh(new THREE.RingGeometry(AR.WALL - 0.02, AR.WALL + 0.06, 24, 1, Math.PI / 2 - p.phi - p.half, p.half * 2), new THREE.MeshBasicMaterial({ color: pc, transparent: true, opacity: 0.9, side: THREE.DoubleSide }));
+      mouth.rotation.x = -Math.PI / 2; mouth.position.y = surfH(AR.WALL) + 0.025; g.add(mouth);
+      this.pocketMeshes.push({ p, tray: ramp });
     }
-    // base / table
-    const base = new THREE.Mesh(new THREE.CylinderGeometry(6.3, 6.8, 0.6, 64), new THREE.MeshStandardMaterial({ color: 0x0d111b, metalness: 0.5, roughness: 0.5 }));
-    base.position.y = -0.32; base.receiveShadow = true; g.add(base);
-    const table = new THREE.Mesh(new THREE.CircleGeometry(30, 64), new THREE.MeshStandardMaterial({ color: 0x080a10, roughness: 0.9 }));
+    // ---------- pedestal + table with a soft contact shadow ----------
+    const ped = new THREE.Mesh(new THREE.LatheGeometry([[0, -0.32], [6.32, -0.32], [6.42, -0.36], [6.42, -0.5], [6.6, -0.54], [6.7, -0.62], [0, -0.62]].map(([a, b]) => new THREE.Vector2(a, b)), 128),
+      new THREE.MeshStandardMaterial({ color: 0x0b0e16, metalness: 0.6, roughness: 0.45 }));
+    ped.receiveShadow = true; g.add(ped);
+    const table = new THREE.Mesh(new THREE.CircleGeometry(30, 64), new THREE.MeshStandardMaterial({ color: 0x080a10, roughness: 0.85, metalness: 0.1 }));
     table.rotation.x = -Math.PI / 2; table.position.y = -0.62; table.receiveShadow = true; g.add(table);
-    const edge = new THREE.Mesh(new THREE.TorusGeometry(6.32, 0.03, 8, 128), new THREE.MeshBasicMaterial({ color: T.rim }));
-    edge.rotation.x = Math.PI / 2; edge.position.y = -0.02; g.add(edge);
+    const shc = document.createElement('canvas'); shc.width = shc.height = 256; const shx = shc.getContext('2d');
+    const sgrd = shx.createRadialGradient(128, 128, 60, 128, 128, 128); sgrd.addColorStop(0, 'rgba(0,0,0,0.85)'); sgrd.addColorStop(1, 'rgba(0,0,0,0)');
+    shx.fillStyle = sgrd; shx.fillRect(0, 0, 256, 256);
+    const shadow = new THREE.Mesh(new THREE.PlaneGeometry(17, 17), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(shc), transparent: true, depthWrite: false }));
+    shadow.rotation.x = -Math.PI / 2; shadow.position.y = -0.615; g.add(shadow);
   }
   makeArrow() {
     const g = new THREE.Group();
