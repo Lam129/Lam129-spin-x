@@ -17,3 +17,17 @@ CREATE TABLE IF NOT EXISTS usage (
   day TEXT PRIMARY KEY,
   writes INTEGER NOT NULL DEFAULT 0
 );
+-- email + password accounts (v2)
+CREATE TABLE IF NOT EXISTS accounts (
+  email TEXT PRIMARY KEY,
+  player_id TEXT NOT NULL UNIQUE,
+  pass_hash TEXT NOT NULL,
+  salt TEXT NOT NULL,
+  created INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS sessions (
+  token_hash TEXT PRIMARY KEY,
+  player_id TEXT NOT NULL,
+  created INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS sessions_player ON sessions (player_id);

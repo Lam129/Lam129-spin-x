@@ -141,14 +141,15 @@ const Assets = {
       const prog = {};
       const one = async (g) => {
         const res = await fetch(`assets/parts_${g}.txt`);
-        const total = +res.headers.get('content-length') || 0;
+        // progress uses the real (uncompressed) size recorded at pack time; content-length is the gzip size
+        const total = (j.sizes && j.sizes[g]) || +res.headers.get('content-length') || 0;
         let bytes;
         if (res.body && total) {
           const reader = res.body.getReader(); const parts = []; let got = 0;
           for (;;) {
             const { done, value } = await reader.read(); if (done) break; parts.push(value); got += value.length;
             prog[g] = [got, total];
-            if (onProgress) { let a = 0, b = 0; for (const k in prog) { a += prog[k][0]; b += prog[k][1]; } onProgress(a / Math.max(b, 1)); }
+            if (onProgress) { let a = 0, b = 0; for (const k in prog) { a += Math.min(prog[k][0], prog[k][1]); b += prog[k][1]; } const all = j.sizes ? Object.values(j.sizes).reduce((x, y) => x + y, 0) : b; onProgress(Math.min(1, a / Math.max(all, 1))); }
           }
           bytes = new Uint8Array(got); let o = 0; for (const p of parts) { bytes.set(p, o); o += p.length; }
         } else bytes = new Uint8Array(await res.arrayBuffer());

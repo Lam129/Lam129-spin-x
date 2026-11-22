@@ -479,7 +479,37 @@ img.lz{background:linear-gradient(90deg,#0b0f1a,#151b2a,#0b0f1a);background-size
 .fcell b{display:block;font-size:17px}
 .fcell .num{font-size:30px;color:var(--hot);font-weight:700}
 .fcell small{color:var(--dim);font-size:12px;line-height:1.5;display:block}
-#loading{position:fixed;inset:0;z-index:9;display:grid;place-items:center;background:var(--bg);font-family:var(--f-disp);letter-spacing:.3em;color:var(--dim)}
+#loading{position:fixed;inset:0;z-index:9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;background:radial-gradient(ellipse at 50% 40%,#2a0e06 0,#0a0710 55%,#04050a 100%);overflow:hidden;text-align:center}
+.ld-rays{position:absolute;left:50%;top:38%;width:2200px;height:2200px;translate:-50% -50%;background:repeating-conic-gradient(from 0deg,rgba(255,140,60,.09) 0 1.5deg,transparent 1.5deg 7deg);mask:radial-gradient(circle,transparent 0 80px,#000 200px,transparent 800px);-webkit-mask:radial-gradient(circle,transparent 0 80px,#000 200px,transparent 800px);animation:lbRays 40s linear infinite}
+.ld-top{position:relative;width:150px;height:150px;margin-bottom:6px;filter:drop-shadow(0 0 30px rgba(255,106,26,.55))}
+.ld-top i{position:absolute;inset:0;border-radius:50%}
+.ld-top .r1{background:conic-gradient(from 0deg,#ff6a1a,#ffd27a 12%,#fff 14%,#8a95b0 20%,#2a3248 30%,#ff6a1a 38%,#ffd27a 46%,#fff 48%,#8a95b0 56%,#2a3248 66%,#ff6a1a 72%,#ffd27a 82%,#fff 84%,#8a95b0 90%,#2a3248 100%);clip-path:polygon(50% 0,64% 30%,100% 24%,78% 52%,96% 86%,58% 72%,34% 100%,30% 64%,0 58%,28% 38%,12% 6%,42% 22%);animation:ldSpin .35s linear infinite}
+.ld-top .r2{inset:12%;background:conic-gradient(#ff3e0a,#ff9a2a,#ff3e0a);clip-path:polygon(50% 4%,61% 38%,96% 50%,61% 62%,50% 96%,39% 62%,4% 50%,39% 38%);animation:ldSpin .35s linear infinite reverse;opacity:.85}
+.ld-top .core{inset:32%;background:radial-gradient(circle at 40% 35%,#fff,#ffb347 35%,#7a2a08 75%);box-shadow:0 0 20px #ff6a1a,inset 0 0 8px rgba(0,0,0,.5)}
+@keyframes ldSpin{to{rotate:360deg}}
+.ld-logo{position:relative;font:900 clamp(40px,8vw,72px) var(--f-body);font-style:italic;letter-spacing:.03em;color:#fff;text-shadow:5px 5px 0 #ff5a10,0 0 30px rgba(255,90,20,.6);line-height:1.05}
+.ld-logo span{display:block;font:700 14px var(--f-disp);letter-spacing:.8em;color:var(--ice);text-shadow:none;font-style:normal;margin-top:8px}
+.ld-feats{position:relative;color:var(--dim);font-size:15px}.ld-feats b{color:var(--hot2);font-family:var(--f-disp);font-size:20px}
+.ld-bar{position:relative;width:min(360px,80vw);height:8px;background:#0b0f1a;border:1px solid var(--line2);overflow:hidden;clip-path:polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%)}
+.ld-bar i{position:absolute;inset:0 auto 0 0;width:0;background:linear-gradient(90deg,#ff5a10,#ffd27a);box-shadow:0 0 12px #ff6a1a;transition:width .25s}
+.ld-pct{position:relative;font:700 13px var(--f-disp);letter-spacing:.2em;color:var(--dim)}
+.ld-tip{position:relative;max-width:520px;min-height:2.6em;color:#c9d0e2;font-size:14px;line-height:1.6;transition:opacity .4s}
+/* auth screen with hero */
+#s-auth{display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,480px);align-items:center;gap:32px;padding:24px max(24px,4vw)}
+.auth-hero{display:grid;gap:14px;align-content:end;align-self:stretch;max-width:560px;padding:44vh 0 2vh}
+.ah-logo{font:900 clamp(44px,6vw,84px) var(--f-body);font-style:italic;line-height:1.02;text-shadow:6px 6px 0 #ff5a10,0 0 36px rgba(255,90,20,.5)}
+.ah-logo span{display:block;font:700 15px var(--f-disp);letter-spacing:.8em;color:var(--ice);text-shadow:none;font-style:normal;margin-top:10px}
+.ah-tag{margin:0;font-size:18px;color:#dfe5f2;line-height:1.6;text-shadow:0 2px 10px #000}
+.ah-feats{list-style:none;margin:6px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ah-feats li{display:flex;gap:12px;align-items:center;padding:10px 12px;background:rgba(12,16,28,.7);border:1px solid var(--line);backdrop-filter:blur(4px)}
+.ah-feats b{font:700 30px var(--f-disp);color:var(--hot);min-width:46px;text-align:center}
+.ah-feats span{font-weight:900;font-size:15px}.ah-feats small{display:block;font-weight:400;font-size:12px;color:var(--dim)}
+.ah-now{display:flex;gap:10px;align-items:baseline;margin-top:4px}.ah-now small{font:700 11px var(--f-disp);letter-spacing:.2em;color:var(--dim)}.ah-now b{font-size:16px;color:var(--hot2)}
+.auth-card{width:100%;box-sizing:border-box;min-width:0;justify-self:end;max-height:calc(100vh - 48px);overflow:auto}
+.auth-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.auth-tabs button{padding:10px 4px;font-weight:700;background:#0c111d;border:1px solid var(--line2)}
+.auth-tabs button[aria-selected="true"]{border-color:var(--hot);color:var(--hot);background:#1b1410}
+.af{display:grid;gap:6px}
 @media (max-width:900px){
   .ladder{grid-template-columns:repeat(2,minmax(0,1fr))}
   .ftable{grid-template-columns:1fr 1fr}
@@ -546,6 +576,11 @@ img.lz{background:linear-gradient(90deg,#0b0f1a,#151b2a,#0b0f1a);background-size
   /* result & auth */
   .res-title{font-size:44px}.res-score{font-size:28px}
   .starter-grid{grid-template-columns:repeat(2,1fr)}
+  #s-auth{display:flex;flex-direction:column;align-items:stretch;gap:16px;padding:18px max(14px,env(safe-area-inset-left,0px)) 24px}
+  .auth-hero{max-width:none;padding:min(40vh,340px) 0 0}
+  .ah-logo{font-size:40px}.ah-tag{font-size:15px}
+  .ah-feats{grid-template-columns:1fr 1fr;gap:6px}.ah-feats li{padding:8px}.ah-feats b{font-size:22px;min-width:30px}
+  .auth-card{max-height:none;justify-self:stretch}
   .auth-card{padding:24px 20px}
   .settings{right:12px;left:12px;width:auto}
   /* battle HUD */
@@ -602,29 +637,57 @@ img.lz{background:linear-gradient(90deg,#0b0f1a,#151b2a,#0b0f1a);background-size
 </style>
 
 <canvas id="gl"></canvas>
-<div id="loading">LOADING…</div>
+<div id="loading">
+  <div class="ld-rays"></div>
+  <div class="ld-top" aria-hidden="true"><i class="r1"></i><i class="r2"></i><i class="core"></i></div>
+  <div class="ld-logo">陀螺對決<span>SPIN DUEL</span></div>
+  <div class="ld-feats"><b>802</b> 種零件・<b>8</b> 座戰鬥盤・<b>30</b> 種必殺技</div>
+  <div class="ld-bar"><i id="ldBar"></i></div>
+  <div class="ld-pct" id="ldPct">載入中…</div>
+  <div class="ld-tip" id="ldTip">組裝鋒輪、鎖芯、旋尖，打造你的專屬陀螺</div>
+</div>
 <div class="settings panel cut" id="settings" hidden>
   <div style="display:flex;justify-content:space-between;align-items:center"><b>設定</b><button class="btn cut" id="setClose" style="padding:4px 10px">關閉</button></div>
   <label for="vol-master">主音量</label><input type="range" id="vol-master" min="0" max="100" data-vol="master">
   <label for="vol-sfx">音效</label><input type="range" id="vol-sfx" min="0" max="100" data-vol="sfx">
   <label for="vol-voice">語音（倒數口號）</label><input type="range" id="vol-voice" min="0" max="100" data-vol="voice">
   <button class="btn cut" id="voiceTest">試聽語音</button>
+  <div id="setAcct" style="display:grid;gap:6px;border-top:1px solid var(--line);padding-top:10px"></div>
   <div class="desc" style="font-size:12px">倒數語音預設使用瀏覽器內建的英文語音，聲音會依電腦和瀏覽器而不同。若在 assets/voice/ 放入真人錄音（3.mp3、2.mp3、1.mp3、getfight.mp3），會自動改用錄音。</div>
 </div>
 <div id="ui">
   <!-- AUTH -->
   <section class="screen" id="s-auth" hidden>
+    <div class="auth-hero pe-none">
+      <div class="eyebrow">Original 3D Spinning-Top Battles</div>
+      <div class="ah-logo">陀螺對決<span>SPIN DUEL</span></div>
+      <p class="ah-tag">組裝你的專屬陀螺，拉繩發射，在 8 座戰鬥盤上一決勝負。</p>
+      <ul class="ah-feats">
+        <li><b>802</b><span>種零件<small>鋒輪・鎖芯・旋尖自由組裝</small></span></li>
+        <li><b>30</b><span>種必殺技<small>召喚靈獸的電影化演出</small></span></li>
+        <li><b>8</b><span>位頭目<small>每人一座專屬戰鬥盤</small></span></li>
+        <li><b>∞</b><span>生存模式<small>挑戰連勝排行榜</small></span></li>
+      </ul>
+      <div class="ah-now"><small>展示中</small><b id="ahBey"></b></div>
+    </div>
     <form class="auth-card panel cut" id="authForm">
       <div>
         <div class="eyebrow">Player Registration · 旋鬥士登錄</div>
         <div class="auth-logo">陀螺對決<span class="auth-sub">SPIN DUEL</span></div>
       </div>
+      <div class="auth-tabs" id="authTabs" role="tablist" hidden>
+        <button type="button" role="tab" data-atab="login">登入</button>
+        <button type="button" role="tab" data-atab="register">註冊</button>
+        <button type="button" role="tab" data-atab="guest">先試玩</button>
+      </div>
       <div class="acct" id="acctLine"><span class="dot"></span><span>正在連線帳號…</span></div>
-      <div style="display:grid;gap:6px">
+      <div class="af" id="fEmailWrap" hidden><label for="fEmail">Email</label><input class="inp" id="fEmail" type="email" autocomplete="email" placeholder="you@example.com"></div>
+      <div class="af" id="fPassWrap" hidden><label for="fPass">密碼（至少 8 個字元）</label><input class="inp" id="fPass" type="password" autocomplete="current-password" placeholder="••••••••"></div>
+      <div class="af" id="fNickWrap">
         <label for="nick">玩家暱稱（2–12 字）</label>
         <input class="inp" id="nick" maxlength="12" autocomplete="off" placeholder="例如：疾風之翼">
       </div>
-      <div style="display:grid;gap:6px">
+      <div class="af" id="fStarterWrap">
         <label>選擇你的起始類型</label>
         <div class="starter-grid" id="starterGrid"></div>
         <div class="desc" id="starterDesc"></div>
@@ -1248,9 +1311,9 @@ const Api = {
     try {
       res = await fetch(this.base + path, { method, headers: { 'Content-Type': 'application/json', ...(this.cred ? { Authorization: `Bearer ${this.cred.id}.${this.cred.token}` } : {}) }, body: body ? JSON.stringify(body) : undefined });
     } catch (e) { this.flagBusy(); throw Object.assign(new Error('network'), { code: 'busy' }); }
-    if (res.status === 503 || res.status === 429) { this.flagBusy(); throw Object.assign(new Error('busy'), { code: 'busy' }); }
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw Object.assign(new Error(data.error || 'error'), { code: data.error || 'error', status: res.status });
+    if (res.status === 503 || data.error === 'busy') { this.flagBusy(); throw Object.assign(new Error('busy'), { code: 'busy', msg: '目前流量過大，請稍後再試' }); }
+    if (!res.ok) throw Object.assign(new Error(data.error || 'error'), { code: data.error || 'error', status: res.status, msg: data.message || '' });
     this.busy = false;
     return data;
   },
@@ -1258,8 +1321,10 @@ const Api = {
     if (!this.busy && typeof UI !== 'undefined' && UI.toast) UI.toast('目前流量過大，請稍後再試。進度先存在這台電腦上。');
     this.busy = true;
   },
+  loadCred() { try { this.cred = JSON.parse(localStorage.getItem(this.CKEY) || 'null'); } catch (e) { this.cred = null; } return this.cred; },
+  setCred(c) { this.cred = c; try { c ? localStorage.setItem(this.CKEY, JSON.stringify(c)) : localStorage.removeItem(this.CKEY); } catch (e) {} },
   async ensureGuest() {
-    try { this.cred = JSON.parse(localStorage.getItem(this.CKEY) || 'null'); } catch (e) { this.cred = null; }
+    this.loadCred();
     if (this.cred && this.cred.id && this.cred.token) return this.cred;
     const g = await this.call('POST', '/api/guest');
     this.cred = { id: g.id, token: g.token };
@@ -1275,8 +1340,10 @@ const Store = {
   async init() {
     // public site: our own backend (guest account, cloud save)
     if (Api.base && !(window.claude && typeof window.claude.use === 'function')) {
-      try { await Api.ensureGuest(); this.mode = 'server'; this.uid = Api.cred.id; } catch (e) { this.mode = 'local'; }
-      return this.load();
+      // public site: nothing is created until the player logs in, registers or chooses to try as a guest
+      this.mode = 'server';
+      if (Api.loadCred() && Api.cred.id) { this.uid = Api.cred.id; return this.load(); }
+      return null;
     }
     const c = window.claude;
     if (c && typeof c.use === 'function') {
@@ -1297,6 +1364,7 @@ const Store = {
   docRef() { return this.db.doc('data/users/' + this.uid + '/profile'); },
   async load() {
     if (this.mode === 'server') {
+      if (!Api.cred) return (this.profile = null);
       try {
         const r = await Api.call('GET', '/api/profile');
         const local = this.readLocal();
@@ -1306,7 +1374,7 @@ const Store = {
         if (this.profile && this.profile !== remote) this.saveNow();
         return this.profile;
       } catch (e) {
-        if (e.status === 401) { try { localStorage.removeItem(Api.CKEY); } catch (er) {} }
+        if (e.status === 401) { Api.setCred(null); return (this.profile = null); }
         this.profile = this.readLocal(); return this.profile;
       }
     }
@@ -1324,6 +1392,26 @@ const Store = {
     }
     this.profile = this.readLocal();
     return this.profile;
+  },
+  /* public-site account actions */
+  async login(email, password) {
+    const r = await Api.call('POST', '/api/login', { email, password });
+    Api.setCred({ id: r.id, token: r.token, email: r.email });
+    this.uid = r.id;
+    try { localStorage.removeItem(this.LKEY); } catch (e) {}   // never mix another account's local copy
+    return this.load();
+  },
+  async register(email, password, name) {
+    const r = await Api.call('POST', '/api/register', { email, password, name });   // binds the current guest when signed in
+    Api.setCred({ id: r.id, token: r.token, email: r.email });
+    this.uid = r.id;
+  },
+  async startGuest() { await Api.ensureGuest(); this.uid = Api.cred.id; },
+  async logout() {
+    try { await Api.call('POST', '/api/logout'); } catch (e) {}
+    Api.setCred(null);
+    try { localStorage.removeItem(this.LKEY); } catch (e) {}
+    location.reload();
   },
   readLocal() {
     try { const s = localStorage.getItem(this.LKEY); return s ? migrate(JSON.parse(s)) : null; } catch (e) { return null; }
@@ -1779,14 +1867,15 @@ const Assets = {
       const prog = {};
       const one = async (g) => {
         const res = await fetch(`assets/parts_${g}.txt`);
-        const total = +res.headers.get('content-length') || 0;
+        // progress uses the real (uncompressed) size recorded at pack time; content-length is the gzip size
+        const total = (j.sizes && j.sizes[g]) || +res.headers.get('content-length') || 0;
         let bytes;
         if (res.body && total) {
           const reader = res.body.getReader(); const parts = []; let got = 0;
           for (;;) {
             const { done, value } = await reader.read(); if (done) break; parts.push(value); got += value.length;
             prog[g] = [got, total];
-            if (onProgress) { let a = 0, b = 0; for (const k in prog) { a += prog[k][0]; b += prog[k][1]; } onProgress(a / Math.max(b, 1)); }
+            if (onProgress) { let a = 0, b = 0; for (const k in prog) { a += Math.min(prog[k][0], prog[k][1]); b += prog[k][1]; } const all = j.sizes ? Object.values(j.sizes).reduce((x, y) => x + y, 0) : b; onProgress(Math.min(1, a / Math.max(all, 1))); }
           }
           bytes = new Uint8Array(got); let o = 0; for (const p of parts) { bytes.set(p, o); o += p.length; }
         } else bytes = new Uint8Array(await res.arrayBuffer());
@@ -4361,6 +4450,10 @@ const UI = {
     const el = $('#settings'); const on = force ?? el.hidden;
     el.hidden = !on;
     if (on) for (const k of ['master', 'sfx', 'voice']) $('#vol-' + k).value = Math.round(SFX.vol[k] * 100);
+    const acct = $('#setAcct');
+    if (acct) acct.innerHTML = Store.mode !== 'server' ? '' : Api.cred && Api.cred.email
+      ? `<div class="desc">帳號：<b style="color:var(--fg)">${esc(Api.cred.email)}</b></div><button class="btn cut" id="logoutBtn">登出</button>`
+      : `<div class="desc">目前是訪客，進度只存在這個瀏覽器。</div><button class="btn primary cut" id="bindBtn">綁定 Email 保存進度</button>`;
   },
   toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(this._tt); this._tt = setTimeout(() => t.classList.remove('show'), 2200); },
   toastTop(msg) { this.toast(msg); },
@@ -4370,16 +4463,77 @@ const UI = {
   },
 
   /* ---------- AUTH ---------- */
+  atab: 'register',
+  setAuthTab(t) {
+    const server = Store.mode === 'server';
+    this.atab = server ? t : 'local';
+    $('#authTabs').hidden = !server || t === 'setup';
+    $$('[data-atab]').forEach((b) => b.setAttribute('aria-selected', b.dataset.atab === t));
+    const needCred = server && (t === 'login' || t === 'register');
+    $('#fEmailWrap').hidden = !needCred; $('#fPassWrap').hidden = !needCred;
+    $('#fPass').autocomplete = t === 'register' ? 'new-password' : 'current-password';
+    const needProfile = !server || t === 'register' || t === 'guest' || t === 'setup';
+    const keepProfile = t === 'register' && Store.profile;   // binding a guest keeps the current save
+    $('#fNickWrap').hidden = !needProfile || keepProfile; $('#fStarterWrap').hidden = !needProfile || keepProfile;
+    $('#authGo').textContent = { login: '登入', register: Store.profile ? '綁定 Email 並保存進度' : '註冊並開始', guest: '先試玩', setup: '建立旋鬥士並進入', local: '建立檔案並進入' }[this.atab];
+    $('#authWarn').textContent = '';
+    this.acctLine();
+  },
+  async submitAuth() {
+    const t = this.atab, warn = $('#authWarn'), name = $('#nick').value.trim();
+    const email = $('#fEmail').value.trim(), pass = $('#fPass').value;
+    const needName = t === 'local' || t === 'guest' || t === 'setup' || (t === 'register' && !Store.profile);
+    if (needName && name.length < 2) { warn.textContent = '暱稱至少要 2 個字。'; return; }
+    if ((t === 'login' || t === 'register') && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { warn.textContent = '請輸入正確的 Email。'; return; }
+    if (t === 'register' && pass.length < 8) { warn.textContent = '密碼至少要 8 個字元。'; return; }
+    const btn = $('#authGo'); btn.disabled = true; warn.textContent = '處理中…';
+    try {
+      SFX.ensure();
+      if (t === 'login') {
+        const p = await Store.login(email, pass);
+        if (!p) { btn.disabled = false; this.setAuthTab('setup'); $('#authWarn').textContent = '登入成功！先設定你的旋鬥士。'; return; }
+      } else if (t === 'register') {
+        await Store.register(email, pass, name);
+        if (!Store.profile) Store.profile = newProfile(name, this.starter);
+      } else if (t === 'guest') {
+        await Store.startGuest();
+        Store.profile = newProfile(name, this.starter);
+      } else {
+        Store.profile = newProfile(name, this.starter);
+      }
+      await Store.saveNow();
+      SFX.coin();
+      this.stopAuthCycle();
+      UI.go('hub');
+    } catch (e) {
+      warn.textContent = e.msg || (e.code === 'busy' ? '目前流量過大，請稍後再試。' : '連線失敗，請稍後再試。');
+    } finally { btn.disabled = false; }
+  },
+  startAuthCycle() {
+    const show = ['flame@rb', 'kirin@sy', 'wolf@lv', 'jelly@cr', 'bull@gd', 'fox@sk', 'darkstar@rb', 'phoenix@gd'];
+    let k = 0;
+    const step = () => {
+      if (this.cur !== 'auth') return this.stopAuthCycle();
+      const b = show[k++ % show.length];
+      GL.show.showBey({ b, r: '3-60', t: 'F' }); this.authPose();
+      const el = $('#ahBey'); if (el) el.textContent = BLADE[b].name;
+    };
+    this.stopAuthCycle(); step();
+    this._authCycle = setInterval(step, 3200);
+  },
+  authPose() { const sh = GL.show; sh.lookY = -0.42; sh.zoom = GL.w < 820 ? 0.95 : 0.88; },
+  stopAuthCycle() { clearInterval(this._authCycle); this._authCycle = null; },
   renderAuth() {
     const grid = $('#starterGrid');
     grid.innerHTML = Object.entries(TYPES).map(([k, t]) => `<button type="button" class="starter t-${k}" data-starter="${k}" aria-pressed="${k === this.starter}">${t.name}<small>${esc(beyName(STARTERS[k]))}</small></button>`).join('');
     $('#starterDesc').textContent = `${TYPES[this.starter].desc} 起始陀螺：${beyName(STARTERS[this.starter])} ${beyCode(STARTERS[this.starter])}`;
-    GL.show.setOffset(0); GL.show.showBey(STARTERS[this.starter]);
+    GL.show.setOffset(-0.2);
+    if (this._authCycle) { GL.show.showBey(STARTERS[this.starter]); this.authPose(); $('#ahBey').textContent = beyName(STARTERS[this.starter]); }
   },
   acctLine() {
     const el = $('#acctLine');
     if (Store.mode === 'cloud') el.innerHTML = `<span class="dot"></span><span>已連結 claude.ai 帳號${Store.accountName ? '：' + esc(Store.accountName) : ''}，進度會存在你的帳號裡</span>`;
-    else if (Store.mode === 'server') el.innerHTML = `<span class="dot"></span><span>已建立訪客帳號，進度會自動存到雲端（同一台電腦、同一個瀏覽器）</span>`;
+    else if (Store.mode === 'server') el.innerHTML = this.atab === 'guest' ? `<span class="dot off"></span><span>訪客的進度只存在這個瀏覽器，之後可以在設定裡綁定 Email 保存。</span>` : this.atab === 'login' ? `<span class="dot"></span><span>登入後換電腦、換手機也能繼續玩。</span>` : this.atab === 'setup' ? `<span class="dot"></span><span>已登入${Api.cred && Api.cred.email ? '：' + esc(Api.cred.email) : ''}</span>` : `<span class="dot"></span><span>${Store.profile ? '綁定後目前的進度會保留，' : ''}註冊後進度會存在你的帳號裡。</span>`;
     else el.innerHTML = `<span class="dot off"></span><span>目前無法使用雲端帳號，進度會存在這台電腦的瀏覽器裡</span>`;
   },
 
@@ -4661,6 +4815,9 @@ function bindEvents() {
   document.addEventListener('click', (e) => {
     const t = e.target.closest('button'); if (!t || UI._suppressClick) return;
     SFX.ensure();
+    if (t.dataset.atab) { SFX.click(); return UI.setAuthTab(t.dataset.atab); }
+    if (t.id === 'logoutBtn') return Store.logout();
+    if (t.id === 'bindBtn') { UI.toggleSettings(false); UI.show('auth'); UI.renderAuth(); UI.setAuthTab('register'); UI.startAuthCycle(); return; }
     if (t.dataset.go === 'survival') { SFX.click(); return Battle.startSurvival(); }
     if (t.dataset.go === 'online') { SFX.click(); return UI.toast('線上對戰開發中，敬請期待！'); }
     if (t.dataset.showbey) { SFX.click(); UI.hubBey = +t.dataset.showbey; return UI.renderHubBey(); }
@@ -4679,15 +4836,7 @@ function bindEvents() {
     if (t.dataset.ctab) { UI.collTab = t.dataset.ctab; UI.collSel = null; SFX.click(); return UI.renderCollection(); }
     if (t.dataset.cpart) { UI.collSel = { kind: UI.collTab, id: t.dataset.cpart }; SFX.click(); return UI.renderCollection(); }
   });
-  $('#authForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const name = $('#nick').value.trim();
-    if (name.length < 2) { $('#authWarn').textContent = '暱稱至少要 2 個字。'; return; }
-    SFX.ensure(); SFX.coin();
-    Store.profile = newProfile(name, UI.starter);
-    Store.saveNow();
-    UI.go('hub');
-  });
+  $('#authForm').addEventListener('submit', (e) => { e.preventDefault(); UI.submitAuth(); });
   $('#startBattle').addEventListener('click', () => Battle.start(OPPONENTS[UI.oppSel], UI.mode));
   $('#quitBattle').addEventListener('click', () => Battle.quit());
   $('#spBtn').addEventListener('click', () => Battle.useSpecial(0));
@@ -4744,17 +4893,21 @@ function loop(now) {
   requestAnimationFrame(loop);
 }
 async function boot() {
-  if (!window.THREE) { $('#loading').textContent = '3D 引擎載入失敗，請重新整理頁面。'; return; }
+  const tips = ['組裝鋒輪、鎖芯、旋尖，打造你的專屬陀螺', '拉繩越快，陀螺的初始轉速越高', '攻擊型擅長擊出，持久型靠轉速取勝，防禦型最耐撞', '把對手撞進裂界區可以一次拿 3 分', '必殺技集滿後按空白鍵（手機點按鈕）施放', '扭蛋連續 60 抽一定出傳說零件', '每位頭目都有自己的戰鬥盤，地形會改變戰術'];
+  let ti = 0; const tipTimer = setInterval(() => { const el = $('#ldTip'); if (!el) return; el.style.opacity = 0; setTimeout(() => { el.textContent = tips[++ti % tips.length]; el.style.opacity = 1; }, 400); }, 2600);
+  if (!window.THREE) { $('#ldPct').textContent = '3D 引擎載入失敗，請重新整理頁面。'; return; }
   if (THREE.ColorManagement) THREE.ColorManagement.legacyMode = false;
-  await Assets.load((f) => { $('#loading').textContent = `LOADING MODELS ${Math.round(f * 100)}%`; });
+  await Assets.load((f) => { const pct = Math.min(100, Math.round(f * 100)); $('#ldBar').style.width = pct + '%'; $('#ldPct').textContent = `載入 3D 模型 ${pct}%`; });
+  $('#ldBar').style.width = '100%'; $('#ldPct').textContent = '準備戰鬥盤…';
   GL.init();
   bindEvents();
   requestAnimationFrame(loop);
   const p = await Store.init();
+  clearInterval(tipTimer);
   $('#loading').hidden = true;
   if (p) UI.go('hub');
   else {
-    UI.show('auth'); UI.acctLine(); UI.renderAuth();
+    UI.show('auth'); UI.renderAuth(); UI.setAuthTab(Store.mode === 'server' ? 'register' : 'local'); UI.startAuthCycle();
     if (Store.accountName) $('#nick').value = Store.accountName.slice(0, 12);
   }
 }

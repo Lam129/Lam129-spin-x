@@ -42,6 +42,7 @@ for (const f of files) {
     }
   }
 }
-for (const [g, v] of Object.entries(groups)) fs.writeFileSync(path.join(dir, `parts_${g}.txt`), Buffer.concat(v.chunks).toString('base64'));
-fs.writeFileSync(path.join(dir, 'parts.json'), JSON.stringify({ scale: SCALE, groups: Object.keys(groups), where, parts: index }));
+const sizes = {};
+for (const [g, v] of Object.entries(groups)) { const txt = Buffer.concat(v.chunks).toString('base64'); sizes[g] = txt.length; fs.writeFileSync(path.join(dir, `parts_${g}.txt`), txt); }
+fs.writeFileSync(path.join(dir, 'parts.json'), JSON.stringify({ scale: SCALE, groups: Object.keys(groups), sizes, where, parts: index }));
 console.log('packed', files.length, 'files', Object.entries(groups).map(([g, v]) => g + ':' + v.offset).join(' '));

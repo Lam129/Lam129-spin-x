@@ -1,6 +1,9 @@
 /* 陀螺對決 public backend — Cloudflare Worker + D1 + Durable Objects (all on the free plan).
    Routes:
      POST /api/guest                → create an anonymous account   → { id, token }
+     POST /api/register             → { email, password, name? } create an account (binds the current guest if signed in) → { id, token, email }
+     POST /api/login                → { email, password }           → { id, token, email }
+     POST /api/logout               → end this session
      GET  /api/profile              → load my save                  (Authorization: Bearer <id>.<token>)
      PUT  /api/profile              → store my save (≤ 64 KB)
      GET  /api/leaderboard?n=10     → survival best-streak ranking
@@ -13,6 +16,7 @@
 const BUSY = { error: 'busy', message: '目前流量過大，請稍後再試' };
 const MAX_PROFILE = 64 * 1024;
 const ipHits = new Map(); // per-isolate sliding window
+const loginHits = new Map(); // stricter window for password attempts
 
 function cors(env, req) {
   const origin = req.headers.get('Origin') || '';
@@ -53,9 +57,26 @@ async function auth(env, req) {
   const h = req.headers.get('Authorization') || '';
   const m = h.match(/^Bearer ([a-f0-9]{24})\.([a-f0-9]{48})$/);
   if (!m) return null;
+  const th = await sha256(m[2]);
   const row = await env.DB.prepare('SELECT id, token_hash, name FROM players WHERE id = ?1').bind(m[1]).first();
-  if (!row || row.token_hash !== (await sha256(m[2]))) return null;
-  return row;
+  if (!row) return null;
+  if (row.token_hash === th) return row;                       // guest device token
+  const ses = await env.DB.prepare('SELECT player_id FROM sessions WHERE token_hash = ?1').bind(th).first();
+  return ses && ses.player_id === row.id ? { ...row, session: th } : null;  // logged-in session
+}
+/* PBKDF2-SHA256 password hashing (WebCrypto, 100k iterations = Workers maximum) */
+async function hashPassword(password, saltHex) {
+  const salt = Uint8Array.from(saltHex.match(/../g).map((h) => parseInt(h, 16)));
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt, iterations: 100000 }, key, 256);
+  return [...new Uint8Array(bits)].map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+function safeEqual(a, b) { if (a.length !== b.length) return false; let r = 0; for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i); return r === 0; }
+const EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,}$/;
+async function newSession(env, playerId) {
+  const token = randomHex(24);
+  await env.DB.prepare('INSERT INTO sessions (token_hash, player_id, created) VALUES (?1, ?2, ?3)').bind(await sha256(token), playerId, Date.now()).run();
+  return token;
 }
 
 export default {
@@ -72,6 +93,40 @@ export default {
         const id = randomHex(12), token = randomHex(24);
         await env.DB.prepare('INSERT INTO players (id, token_hash, name, profile, updated) VALUES (?1, ?2, ?3, NULL, ?4)').bind(id, await sha256(token), '旋鬥士', Date.now()).run();
         return json({ id, token }, 200, H);
+      }
+      if (path === '/api/register' && req.method === 'POST') {
+        if (rateLimited('L' + ip, 10)) return json(BUSY, 503, H);
+        const body = await req.json().catch(() => ({}));
+        const email = String(body.email || '').trim().toLowerCase(), password = String(body.password || '');
+        if (!EMAIL_RE.test(email)) return json({ error: 'bad_email', message: 'Email 格式不正確' }, 400, H);
+        if (password.length < 8 || password.length > 128) return json({ error: 'weak_password', message: '密碼至少要 8 個字元' }, 400, H);
+        if (await env.DB.prepare('SELECT 1 FROM accounts WHERE email = ?1').bind(email).first()) return json({ error: 'email_taken', message: '這個 Email 已經註冊過了，請直接登入' }, 409, H);
+        if (await overBudget(env)) return json(BUSY, 503, H);
+        // bind to the current guest (keeps progress) unless that guest already owns an account
+        let me = await auth(env, req);
+        if (me && (await env.DB.prepare('SELECT 1 FROM accounts WHERE player_id = ?1').bind(me.id).first())) me = null;
+        let pid = me && me.id;
+        if (!pid) {
+          pid = randomHex(12);
+          await env.DB.prepare('INSERT INTO players (id, token_hash, name, profile, updated) VALUES (?1, ?2, ?3, NULL, ?4)').bind(pid, await sha256(randomHex(24)), cleanName(body.name), Date.now()).run();
+        }
+        const salt = randomHex(16);
+        await env.DB.prepare('INSERT INTO accounts (email, player_id, pass_hash, salt, created) VALUES (?1, ?2, ?3, ?4, ?5)').bind(email, pid, await hashPassword(password, salt), salt, Date.now()).run();
+        return json({ id: pid, token: await newSession(env, pid), email }, 200, H);
+      }
+      if (path === '/api/login' && req.method === 'POST') {
+        if (rateLimited('L' + ip, 10)) return json({ error: 'too_many', message: '嘗試次數太多，請稍後再試' }, 429, H);
+        const body = await req.json().catch(() => ({}));
+        const email = String(body.email || '').trim().toLowerCase(), password = String(body.password || '');
+        const acc = await env.DB.prepare('SELECT player_id, pass_hash, salt FROM accounts WHERE email = ?1').bind(email).first();
+        const ok = acc && safeEqual(await hashPassword(password, acc.salt), acc.pass_hash);
+        if (!ok) return json({ error: 'bad_login', message: 'Email 或密碼不正確' }, 401, H);
+        return json({ id: acc.player_id, token: await newSession(env, acc.player_id), email }, 200, H);
+      }
+      if (path === '/api/logout' && req.method === 'POST') {
+        const me = await auth(env, req);
+        if (me && me.session) await env.DB.prepare('DELETE FROM sessions WHERE token_hash = ?1').bind(me.session).run();
+        return json({ ok: true }, 200, H);
       }
       if (path === '/api/profile') {
         const me = await auth(env, req); if (!me) return json({ error: 'auth' }, 401, H);

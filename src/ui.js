@@ -73,6 +73,10 @@ const UI = {
     const el = $('#settings'); const on = force ?? el.hidden;
     el.hidden = !on;
     if (on) for (const k of ['master', 'sfx', 'voice']) $('#vol-' + k).value = Math.round(SFX.vol[k] * 100);
+    const acct = $('#setAcct');
+    if (acct) acct.innerHTML = Store.mode !== 'server' ? '' : Api.cred && Api.cred.email
+      ? `<div class="desc">帳號：<b style="color:var(--fg)">${esc(Api.cred.email)}</b></div><button class="btn cut" id="logoutBtn">登出</button>`
+      : `<div class="desc">目前是訪客，進度只存在這個瀏覽器。</div><button class="btn primary cut" id="bindBtn">綁定 Email 保存進度</button>`;
   },
   toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(this._tt); this._tt = setTimeout(() => t.classList.remove('show'), 2200); },
   toastTop(msg) { this.toast(msg); },
@@ -82,16 +86,77 @@ const UI = {
   },
 
   /* ---------- AUTH ---------- */
+  atab: 'register',
+  setAuthTab(t) {
+    const server = Store.mode === 'server';
+    this.atab = server ? t : 'local';
+    $('#authTabs').hidden = !server || t === 'setup';
+    $$('[data-atab]').forEach((b) => b.setAttribute('aria-selected', b.dataset.atab === t));
+    const needCred = server && (t === 'login' || t === 'register');
+    $('#fEmailWrap').hidden = !needCred; $('#fPassWrap').hidden = !needCred;
+    $('#fPass').autocomplete = t === 'register' ? 'new-password' : 'current-password';
+    const needProfile = !server || t === 'register' || t === 'guest' || t === 'setup';
+    const keepProfile = t === 'register' && Store.profile;   // binding a guest keeps the current save
+    $('#fNickWrap').hidden = !needProfile || keepProfile; $('#fStarterWrap').hidden = !needProfile || keepProfile;
+    $('#authGo').textContent = { login: '登入', register: Store.profile ? '綁定 Email 並保存進度' : '註冊並開始', guest: '先試玩', setup: '建立旋鬥士並進入', local: '建立檔案並進入' }[this.atab];
+    $('#authWarn').textContent = '';
+    this.acctLine();
+  },
+  async submitAuth() {
+    const t = this.atab, warn = $('#authWarn'), name = $('#nick').value.trim();
+    const email = $('#fEmail').value.trim(), pass = $('#fPass').value;
+    const needName = t === 'local' || t === 'guest' || t === 'setup' || (t === 'register' && !Store.profile);
+    if (needName && name.length < 2) { warn.textContent = '暱稱至少要 2 個字。'; return; }
+    if ((t === 'login' || t === 'register') && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { warn.textContent = '請輸入正確的 Email。'; return; }
+    if (t === 'register' && pass.length < 8) { warn.textContent = '密碼至少要 8 個字元。'; return; }
+    const btn = $('#authGo'); btn.disabled = true; warn.textContent = '處理中…';
+    try {
+      SFX.ensure();
+      if (t === 'login') {
+        const p = await Store.login(email, pass);
+        if (!p) { btn.disabled = false; this.setAuthTab('setup'); $('#authWarn').textContent = '登入成功！先設定你的旋鬥士。'; return; }
+      } else if (t === 'register') {
+        await Store.register(email, pass, name);
+        if (!Store.profile) Store.profile = newProfile(name, this.starter);
+      } else if (t === 'guest') {
+        await Store.startGuest();
+        Store.profile = newProfile(name, this.starter);
+      } else {
+        Store.profile = newProfile(name, this.starter);
+      }
+      await Store.saveNow();
+      SFX.coin();
+      this.stopAuthCycle();
+      UI.go('hub');
+    } catch (e) {
+      warn.textContent = e.msg || (e.code === 'busy' ? '目前流量過大，請稍後再試。' : '連線失敗，請稍後再試。');
+    } finally { btn.disabled = false; }
+  },
+  startAuthCycle() {
+    const show = ['flame@rb', 'kirin@sy', 'wolf@lv', 'jelly@cr', 'bull@gd', 'fox@sk', 'darkstar@rb', 'phoenix@gd'];
+    let k = 0;
+    const step = () => {
+      if (this.cur !== 'auth') return this.stopAuthCycle();
+      const b = show[k++ % show.length];
+      GL.show.showBey({ b, r: '3-60', t: 'F' }); this.authPose();
+      const el = $('#ahBey'); if (el) el.textContent = BLADE[b].name;
+    };
+    this.stopAuthCycle(); step();
+    this._authCycle = setInterval(step, 3200);
+  },
+  authPose() { const sh = GL.show; sh.lookY = -0.42; sh.zoom = GL.w < 820 ? 0.95 : 0.88; },
+  stopAuthCycle() { clearInterval(this._authCycle); this._authCycle = null; },
   renderAuth() {
     const grid = $('#starterGrid');
     grid.innerHTML = Object.entries(TYPES).map(([k, t]) => `<button type="button" class="starter t-${k}" data-starter="${k}" aria-pressed="${k === this.starter}">${t.name}<small>${esc(beyName(STARTERS[k]))}</small></button>`).join('');
     $('#starterDesc').textContent = `${TYPES[this.starter].desc} 起始陀螺：${beyName(STARTERS[this.starter])} ${beyCode(STARTERS[this.starter])}`;
-    GL.show.setOffset(0); GL.show.showBey(STARTERS[this.starter]);
+    GL.show.setOffset(-0.2);
+    if (this._authCycle) { GL.show.showBey(STARTERS[this.starter]); this.authPose(); $('#ahBey').textContent = beyName(STARTERS[this.starter]); }
   },
   acctLine() {
     const el = $('#acctLine');
     if (Store.mode === 'cloud') el.innerHTML = `<span class="dot"></span><span>已連結 claude.ai 帳號${Store.accountName ? '：' + esc(Store.accountName) : ''}，進度會存在你的帳號裡</span>`;
-    else if (Store.mode === 'server') el.innerHTML = `<span class="dot"></span><span>已建立訪客帳號，進度會自動存到雲端（同一台電腦、同一個瀏覽器）</span>`;
+    else if (Store.mode === 'server') el.innerHTML = this.atab === 'guest' ? `<span class="dot off"></span><span>訪客的進度只存在這個瀏覽器，之後可以在設定裡綁定 Email 保存。</span>` : this.atab === 'login' ? `<span class="dot"></span><span>登入後換電腦、換手機也能繼續玩。</span>` : this.atab === 'setup' ? `<span class="dot"></span><span>已登入${Api.cred && Api.cred.email ? '：' + esc(Api.cred.email) : ''}</span>` : `<span class="dot"></span><span>${Store.profile ? '綁定後目前的進度會保留，' : ''}註冊後進度會存在你的帳號裡。</span>`;
     else el.innerHTML = `<span class="dot off"></span><span>目前無法使用雲端帳號，進度會存在這台電腦的瀏覽器裡</span>`;
   },
 
@@ -373,6 +438,9 @@ function bindEvents() {
   document.addEventListener('click', (e) => {
     const t = e.target.closest('button'); if (!t || UI._suppressClick) return;
     SFX.ensure();
+    if (t.dataset.atab) { SFX.click(); return UI.setAuthTab(t.dataset.atab); }
+    if (t.id === 'logoutBtn') return Store.logout();
+    if (t.id === 'bindBtn') { UI.toggleSettings(false); UI.show('auth'); UI.renderAuth(); UI.setAuthTab('register'); UI.startAuthCycle(); return; }
     if (t.dataset.go === 'survival') { SFX.click(); return Battle.startSurvival(); }
     if (t.dataset.go === 'online') { SFX.click(); return UI.toast('線上對戰開發中，敬請期待！'); }
     if (t.dataset.showbey) { SFX.click(); UI.hubBey = +t.dataset.showbey; return UI.renderHubBey(); }
@@ -391,15 +459,7 @@ function bindEvents() {
     if (t.dataset.ctab) { UI.collTab = t.dataset.ctab; UI.collSel = null; SFX.click(); return UI.renderCollection(); }
     if (t.dataset.cpart) { UI.collSel = { kind: UI.collTab, id: t.dataset.cpart }; SFX.click(); return UI.renderCollection(); }
   });
-  $('#authForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const name = $('#nick').value.trim();
-    if (name.length < 2) { $('#authWarn').textContent = '暱稱至少要 2 個字。'; return; }
-    SFX.ensure(); SFX.coin();
-    Store.profile = newProfile(name, UI.starter);
-    Store.saveNow();
-    UI.go('hub');
-  });
+  $('#authForm').addEventListener('submit', (e) => { e.preventDefault(); UI.submitAuth(); });
   $('#startBattle').addEventListener('click', () => Battle.start(OPPONENTS[UI.oppSel], UI.mode));
   $('#quitBattle').addEventListener('click', () => Battle.quit());
   $('#spBtn').addEventListener('click', () => Battle.useSpecial(0));
@@ -456,17 +516,21 @@ function loop(now) {
   requestAnimationFrame(loop);
 }
 async function boot() {
-  if (!window.THREE) { $('#loading').textContent = '3D 引擎載入失敗，請重新整理頁面。'; return; }
+  const tips = ['組裝鋒輪、鎖芯、旋尖，打造你的專屬陀螺', '拉繩越快，陀螺的初始轉速越高', '攻擊型擅長擊出，持久型靠轉速取勝，防禦型最耐撞', '把對手撞進裂界區可以一次拿 3 分', '必殺技集滿後按空白鍵（手機點按鈕）施放', '扭蛋連續 60 抽一定出傳說零件', '每位頭目都有自己的戰鬥盤，地形會改變戰術'];
+  let ti = 0; const tipTimer = setInterval(() => { const el = $('#ldTip'); if (!el) return; el.style.opacity = 0; setTimeout(() => { el.textContent = tips[++ti % tips.length]; el.style.opacity = 1; }, 400); }, 2600);
+  if (!window.THREE) { $('#ldPct').textContent = '3D 引擎載入失敗，請重新整理頁面。'; return; }
   if (THREE.ColorManagement) THREE.ColorManagement.legacyMode = false;
-  await Assets.load((f) => { $('#loading').textContent = `LOADING MODELS ${Math.round(f * 100)}%`; });
+  await Assets.load((f) => { const pct = Math.min(100, Math.round(f * 100)); $('#ldBar').style.width = pct + '%'; $('#ldPct').textContent = `載入 3D 模型 ${pct}%`; });
+  $('#ldBar').style.width = '100%'; $('#ldPct').textContent = '準備戰鬥盤…';
   GL.init();
   bindEvents();
   requestAnimationFrame(loop);
   const p = await Store.init();
+  clearInterval(tipTimer);
   $('#loading').hidden = true;
   if (p) UI.go('hub');
   else {
-    UI.show('auth'); UI.acctLine(); UI.renderAuth();
+    UI.show('auth'); UI.renderAuth(); UI.setAuthTab(Store.mode === 'server' ? 'register' : 'local'); UI.startAuthCycle();
     if (Store.accountName) $('#nick').value = Store.accountName.slice(0, 12);
   }
 }

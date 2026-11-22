@@ -9,9 +9,9 @@ const Api = {
     try {
       res = await fetch(this.base + path, { method, headers: { 'Content-Type': 'application/json', ...(this.cred ? { Authorization: `Bearer ${this.cred.id}.${this.cred.token}` } : {}) }, body: body ? JSON.stringify(body) : undefined });
     } catch (e) { this.flagBusy(); throw Object.assign(new Error('network'), { code: 'busy' }); }
-    if (res.status === 503 || res.status === 429) { this.flagBusy(); throw Object.assign(new Error('busy'), { code: 'busy' }); }
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw Object.assign(new Error(data.error || 'error'), { code: data.error || 'error', status: res.status });
+    if (res.status === 503 || data.error === 'busy') { this.flagBusy(); throw Object.assign(new Error('busy'), { code: 'busy', msg: '目前流量過大，請稍後再試' }); }
+    if (!res.ok) throw Object.assign(new Error(data.error || 'error'), { code: data.error || 'error', status: res.status, msg: data.message || '' });
     this.busy = false;
     return data;
   },
@@ -19,8 +19,10 @@ const Api = {
     if (!this.busy && typeof UI !== 'undefined' && UI.toast) UI.toast('目前流量過大，請稍後再試。進度先存在這台電腦上。');
     this.busy = true;
   },
+  loadCred() { try { this.cred = JSON.parse(localStorage.getItem(this.CKEY) || 'null'); } catch (e) { this.cred = null; } return this.cred; },
+  setCred(c) { this.cred = c; try { c ? localStorage.setItem(this.CKEY, JSON.stringify(c)) : localStorage.removeItem(this.CKEY); } catch (e) {} },
   async ensureGuest() {
-    try { this.cred = JSON.parse(localStorage.getItem(this.CKEY) || 'null'); } catch (e) { this.cred = null; }
+    this.loadCred();
     if (this.cred && this.cred.id && this.cred.token) return this.cred;
     const g = await this.call('POST', '/api/guest');
     this.cred = { id: g.id, token: g.token };
@@ -36,8 +38,10 @@ const Store = {
   async init() {
     // public site: our own backend (guest account, cloud save)
     if (Api.base && !(window.claude && typeof window.claude.use === 'function')) {
-      try { await Api.ensureGuest(); this.mode = 'server'; this.uid = Api.cred.id; } catch (e) { this.mode = 'local'; }
-      return this.load();
+      // public site: nothing is created until the player logs in, registers or chooses to try as a guest
+      this.mode = 'server';
+      if (Api.loadCred() && Api.cred.id) { this.uid = Api.cred.id; return this.load(); }
+      return null;
     }
     const c = window.claude;
     if (c && typeof c.use === 'function') {
@@ -58,6 +62,7 @@ const Store = {
   docRef() { return this.db.doc('data/users/' + this.uid + '/profile'); },
   async load() {
     if (this.mode === 'server') {
+      if (!Api.cred) return (this.profile = null);
       try {
         const r = await Api.call('GET', '/api/profile');
         const local = this.readLocal();
@@ -67,7 +72,7 @@ const Store = {
         if (this.profile && this.profile !== remote) this.saveNow();
         return this.profile;
       } catch (e) {
-        if (e.status === 401) { try { localStorage.removeItem(Api.CKEY); } catch (er) {} }
+        if (e.status === 401) { Api.setCred(null); return (this.profile = null); }
         this.profile = this.readLocal(); return this.profile;
       }
     }
@@ -85,6 +90,26 @@ const Store = {
     }
     this.profile = this.readLocal();
     return this.profile;
+  },
+  /* public-site account actions */
+  async login(email, password) {
+    const r = await Api.call('POST', '/api/login', { email, password });
+    Api.setCred({ id: r.id, token: r.token, email: r.email });
+    this.uid = r.id;
+    try { localStorage.removeItem(this.LKEY); } catch (e) {}   // never mix another account's local copy
+    return this.load();
+  },
+  async register(email, password, name) {
+    const r = await Api.call('POST', '/api/register', { email, password, name });   // binds the current guest when signed in
+    Api.setCred({ id: r.id, token: r.token, email: r.email });
+    this.uid = r.id;
+  },
+  async startGuest() { await Api.ensureGuest(); this.uid = Api.cred.id; },
+  async logout() {
+    try { await Api.call('POST', '/api/logout'); } catch (e) {}
+    Api.setCred(null);
+    try { localStorage.removeItem(this.LKEY); } catch (e) {}
+    location.reload();
   },
   readLocal() {
     try { const s = localStorage.getItem(this.LKEY); return s ? migrate(JSON.parse(s)) : null; } catch (e) { return null; }

@@ -26,3 +26,16 @@ let [, lb] = await call('GET', '/api/leaderboard?n=5'); ok(lb.rows.length === 1 
 // daily write budget = 6 in this test: further writes must answer busy
 let last; for (let i = 0; i < 4; i++) last = await call('PUT', '/api/profile', { profile: { name: 'x' } }, tok);
 ok(last[0] === 503 && last[1].error === 'busy' && last[1].message === '目前流量過大，請稍後再試', 'over budget answers busy');
+// ---- accounts
+env.DAILY_WRITE_LIMIT = '1000';
+let [s2, g2] = await call('POST', '/api/guest'); const gt = g2.id + '.' + g2.token;
+await call('PUT', '/api/profile', { profile: { name: '試玩者', coins: 42 } }, gt);
+let [rs, reg] = await call('POST', '/api/register', { email: 'Player@Example.com', password: 'secret123' }, gt);
+ok(rs === 200 && reg.id === g2.id, 'register binds current guest (keeps progress)');
+let [ds] = await call('POST', '/api/register', { email: 'player@example.com', password: 'secret123' }); ok(ds === 409, 'duplicate email rejected');
+let [ws] = await call('POST', '/api/register', { email: 'x@y.com', password: 'short' }); ok(ws === 400, 'short password rejected');
+let [bs] = await call('POST', '/api/login', { email: 'player@example.com', password: 'wrongpass' }); ok(bs === 401, 'wrong password rejected');
+let [ls, lg] = await call('POST', '/api/login', { email: 'PLAYER@example.com', password: 'secret123' }); ok(ls === 200 && lg.id === g2.id, 'login works, email case-insensitive');
+let [, pp] = await call('GET', '/api/profile', null, lg.id + '.' + lg.token); ok(pp.profile && pp.profile.coins === 42, 'login session loads the same progress');
+await call('POST', '/api/logout', null, lg.id + '.' + lg.token);
+let [os] = await call('GET', '/api/profile', null, lg.id + '.' + lg.token); ok(os === 401, 'logout ends the session');
