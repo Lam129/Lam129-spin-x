@@ -2105,6 +2105,12 @@ const Assets = {
     const uv = new Float32Array(m.n * 2);
     for (let i = 0; i < m.n; i++) { uv[i * 2] = pos[i * 3] / 0.96 + 0.5; uv[i * 2 + 1] = -pos[i * 3 + 2] / 0.96 + 0.5; }
     g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+    if (m.c != null) {
+      // baked AO (linear 0..1) stored as vertex colour; materials multiply it into albedo
+      const a8 = new Uint8Array(B, m.c, m.n), col = new Float32Array(m.n * 3);
+      for (let i = 0; i < m.n; i++) { const v = Math.pow(a8[i] / 255, 1.25); col[i * 3] = col[i * 3 + 1] = col[i * 3 + 2] = v; }
+      g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    }
     g.computeBoundingSphere();
     return (this.cache[ck] = g);
   },
@@ -2117,6 +2123,32 @@ const MAT = {
   clear: (c, op = 0.4) => new THREE.MeshPhysicalMaterial({ color: c, metalness: 0.1, roughness: 0.08, transparent: true, opacity: op, clearcoat: 1, depthWrite: false }),
   dark: () => new THREE.MeshStandardMaterial({ color: 0x15171f, metalness: 0.55, roughness: 0.45 }),
   glow: (c) => new THREE.MeshBasicMaterial({ color: c }),
+};
+/* spun-metal roughness: fine concentric lathe marks (planar UV centred on the axis). Highlights stretch along
+   the rings the way they do on real turned metal, instead of the old random-scratch bump that looked crumpled. */
+function spunTex() {
+  return canvasTex('spun', 1024, 1024, (g, W) => {
+    g.fillStyle = 'rgb(150,150,150)'; g.fillRect(0, 0, W, W);
+    for (let r = 2; r < 512; r += 0.9) {
+      const v = 120 + Math.random() * 70 | 0;
+      g.strokeStyle = `rgba(${v},${v},${v},0.55)`; g.lineWidth = rand(0.4, 1.1);
+      g.beginPath(); g.arc(512, 512, r, 0, TAU); g.stroke();
+    }
+    for (let i = 0; i < 40; i++) {   // a few soft machining bands
+      const r = rand(40, 500), v = rand(100, 200) | 0;
+      g.strokeStyle = `rgba(${v},${v},${v},0.25)`; g.lineWidth = rand(3, 9);
+      g.beginPath(); g.arc(512, 512, r, 0, TAU); g.stroke();
+    }
+  }, false);
+}
+/* asset meshes carry baked AO in their vertex colours */
+function withAO(mesh) { if (mesh.geometry && mesh.geometry.attributes.color) { mesh.material.vertexColors = true; mesh.material.needsUpdate = true; } return mesh; }
+const MAT2 = {
+  metal: (c, rough = 0.24) => { const t = setUV(spunTex().clone()); t.needsUpdate = true; return new THREE.MeshPhysicalMaterial({ color: c, metalness: 1, roughness: rough, roughnessMap: t, envMapIntensity: 1.25 }); },
+  gun: (c) => new THREE.MeshPhysicalMaterial({ color: c, metalness: 0.9, roughness: 0.38, envMapIntensity: 1.1 }),
+  plastic: (c) => new THREE.MeshPhysicalMaterial({ color: c, metalness: 0.0, roughness: 0.36, clearcoat: 0.55, clearcoatRoughness: 0.28, envMapIntensity: 0.9 }),
+  gem: (c) => new THREE.MeshPhysicalMaterial({ color: c, metalness: 0.2, roughness: 0.05, transparent: true, opacity: 0.6, emissive: c, emissiveIntensity: 0.18, clearcoat: 1, clearcoatRoughness: 0.04 }),
+  rubber: () => new THREE.MeshStandardMaterial({ color: 0x1b1c22, roughness: 0.92, metalness: 0 }),
 };
 function setUV(tex) { tex.repeat.set(1 / 0.96, 1 / 0.96); tex.offset.set(0.5, 0.5); tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping; return tex; }
 
@@ -2134,7 +2166,7 @@ function buildBlade(bl) {
   const subGeo = useA ? Assets.geo(AK, 'sub') : cachedGeo('bs-' + bl.id, () => wedgeExtrude(makeOutlineShape(subFn, 0.2), 0.035, subFn, { thin: 0.3 }));
   const eng = setUV(engraveTex(bl.id, n, bl.accent).clone()); eng.needsUpdate = true;
   const metalMat = MAT.metal(new THREE.Color(bl.metal).multiplyScalar(0.82), 0.26, eng);
-  const sub = new THREE.Mesh(subGeo, MAT.metal(new THREE.Color(bl.metal).multiplyScalar(0.72), 0.32));
+  const sub = new THREE.Mesh(subGeo, useA ? MAT2.gun(new THREE.Color(bl.metal).multiplyScalar(0.55)) : MAT.metal(new THREE.Color(bl.metal).multiplyScalar(0.72), 0.32)); if (useA) withAO(sub);
   if (!useA) sub.rotation.y = Math.PI / n; sub.castShadow = true; g.add(sub);
   // ---- Layer 2: metal main blade with windows
   const windows = [];
@@ -2144,13 +2176,13 @@ function buildBlade(bl) {
     if (rr > 0.27) windows.push(slotPath(0.245, Math.min(rr, 0.31), a, Math.min(0.34, 1.1 / n)));
   }
   const mainGeo = useA ? Assets.geo(AK, 'metal') : cachedGeo('bm-' + bl.id, () => wedgeExtrude(makeOutlineShape(mainFn, 0.205, windows), 0.075, mainFn, { thin: 0.62 }));
-  const main = new THREE.Mesh(mainGeo, metalMat);
+  const main = new THREE.Mesh(mainGeo, useA ? MAT2.metal(new THREE.Color(bl.metal).multiplyScalar(0.9)) : metalMat); if (useA) withAO(main);
   if (!useA) main.position.y = 0.03; main.castShadow = true; main.receiveShadow = true; g.add(main);
   // glowing accent edge line along contact outline
   const linePts = [];
   for (let i = 0; i <= 200; i++) { const th = (i / 200) * TAU, r = mainFn(th) - 0.004; linePts.push(new THREE.Vector3(Math.cos(th) * r, 0.03 + 0.02, -Math.sin(th) * r)); }
   const edge = new THREE.Line(new THREE.BufferGeometry().setFromPoints(linePts), new THREE.LineBasicMaterial({ color: bl.accent, transparent: true, opacity: 0.9 }));
-  g.add(edge);
+  if (!useA) g.add(edge);
   // ---- Layer 3: tinted polymer frame (angular, rotated so metal tips lead)
   const frameFn = (th) => {
     const u = (((th * n) / TAU) % 1 + 1) % 1;
@@ -2158,12 +2190,12 @@ function buildBlade(bl) {
     return 0.255 + wing * (sh.base - 0.22);
   };
   const frameGeo = useA ? Assets.geo(AK, 'frame') : cachedGeo('bf-' + bl.id, () => wedgeExtrude(makeOutlineShape(frameFn, 0.19), 0.05, frameFn, { thin: 0.5, hub: 0.2 }));
-  const frame = new THREE.Mesh(frameGeo, MAT.plastic(bl.plastic));
+  const frame = new THREE.Mesh(frameGeo, useA ? MAT2.plastic(bl.plastic) : MAT.plastic(bl.plastic)); if (useA) withAO(frame);
   if (!useA) { frame.position.y = 0.1; frame.rotation.y = -0.22; } frame.castShadow = true; g.add(frame);
   // clear tinted overlay wings (translucent)
   const clearFn = (th) => frameFn(th + 0.35) * 0.96;
   const clearGeo = useA ? Assets.geo(AK, 'clear') : cachedGeo('bc-' + bl.id, () => wedgeExtrude(makeOutlineShape(clearFn, 0.19), 0.02, clearFn, { thin: 0.2, bevel: 0.004 }));
-  const clr = new THREE.Mesh(clearGeo, MAT.clear(bl.accent, 0.3)); if (!useA) clr.position.y = 0.155; g.add(clr);
+  if (clearGeo) { const clr = new THREE.Mesh(clearGeo, useA ? MAT2.gem(bl.accent) : MAT.clear(bl.accent, 0.3)); if (!useA) clr.position.y = 0.155; g.add(clr); }
   // ---- Layer 4: centre chip (faceted metal ring + emblem + dome + screws)
   const ring = new THREE.Mesh(useA ? Assets.geo(AK, 'chip') : cachedGeo('chipring', () => {
     const s = new THREE.Shape(); const N = 12;
@@ -2171,8 +2203,8 @@ function buildBlade(bl) {
     const h = new THREE.Path(); h.absarc(0, 0, 0.17, 0, TAU, true); s.holes.push(h);
     const geo = new THREE.ExtrudeGeometry(s, { depth: 0.07, bevelEnabled: true, bevelThickness: 0.008, bevelSize: 0.006, bevelSegments: 2 });
     geo.rotateX(-Math.PI / 2); return geo;
-  }), MAT.metal(0x2a2e3a, 0.35));
-  if (!useA) ring.position.y = 0.11; ring.castShadow = true; g.add(ring);
+  }), useA ? MAT2.gun(0x2c303c) : MAT.metal(0x2a2e3a, 0.35));
+  if (!useA) ring.position.y = 0.11; else withAO(ring); ring.castShadow = true; g.add(ring);
   const chipBase = new THREE.Mesh(cachedGeo('chipbase', () => new THREE.CylinderGeometry(0.172, 0.172, 0.06, 48)), MAT.dark());
   chipBase.position.y = 0.14; g.add(chipBase);
   const emT = emblemTexture(bl);
@@ -2180,16 +2212,16 @@ function buildBlade(bl) {
   em.rotation.x = -Math.PI / 2; em.position.y = 0.171; g.add(em);
   const dome = new THREE.Mesh(cachedGeo('dome', () => { const d = new THREE.SphereGeometry(0.17, 48, 16, 0, TAU, 0, Math.PI * 0.5); d.scale(1, 0.28, 1); return d; }), MAT.clear(0xffffff, 0.22));
   dome.position.y = 0.171; g.add(dome);
-  const screwGeo = cachedGeo('screw', () => new THREE.CylinderGeometry(0.014, 0.014, 0.012, 6));
+  const screwGeo = cachedGeo('screw', () => new THREE.CylinderGeometry(0.011, 0.012, 0.008, 6));
   const screwMat = MAT.metal(0xd8dde8, 0.25);
   for (let i = 0; i < 3; i++) {
-    const a = (i / 3) * TAU + 0.5;
-    const sc = new THREE.Mesh(screwGeo, screwMat); sc.position.set(Math.cos(a) * 0.198, 0.186, Math.sin(a) * 0.198); g.add(sc);
+    const a = (i / 3) * TAU + 0.5, r = useA ? 0.212 : 0.198;
+    const sc = new THREE.Mesh(screwGeo, screwMat); sc.position.set(Math.cos(a) * r, useA ? 0.172 : 0.186, Math.sin(a) * r); g.add(sc);
   }
   // accent lights on each contact tip
   const studGeo = cachedGeo('stud', () => new THREE.BoxGeometry(0.05, 0.012, 0.02));
   const studMat = MAT.glow(bl.accent);
-  for (let i = 0; i < n; i++) {
+  for (let i = 0; i < (useA ? 0 : n); i++) {
     const th = (i / n) * TAU + 0.18;
     const r = 0.29;
     const st = new THREE.Mesh(studGeo, studMat);
@@ -2221,14 +2253,15 @@ function buildRatchet(rt) {
     const hole = new THREE.Path(); hole.absarc(0, 0, 0.12, 0, TAU, true); s.holes.push(hole);
     const geo = new THREE.ExtrudeGeometry(s, { depth: h * 0.7, bevelEnabled: true, bevelThickness: 0.006, bevelSize: 0.006, bevelSegments: 2, curveSegments: 6 });
     geo.rotateX(-Math.PI / 2); return geo;
-  }), MAT.plastic(col));
-  if (!useA) body.position.y = 0.006; body.castShadow = true; g.add(body);
+  }), useA ? MAT2.plastic(col) : MAT.plastic(col));
+  if (!useA) body.position.y = 0.006; else withAO(body); body.castShadow = true; g.add(body);
+  if (useA) { const lg = Assets.geo(AK, 'label'); if (lg) g.add(withAO(new THREE.Mesh(lg, MAT2.plastic(0xf2f4f8)))); }
   // printed code band
   const band = new THREE.Mesh(cachedGeo('rband' + rt.h, () => new THREE.CylinderGeometry(0.238, 0.238, h * 0.28, 64, 1, true)), new THREE.MeshStandardMaterial({ map: ratchetLabel(rt), metalness: 0.2, roughness: 0.5 }));
-  band.position.y = h * 0.33; g.add(band);
+  band.position.y = h * 0.33; if (!useA) g.add(band);
   // metal reinforcement ring
   const ring = new THREE.Mesh(cachedGeo('rring', () => new THREE.TorusGeometry(0.24, 0.008, 6, 64)), MAT.metal(0xc9d0dc, 0.25));
-  ring.rotation.x = Math.PI / 2; ring.position.y = h * 0.53; g.add(ring);
+  ring.rotation.x = Math.PI / 2; ring.position.y = h * 0.53; if (!useA) g.add(ring);
   // angled lock teeth (ratchet prongs) rising above the body
   const toothW = clamp(TAU / rt.prongs * 0.42, 0.18, 0.9);
   const tg = cachedGeo('rtooth' + rt.prongs + rt.h, () => {
@@ -2252,7 +2285,7 @@ function buildRatchet(rt) {
     geo.computeVertexNormals(); return geo;
   });
   const tm = MAT.plastic(col.clone().offsetHSL(0, 0.05, 0.12));
-  if (useA) { const tt = new THREE.Mesh(Assets.geo(AK, 'teeth'), tm); tt.castShadow = true; g.add(tt); }
+  if (useA) { const tt = withAO(new THREE.Mesh(Assets.geo(AK, 'teeth'), MAT2.plastic(col.clone().offsetHSL(0, 0.04, 0.08)))); tt.castShadow = true; g.add(tt); }
   else for (let i = 0; i < rt.prongs; i++) {
     const t = new THREE.Mesh(tg, tm); t.position.y = h * 0.62; t.rotation.y = (i / rt.prongs) * TAU; t.castShadow = true; g.add(t);
   }
@@ -2301,11 +2334,14 @@ function buildBit(bt) {
   const L = BIT_LEN[bt.tip];
   const AK = 'bit_' + (bt.base || bt.id);
   if (Assets.has(AK)) {
-    const add = (name, mat) => { const gg = Assets.geo(AK, name); if (!gg) return null; const m = new THREE.Mesh(gg, mat); m.position.y = -L; m.castShadow = true; g.add(m); return m; };
-    add('body', MAT.plastic(bt.tip === 'rubber' ? 0xd9dde6 : bt.color));
-    add('tabs', MAT.plastic(new THREE.Color(bt.color).offsetHSL(0, 0, -0.15)));
-    add('gear', MAT.metal(0xc8ced9, 0.28)); add('guard', MAT.metal(0x9aa3b4, 0.3)); add('tip', MAT.metal(0xe6e9f0, 0.15));
-    if (bt.tip === 'rubber') {
+    const add = (name, mat) => { const gg = Assets.geo(AK, name); if (!gg) return null; const m = withAO(new THREE.Mesh(gg, mat)); m.position.y = -L; m.castShadow = true; g.add(m); return m; };
+    const col = new THREE.Color(bt.color);
+    add('body', MAT2.plastic(bt.tip === 'rubber' ? 0xd9dde6 : col));
+    add('tabs', MAT2.plastic(col.clone().offsetHSL(0, 0, -0.15)));
+    add('gear', MAT2.metal(0xc8ced9, 0.22)); add('guard', MAT2.metal(0xa8b0c0, 0.26));
+    const metalTip = ['needle', 'hneedle', 'ball', 'point', 'spike', 'htaper'].includes(bt.tip);
+    const tipMesh = add('tip', bt.tip === 'rubber' ? MAT2.rubber() : metalTip ? MAT2.metal(0xe6e9f0, 0.14) : MAT2.plastic(col.clone().offsetHSL(0, -0.05, -0.12)));
+    if (bt.tip === 'rubber' && !tipMesh) {
       const rub = new THREE.Mesh(cachedGeo('rub', () => new THREE.CylinderGeometry(0.125, 0.112, 0.06, 40)), new THREE.MeshStandardMaterial({ color: 0x18181d, roughness: 0.95 }));
       rub.position.y = -L + 0.03; g.add(rub);
     }

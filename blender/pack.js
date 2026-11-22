@@ -23,6 +23,7 @@ for (const f of files) {
     const mesh = json.meshes[node.mesh];
     for (const prim of mesh.primitives) {
       const P = acc(prim.attributes.POSITION), N = acc(prim.attributes.NORMAL), I = acc(prim.indices);
+      const C = prim.attributes.COLOR_0 != null ? acc(prim.attributes.COLOR_0) : null;
       const n = P.a.count;
       const pos = Buffer.alloc(n * 6), nrm = Buffer.alloc(n * 3);
       for (let i = 0; i < n; i++) for (let c = 0; c < 3; c++) {
@@ -37,7 +38,21 @@ for (const f of files) {
         const v = I.a.componentType === 5125 ? bin.readUInt32LE(I.start + i * 4) : I.a.componentType === 5123 ? bin.readUInt16LE(I.start + i * 2) : bin.readUInt8(I.start + i);
         big ? idx.writeUInt32LE(v, i * 4) : idx.writeUInt16LE(v, i * 2);
       }
-      index[key].push({ name: mesh.name, n, ic, big, p: push(pos), q: push(nrm), i: push(idx) });
+      // baked ambient occlusion (red channel of COLOR_0) -> one byte per vertex
+      let ao = null;
+      if (C) {
+        const comps = C.a.type === 'VEC4' ? 4 : 3, ct = C.a.componentType;
+        const sz = ct === 5126 ? 4 : ct === 5123 ? 2 : 1;
+        ao = Buffer.alloc(n);
+        for (let i = 0; i < n; i++) {
+          const o = C.start + i * comps * sz;
+          const v = ct === 5126 ? bin.readFloatLE(o) : ct === 5123 ? bin.readUInt16LE(o) / 65535 : bin.readUInt8(o) / 255;
+          ao.writeUInt8(Math.round(Math.max(0, Math.min(1, v)) * 255), i);
+        }
+      }
+      const entry = { name: mesh.name, n, ic, big, p: push(pos), q: push(nrm), i: push(idx) };
+      if (ao) entry.c = push(ao);
+      index[key].push(entry);
       grp.offset = offset;
     }
   }
