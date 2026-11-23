@@ -39,3 +39,33 @@ let [ls, lg] = await call('POST', '/api/login', { email: 'PLAYER@example.com', p
 let [, pp] = await call('GET', '/api/profile', null, lg.id + '.' + lg.token); ok(pp.profile && pp.profile.coins === 42, 'login session loads the same progress');
 await call('POST', '/api/logout', null, lg.id + '.' + lg.token);
 let [os] = await call('GET', '/api/profile', null, lg.id + '.' + lg.token); ok(os === 401, 'logout ends the session');
+// ---- coin shop (Stripe mocked)
+import crypto from 'node:crypto';
+let [, shop0] = await call('GET', '/api/shop'); ok(shop0.enabled === false && shop0.packs.length === 5, 'shop lists packs, disabled without a key');
+let [cs0] = await call('POST', '/api/shop/checkout', { pack: 'p1', currency: 'twd' }, lg2tok()); ok(cs0 === 501, 'checkout refused while the shop is disabled');
+function lg2tok() { return null; }
+env.STRIPE_SECRET_KEY = 'sk_test_dummy'; env.STRIPE_WEBHOOK_SECRET = 'whsec_test';
+let lastStripe = null;
+globalThis.fetch = async (u, o) => { lastStripe = { u, body: String(o.body) }; return new Response(JSON.stringify({ id: 'cs_test_1', url: 'https://checkout.stripe.com/c/pay/cs_test_1' }), { status: 200 }); };
+let [gs, gg] = await call('POST', '/api/guest'); const guestTok = gg.id + '.' + gg.token;
+let [na] = await call('POST', '/api/shop/checkout', { pack: 'p1', currency: 'twd' }, guestTok); ok(na === 403, 'guests must register before buying');
+let [, acct] = await call('POST', '/api/login', { email: 'player@example.com', password: 'secret123' }); const at = acct.id + '.' + acct.token;
+let [cs, co] = await call('POST', '/api/shop/checkout', { pack: 'p2', currency: 'twd', lang: 'ja' }, at);
+const sent = new URLSearchParams(lastStripe.body);
+ok(cs === 200 && co.url.startsWith('https://checkout.stripe.com/') && sent.get('line_items[0][price_data][unit_amount]') === '12000' && sent.get('line_items[0][price_data][currency]') === 'twd' && sent.get('metadata[coins]') === '2200' && sent.get('locale') === 'ja', 'checkout uses server price (NT$120) and first-purchase ×2 coins');
+const hook = async (obj, type, secret = 'whsec_test', ts = Math.floor(Date.now() / 1000)) => {
+  const raw = JSON.stringify({ type, data: { object: obj } });
+  const sig = crypto.createHmac('sha256', secret).update(`${ts}.${raw}`).digest('hex');
+  const res = await worker.fetch(new Request('http://x/api/stripe/webhook', { method: 'POST', body: raw, headers: { 'Stripe-Signature': `t=${ts},v1=${sig}` } }), env);
+  return res.status;
+};
+const sess = { id: 'cs_test_1', payment_status: 'paid', amount_total: 12000, currency: 'twd', payment_intent: 'pi_1', metadata: { player_id: acct.id, pack: 'p2', coins: '2200' } };
+ok(await hook(sess, 'checkout.session.completed', 'whsec_wrong') === 400, 'webhook rejects a bad signature');
+ok(await hook(sess, 'checkout.session.completed', 'whsec_test', Math.floor(Date.now() / 1000) - 3600) === 400, 'webhook rejects a stale timestamp');
+ok(await hook(sess, 'checkout.session.completed') === 200, 'webhook accepts a signed event');
+ok(await hook(sess, 'checkout.session.completed') === 200, 'duplicate delivery is harmless');
+let [, cl1] = await call('POST', '/api/shop/claim', null, at); ok(cl1.delta === 2200, 'claim credits the purchase once');
+let [, cl2] = await call('POST', '/api/shop/claim', null, at); ok(cl2.delta === 0, 'second claim credits nothing');
+let [, shop1] = await call('GET', '/api/shop', null, at); ok(shop1.packs.find((p) => p.id === 'p2').first === false && shop1.packs.find((p) => p.id === 'p1').first === true, 'first-purchase bonus used up only for that pack');
+ok(await hook({ payment_intent: 'pi_1' }, 'charge.refunded') === 200, 'refund event accepted');
+let [, cl3] = await call('POST', '/api/shop/claim', null, at); ok(cl3.delta === -2200, 'refund reverses the credited coins');

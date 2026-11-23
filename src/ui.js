@@ -19,7 +19,8 @@ const UI = {
     if (name === 'gacha') { sh.setOffset(0); sh.clear(); $('#revName').textContent = ''; $('#revEye').textContent = ''; this.renderDome(); }
     if (name === 'collection') { sh.setOffset(0.31); this.renderCollection(); }
     if (name === 'rules') { sh.setOffset(0); sh.clear(); }
-    if (name === 'online') { sh.setOffset(0); sh.clear(); }
+    if (name === 'online' || name === 'shop' || name === 'legal') { sh.setOffset(0); sh.clear(); }
+    if (name === 'legal') Legal.render();
   },
   renderHub() {
     const P = Store.profile;
@@ -57,11 +58,11 @@ const UI = {
   },
   topbar(name) {
     const P = Store.profile; if (!P) return '';
-    const titles = { online: '線上對戰', assembly: '組裝工坊', select: '對戰', gacha: '扭蛋機', collection: '收藏圖鑑', rules: '比賽規則' };
+    const titles = { legal: '關於與免責聲明', shop: '金幣商店', online: '線上對戰', assembly: '組裝工坊', select: '對戰', gacha: '扭蛋機', collection: '收藏圖鑑', rules: '比賽規則' };
     const back = name !== 'hub' ? `<button class="btn cut" data-go="hub" style="padding:8px 14px" aria-label="返回">‹ 返回</button>` : '';
     return `${back}<div class="brand">陀螺對決<small style="font-family:var(--f-disp);color:var(--hot);margin-left:6px;letter-spacing:.2em">SPIN DUEL</small>${titles[name] ? `<small>／ ${titles[name]}</small>` : ''}</div><div class="spacer"></div>
       <div class="chip"><span class="dot ${Store.mode === 'cloud' || Store.mode === 'server' ? '' : 'off'}"></span><span>${esc(P.name)}</span><span style="color:var(--mute);font-size:12px">${Store.mode === 'cloud' || Store.mode === 'server' ? '雲端存檔' : '本機存檔'}</span></div>
-      <div class="chip"><span class="coin"></span><b class="num" id="coinNum">${P.coins.toLocaleString('en-US')}</b></div>
+      <div class="chip"><span class="coin"></span><b class="num" id="coinNum">${P.coins.toLocaleString('en-US')}</b>${Store.mode === 'server' && name !== 'shop' ? '<button class="coin-add" data-go="shop" aria-label="購買金幣" title="購買金幣">＋</button>' : ''}</div>
       <div class="corner">${name === 'hub' ? '' : `
         <button class="ibtn" data-go="collection" title="收藏圖鑑" aria-label="收藏圖鑑"><svg viewBox="0 0 24 24"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg><span>圖鑑 ${this.ownedCount()}/${BLADES.length + RATCHETS.length + BITS.length}</span></button>
         <button class="ibtn" data-go="rules" title="比賽規則" aria-label="比賽規則"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6zM9 10h7M9 14h7M9 18h5"/></svg><span>規則</span></button>`}
@@ -444,6 +445,13 @@ function bindEvents() {
     if (t.id === 'bindBtn') { UI.toggleSettings(false); UI.show('auth'); UI.renderAuth(); UI.setAuthTab('register'); UI.startAuthCycle(); return; }
     if (t.dataset.go === 'survival') { SFX.click(); return Battle.startSurvival(); }
     if (t.dataset.go === 'online') { SFX.click(); return Online.open(); }
+    if (t.dataset.go === 'shop') { SFX.click(); Dev.close(); return Shop.open(); }
+    if (t.dataset.go === 'legal') Dev.close();
+    if (t.dataset.dev != null) { SFX.click(); return Dev.open(); }
+    if (t.id === 'devClose') return Dev.close();
+    if (t.dataset.devcopy) { navigator.clipboard && navigator.clipboard.writeText(t.dataset.devcopy).catch(() => {}); return UI.toast('已複製 Email'); }
+    if (t.dataset.buy) { SFX.click(); return Shop.buy(t.dataset.buy); }
+    if (t.dataset.stad && Online.role === 'host') { SFX.click(); return Online.setStadium(t.dataset.stad); }
     if (t.dataset.go === 'hub' && UI.cur === 'online') Online.leave();
     if (t.id === 'onCreate') return Online.create();
     if (t.id === 'onJoinBtn') return Online.join(($('#onJoinCode').value || '').replace(/\s/g, '').toUpperCase(), 'guest');
@@ -484,6 +492,8 @@ function bindEvents() {
     if (e.code === 'Space') { e.preventDefault(); Battle.useSpecial(Battle.mySide()); }
     if (Battle.net && /^Digit[1-4]$/.test(e.code)) Online.emote(+e.code.slice(5) - 1);
   });
+  $('#shopCur').addEventListener('change', (e) => { Shop.cur = e.target.value; Shop.render(); });
+  $('#devModal').addEventListener('click', (e) => { if (e.target.id === 'devModal') Dev.close(); });
   $('#wgCustom').addEventListener('keydown', (e) => { if (e.key === 'Enter') Online.setWager(e.target.value); });
   $('#onJoinCode').addEventListener('keydown', (e) => { if (e.key === 'Enter') Online.join(e.target.value.replace(/\s/g, '').toUpperCase(), 'guest'); });
   $('#cine').addEventListener('pointerdown', () => { if (!Battle.net) Battle.skipCine(); });
@@ -552,7 +562,13 @@ async function boot() {
   $('#loading').hidden = true; const lv = $('#ldVid'); if (lv) { lv.pause(); lv.removeAttribute('src'); lv.load(); }
   const roomParam = (new URLSearchParams(location.search).get('room') || '').toUpperCase();
   if (roomParam) Online.pendingCode = roomParam;
-  if (p) { UI.go('hub'); if (Online.pendingCode) { const c = Online.pendingCode; Online.pendingCode = ''; Online.open(c); } }
+  const shopParam = new URLSearchParams(location.search).get('shop');
+  if (shopParam) { try { history.replaceState(null, '', location.pathname); } catch (e) {} }
+  if (p) {
+    UI.go('hub'); if (Online.pendingCode) { const c = Online.pendingCode; Online.pendingCode = ''; Online.open(c); }
+    if (shopParam === 'success') { UI.toast('付款完成，正在確認…'); let n = 0; const tick = async () => { const before = Store.profile.coins; await Shop.claim(true); if (Store.profile.coins === before && ++n < 10) setTimeout(tick, 3000); }; tick(); }
+    else { if (shopParam === 'cancel') UI.toast('已取消付款。'); Shop.claim(true); }
+  }
   else {
     UI.show('auth'); UI.renderAuth(); UI.setAuthTab(Store.mode === 'server' ? 'register' : 'local'); UI.startAuthCycle();
     if (Store.accountName) $('#nick').value = Store.accountName.slice(0, 12);

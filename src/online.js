@@ -79,7 +79,7 @@ function cleanDeck(d) {
 const Online = {
   role: '', code: '', peer: null, view: 'menu', wager: 0, acc: [false, false], amt: 0, mid: '',
   used: [[], []], picks: [null, null], locks: [null, null], myNonce: '', pickT: null, pickLeft: 0,
-  cur: null, st: 'training', again: [null, null], lostT: null, inMatch: false, emoAt: 0,
+  cur: null, st: 'training', stad: 'training', again: [null, null], lostT: null, inMatch: false, emoAt: 0,
 
   available() { return Store.mode === 'server' && Api.cred && Api.cred.email; },
   newbie() { return false; },   // newbie protection removed on request
@@ -121,7 +121,7 @@ const Online = {
       case 'peer-joined': this.send({ t: 'hi', ...this.me() }); break;
       case 'peer-left': this.peerLeft(); break;
       case 'hi': return this.onHi(m);
-      case 'wager': if (this.role === 'guest') { this.wager = m.amt | 0; this.acc = [false, false]; this.renderRoom(); } break;
+      case 'wager': if (this.role === 'guest') { this.wager = m.amt | 0; if (STADIUMS[m.stad]) this.stad = m.stad; this.acc = [false, false]; this.renderRoom(); } break;
       case 'acc': this.acc[1 - this.side()] = m.amt === this.wager; this.renderRoom(); if (this.role === 'host') this.tryStart(); break;
       case 'start': if (this.role === 'guest') this.beginMatch(m.amt | 0, m.mid); break;
       case 'pick': if (this.role === 'guest') this.showPick(); break;
@@ -156,7 +156,7 @@ const Online = {
       UI.toast('對手回來了，本回合重賽。');
       return;
     }
-    if (this.role === 'host') { this.clampWager(); this.send({ t: 'wager', amt: this.wager }); }
+    if (this.role === 'host') { this.clampWager(); this.send({ t: 'wager', amt: this.wager, stad: this.stad }); }
     if (this.view === 'result') this.renderResult(); else this.render('room');
   },
   peerLeft() {
@@ -192,7 +192,13 @@ const Online = {
       this.wager = Math.max(0, v);
     }
     this.acc = [false, false];
-    this.send({ t: 'wager', amt: this.wager });
+    this.send({ t: 'wager', amt: this.wager, stad: this.stad });
+    this.renderRoom();
+  },
+  setStadium(id) {
+    if (this.role !== 'host' || !STADIUMS[id] || this.inMatch) return;
+    this.stad = id; this.acc = [false, false];
+    this.send({ t: 'wager', amt: this.wager, stad: this.stad });
     this.renderRoom();
   },
   accept() {
@@ -265,8 +271,7 @@ const Online = {
     clearInterval(this.pickT);
     this.renderPick(true);
     if (this.role === 'host') {
-      const st = Object.keys(STADIUMS);
-      const a = this.peerSafe(0), b = this.peerSafe(1), pick = st[Math.floor(Math.random() * st.length)];
+      const a = this.peerSafe(0), b = this.peerSafe(1), pick = STADIUMS[this.stad] ? this.stad : 'training';
       setTimeout(() => { this.send({ t: 'round', a, b, st: pick }); this.startRound(a, b, pick); }, 1600);
     }
   },
@@ -360,6 +365,9 @@ const Online = {
     $('#wgCustom').disabled = !!guard;
     $('#wgNote').innerHTML = guard ? `新手保護：雙方都要打滿 ${NEWBIE_MATCHES} 場線上對戰才能下注（目前不下注）` : `贏家拿走雙方下注・你有 <b style="color:var(--bal)">${P.coins.toLocaleString('en-US')}</b> 金幣${this.peer ? `・最多可下 ${this.maxWager()}` : ''}`;
     $('#onGuestWager').textContent = `房主設定的下注：${this.wager} 金幣`;
+    $('#onStadiums').innerHTML = Object.entries(STADIUMS).map(([id, S]) => `<button class="st-card" data-stad="${id}" aria-pressed="${id === this.stad}" ${host ? '' : 'disabled'}><i style="background:radial-gradient(ellipse at 50% 45%,${S.theme.floor[0]} 0,${S.theme.floor[1]} 55%,${S.theme.floor[2]} 80%,#${new THREE.Color(S.theme.rim).getHexString()} 82%,#1a2030 90%)"></i>${esc(S.name)}</button>`).join('');
+    const S = STADIUMS[this.stad];
+    $('#onStadPick').innerHTML = `${host ? '已選' : '房主指定'}：<b>${esc(S.name)}</b>・${esc(S.desc)}`;
     const card = (who, side, p) => p ? `<div class="on-pl"><div class="av" style="border-color:${side === this.side() ? 'var(--hot)' : 'var(--ice)'}">${side === this.side() ? playerAvatar(72) : avatarSVG(remoteAvatar(p.name), TYPE_HEX[p.starter], 72)}</div><b>${esc(p.name)}</b><small>線上 ${p.online} 場・勝率 ${p.online ? Math.round(p.wins / p.online * 100) : 0}%</small><span class="${this.acc[side] ? 'ok' : 'wait'}">${this.acc[side] ? '✓ 已接受下注' : p === this.peer || side !== this.side() ? '⋯ 確認中' : '尚未接受'}</span></div>` : `<div class="on-pl empty"><div class="av"></div><b>等待對手…</b><small>把房號或連結傳給好友</small></div>`;
     const meP = { name: P.name, starter: P.starter, online: P.stats.online | 0, wins: P.stats.onlineW | 0 };
     const s = this.side();

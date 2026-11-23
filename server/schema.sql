@@ -31,3 +31,19 @@ CREATE TABLE IF NOT EXISTS sessions (
   created INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS sessions_player ON sessions (player_id);
+-- coin purchases (v3): written only by the verified Stripe webhook, credited once via /api/shop/claim
+CREATE TABLE IF NOT EXISTS purchases (
+  session_id TEXT PRIMARY KEY,
+  player_id TEXT NOT NULL,
+  pack TEXT NOT NULL,
+  coins INTEGER NOT NULL,
+  amount INTEGER,
+  currency TEXT,
+  payment_intent TEXT,
+  status TEXT NOT NULL DEFAULT 'paid',
+  claimed INTEGER NOT NULL DEFAULT 0,
+  reversed INTEGER NOT NULL DEFAULT 0,
+  created INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS purchases_player ON purchases (player_id);
+CREATE INDEX IF NOT EXISTS purchases_pi ON purchases (payment_intent);
