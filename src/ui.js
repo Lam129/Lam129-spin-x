@@ -548,6 +548,12 @@ function loop(now) {
   requestAnimationFrame(loop);
 }
 async function boot() {
+  I18N.init();
+  for (const id of ['#langSet', '#langAuth']) {
+    const sel = $(id); if (!sel) continue;
+    sel.innerHTML = Object.entries(I18N.LANGS).map(([k, v]) => `<option value="${k}" ${k === I18N.lang ? 'selected' : ''}>${k === 'zh-Hant' || k === 'zh-Hans' || k === 'ja' ? '🌐 ' : '🌐 '}${v}</option>`).join('');
+    sel.addEventListener('change', (e) => I18N.set(e.target.value));
+  }
   const tips = ['組裝鋒輪、鎖芯、旋尖，打造你的專屬陀螺', '拉繩越快，陀螺的初始轉速越高', '攻擊型擅長擊出，持久型靠轉速取勝，防禦型最耐撞', '把對手撞進裂界區可以一次拿 3 分', '必殺技集滿後按空白鍵（手機點按鈕）施放', '扭蛋連續 60 抽一定出傳說零件', '每位頭目都有自己的戰鬥盤，地形會改變戰術'];
   let ti = 0; const tipTimer = setInterval(() => { const el = $('#ldTip'); if (!el) return; el.style.opacity = 0; setTimeout(() => { el.textContent = '提示：' + tips[++ti % tips.length]; el.style.opacity = 1; }, 400); }, 2600);
   if (!window.THREE) { $('#ldPct').textContent = '3D 引擎載入失敗，請重新整理頁面。'; return; }

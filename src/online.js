@@ -292,7 +292,8 @@ const Online = {
   },
   hostMatchEnd() { this.send({ t: 'end', score: Battle.score }); this.matchEnd(Battle.score); },
   confirmForfeit() {
-    if (!window.confirm(`現在離開會判輸${this.amt ? `，下注的 ${this.amt} 金幣不會退還` : ''}。確定要離開嗎？`)) return;
+    const extra = this.amt ? tr('，下注的 {0} 金幣不會退還').replace('{0}', this.amt) : '';
+    if (!window.confirm(tr('現在離開會判輸{0}。確定要離開嗎？').replace('{0}', extra))) return;
     this.send({ t: 'ff' });
     this.matchEnd(null, 'me-ff');
     this.leave();

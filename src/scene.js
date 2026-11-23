@@ -395,7 +395,7 @@ class BattleScene {
       }
       const lc = document.createElement('canvas'); lc.width = 512; lc.height = 128; const lx = lc.getContext('2d');
       lx.fillStyle = isX ? '#ff4a1a' : '#ffb347'; lx.font = '900 64px "Noto Sans TC",sans-serif'; lx.textAlign = 'center'; lx.textBaseline = 'middle';
-      lx.fillText(isX ? '裂界區 ×3' : '場外區 ×2', 256, 64);
+      lx.fillText(tr(isX ? '裂界區 ×3' : '場外區 ×2'), 256, 64);
       const lt = new THREE.CanvasTexture(lc); lt.encoding = THREE.sRGBEncoding;
       const lbl = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 0.375), new THREE.MeshBasicMaterial({ map: lt, transparent: true, depthWrite: false }));
       const lr = 5.32; lbl.position.set(Math.sin(p.phi) * lr, 0.33, Math.cos(p.phi) * lr);
