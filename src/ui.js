@@ -492,6 +492,8 @@ function bindEvents() {
     if (e.code === 'Space') { e.preventDefault(); Battle.useSpecial(Battle.mySide()); }
     if (Battle.net && /^Digit[1-4]$/.test(e.code)) Online.emote(+e.code.slice(5) - 1);
   });
+  $('#qualSet').value = GL.qMode || 'auto';
+  $('#qualSet').addEventListener('change', (e) => { GL.setQualityMode(e.target.value); UI.toast(tr('畫質已調整')); });
   $('#shopCur').addEventListener('change', (e) => { Shop.cur = e.target.value; Shop.render(); });
   $('#devModal').addEventListener('click', (e) => { if (e.target.id === 'devModal') Dev.close(); });
   $('#wgCustom').addEventListener('keydown', (e) => { if (e.key === 'Enter') Online.setWager(e.target.value); });

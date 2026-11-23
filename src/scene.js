@@ -7,7 +7,10 @@ const GL = {
     // the scene is drawn through the post-processing composer, so canvas MSAA would only cost time
     const r = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance', stencil: false });
     this.mobile = Math.min(window.innerWidth, window.innerHeight) < 600 || /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-    this.q0 = this.mobile ? 1 : 0; this.q = this.q0;
+    // quality: 'auto' adapts to the device; 'high' / 'mid' / 'low' are fixed (Settings)
+    try { this.qMode = localStorage.getItem('spinx-quality') || 'auto'; } catch (e) { this.qMode = 'auto'; }
+    this.q0 = this.mobile ? 1 : 0;
+    this.q = { high: 0, mid: 1, low: 3 }[this.qMode] ?? this.q0;
     r.setPixelRatio(this.dpr());
     r.outputEncoding = THREE.sRGBEncoding;
     r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = 1.1;
@@ -20,20 +23,29 @@ const GL = {
     window.addEventListener('resize', () => this.resize());
     this.battle.prewarm(r);
   },
-  /* quality levels: 0 = sharp desktop, 1 = default phone, 2 = 1x, 3 = 1x without bloom */
-  dpr() { const d = window.devicePixelRatio || 1; return [Math.min(d, 1.5), Math.min(d, 1.25), 1, 0.85][this.q]; },
+  /* quality levels: 0 = full sharpness (up to 2x pixels, 4x MSAA) … 3 = 1x pixels, no MSAA, no bloom */
+  dpr() { const d = window.devicePixelRatio || 1; return [Math.min(d, 2), Math.min(d, 1.5), Math.min(d, 1.25), 1][this.q]; },
+  samples() { return this.renderer && this.renderer.capabilities.isWebGL2 ? [4, 4, 2, 0][this.q] : 0; },
   setQuality(q) {
     this.q = clamp(q, 0, 3); this.renderer.setPixelRatio(this.dpr());
     this.disposeComposers(); this.resize();
+    this.qT = -3; this.fa = 0; this.fn = 0;   // let the new level settle before judging it
+  },
+  setQualityMode(m) {
+    this.qMode = m; try { localStorage.setItem('spinx-quality', m); } catch (e) {}
+    this.setQuality({ high: 0, mid: 1, low: 3 }[m] ?? this.q0);
   },
   watchFps(dt) {
-    // adapt to the device: step quality down when frames are slow, back up once if there is headroom
-    this.ft = this.ft == null ? 1 / 60 : this.ft * 0.94 + dt * 0.06;
+    if (this.qMode !== 'auto') return;
+    // average over 4 s windows; only a sustained slowdown lowers quality, and good frame rates raise it again
     this.qT = (this.qT || 0) + dt;
-    if (this.qT < 2.5) return;
-    this.qT = 0;
-    if (this.ft > 1 / 42 && this.q < 3) this.setQuality(this.q + 1);
-    else if (this.ft < 1 / 58 && this.q > this.q0 && !this.qUp) { this.qUp = true; this.setQuality(this.q - 1); }
+    if (this.qT < 0) return;
+    this.fa = (this.fa || 0) + dt; this.fn = (this.fn || 0) + 1;
+    if (this.qT < 4) return;
+    const avg = this.fa / Math.max(1, this.fn);
+    this.qT = 0; this.fa = 0; this.fn = 0;
+    if (avg > 1 / 36 && this.q < 3) this.setQuality(this.q + 1);
+    else if (avg < 1 / 57 && this.q > 0) this.setQuality(this.q - 1);
   },
   disposeComposers() {
     for (const k of ['show', 'battle']) { const c = this.composers && this.composers[k]; if (c) { c.renderTarget1.dispose(); c.renderTarget2.dispose(); c.passes.forEach((p) => p.dispose && p.dispose()); } }
@@ -53,7 +65,9 @@ const GL = {
     const key = this.mode === 'battle' ? 'battle' : 'show', scene = key === 'battle' ? this.battle : this.show;
     let c = this.composers[key];
     if (!c) {
-      c = this.composers[key] = new THREE.EffectComposer(this.renderer);
+      const ns = this.samples(), pr = this.dpr();
+      const rt = ns ? new THREE.WebGLRenderTarget(Math.max(1, this.w * pr), Math.max(1, this.h * pr), { samples: ns, type: THREE.HalfFloatType }) : undefined;
+      c = this.composers[key] = new THREE.EffectComposer(this.renderer, rt);
       c.setPixelRatio(this.dpr());
       c.setSize(this.w, this.h);
       c.addPass(new THREE.RenderPass(scene.scene, scene.cam));
@@ -68,7 +82,7 @@ const GL = {
     this.composer = c; this.bloom = c.bloom; this.postPass = c.post;
     this.battle.fx.post = key === 'battle' ? c.post.uniforms : null;
   },
-  setMode(m) { if (this.mode !== m) { this.mode = m; this.qT = -1.5; this.buildComposer(); } },
+  setMode(m) { if (this.mode !== m) { this.mode = m; this.qT = -3; this.fa = 0; this.fn = 0; this.buildComposer(); } },
   render(dt) {
     const s = this.mode === 'battle' ? this.battle : this.show;
     s.update(dt);

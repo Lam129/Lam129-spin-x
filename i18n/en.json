@@ -747,5 +747,11 @@
 "最划算": "Best value",
 "已裝在 {0}": "On {0}",
 "已選：": "Selected: ",
-"房主指定：": "Chosen by host: "
+"房主指定：": "Chosen by host: ",
+"畫質": "Graphics quality",
+"自動（依裝置調整）": "Auto (adapts to your device)",
+"高": "High",
+"中": "Medium",
+"低（省電）": "Low (battery saver)",
+"畫質已調整": "Graphics quality updated"
 }
