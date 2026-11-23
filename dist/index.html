@@ -2671,9 +2671,9 @@ const AR = {
   DRAIN: 0.03,
   rail: 1, drag: 1, stadium: 'training',
   pockets: [
-    { kind: 'rift', phi: Math.PI, half: 0.42, vmin: 1.7 },
-    { kind: 'out', phi: 0.38 * Math.PI, half: 0.3, vmin: 2.1 },
-    { kind: 'out', phi: -0.38 * Math.PI, half: 0.3, vmin: 2.1 },
+    { kind: 'rift', phi: Math.PI, half: 0.42, vmin: 2.4 },
+    { kind: 'out', phi: 0.38 * Math.PI, half: 0.3, vmin: 2.6 },
+    { kind: 'out', phi: -0.38 * Math.PI, half: 0.3, vmin: 2.6 },
   ],
   launchPos: [{ x: 1.0, z: 2.3 }, { x: -1.0, z: -2.3 }],
 };
@@ -2693,7 +2693,7 @@ function weaken(c) { c.atk *= 0.9; c.def *= 0.9; c.drain *= 1.1; }
 function applyStadium(id) {
   const S = STADIUMS[id] || STADIUMS.training;
   AR.stadium = id; AR.K = S.K; AR.G = 4.0 * S.grav; AR.rail = S.rail; AR.drag = S.drag;
-  AR.pockets = S.pockets.map((p) => ({ ...p, vmin: p.kind === 'rift' ? 1.7 : 2.1 }));
+  AR.pockets = S.pockets.map((p) => ({ ...p, vmin: p.kind === 'rift' ? 2.4 : 2.6 }));
 }
 function pocketAt(phi) { for (const p of AR.pockets) if (Math.abs(angDiff(phi, p.phi)) < p.half) return p; return null; }
 
@@ -2741,7 +2741,7 @@ class Arena {
     if (sp.kind === 'regen') b.s = Math.min(1, b.s + 0.03);
     if (sp.kind === 'counter') b.s = Math.min(1, b.s + 0.08);
     if (sp.kind === 'guard') b.meter = Math.max(0, b.meter - 0.35);
-    if (sp.kind === 'rush') { const v = Math.hypot(b.vx, b.vz) || 1; const o = this.beys[1 - side]; const dx = o.x - b.x, dz = o.z - b.z, l = Math.hypot(dx, dz) || 1; b.vx = (dx / l) * Math.max(v, 4.5); b.vz = (dz / l) * Math.max(v, 4.5); }
+    if (sp.kind === 'rush') { const v = Math.hypot(b.vx, b.vz) || 1; const o = this.beys[1 - side]; const dx = o.x - b.x, dz = o.z - b.z, l = Math.hypot(dx, dz) || 1; b.vx = (dx / l) * Math.max(v, 4); b.vz = (dz / l) * Math.max(v, 4); }
     return sp;
   }
   emit(type, side) { this.events.push({ type, side, t: this.t }); }
@@ -2769,7 +2769,7 @@ class Arena {
     const sp = Math.hypot(vx, vz);
     if (sp > 0.02) {
       const ux = vx / sp, uz = vz / sp;
-      const target = 0.35 + c.mob * 3.5 * s + rush * 2.2;
+      const target = 0.35 + c.mob * 3.5 * s + rush * 1.6;
       const gain = c.mob * 1.5;
       ax += ux * (target - sp) * gain; az += uz * (target - sp) * gain;
       const curv = c.mob * 0.7 * s * Math.min(sp, 3);
@@ -2799,7 +2799,7 @@ class Arena {
     if (r >= AR.RB - 0.05 && !(b.kick > 0)) {
       const tx = -rz, tz = rx;
       if (c.grip > 0.1 && s > 0.1) {
-        const acc = 7.5 * c.grip * (0.35 + 0.65 * s) * (1 + rush * 0.7) * AR.rail;
+        const acc = 7.5 * c.grip * (0.35 + 0.65 * s) * (1 + rush * 0.4) * AR.rail;
         ax += tx * acc; az += tz * acc;
         const vt = vx * tx + vz * tz;
         b.railT = (b.railT || 0) + dt;
@@ -2853,6 +2853,8 @@ class Arena {
     }
     b.x = x; b.z = z; b.vx = vx; b.vz = vz;
     const late = this.t > 75 ? 1 + (this.t - 75) * 0.15 : 1;
+    // a loosened ratchet slowly re-seats when the top isn't being hit, so bursts need sustained pressure
+    if (b.meter > 0 && this.t - (b.lastHit || 0) > 1.5) b.meter = Math.max(0, b.meter - dt * 0.03);
     if (!b.usedSpecial) b.charge = Math.min(1, (b.charge || 0) + (dt / 11 + b.dash * dt * 0.25) * (b.chargeRate || 1));
     const regen = bf ? (bf.kind === 'regen' ? 0.8 : bf.kind === 'guard' ? 0.65 : 1) : 1;
     b.s -= (dt * AR.DRAIN * c.drain * (1.25 - 0.55 * c.sta) * late + dt * sp * 0.0012 * (1 - c.stab)) * regen;
@@ -2888,7 +2890,7 @@ class Arena {
     const clash = 1.5 * spinF * (0.35 + aggA + aggB) * (0.5 + Math.min(approach, 6) * 0.25);
     const ka = a.buff && a.buff.t > 0 ? a.buff.kind : '', kb = b.buff && b.buff.t > 0 ? b.buff.kind : '';
     const defA = ka === 'guard' ? 0.55 : 0, defB = kb === 'guard' ? 0.55 : 0;
-    const rushA = ka === 'rush' ? 1.45 : 1, rushB = kb === 'rush' ? 1.45 : 1;
+    const rushA = ka === 'rush' ? 1.22 : 1, rushB = kb === 'rush' ? 1.22 : 1;
     const ctrA = ka === 'counter' || ka === 'gravity', ctrB = kb === 'counter' || kb === 'gravity';
     let jA = (j + clash * (0.6 + aggB)) * (1 - ca.def * 0.5) * rushB * (1 - defA) * (ctrA ? 0.6 : 1) * (ctrB ? 1.4 : 1);
     let jB = (j + clash * (0.6 + aggA)) * (1 - cb.def * 0.5) * rushA * (1 - defB) * (ctrB ? 0.6 : 1) * (ctrA ? 1.4 : 1);
@@ -2907,11 +2909,11 @@ class Arena {
     a.hitCool = b.hitCool = 0.06; a.lastHit = b.lastHit = this.t;
     // ratchet loosening -> burst
     const hiA = cb.high && !ca.high ? 1.15 : 1, hiB = ca.high && !cb.high ? 1.15 : 1;
-    const thr = 2.0;
-    const incA = Math.max(0, impact - thr) * 0.055 * (0.35 + cb.atk * cb.recoil) * (1.5 - a.s) / ca.burstRes * hiA * rand(0.5, 1.5);
-    const incB = Math.max(0, impact - thr) * 0.055 * (0.35 + ca.atk * ca.recoil) * (1.5 - b.s) / cb.burstRes * hiB * rand(0.5, 1.5);
-    a.meter += incA * (ka === 'guard' ? 0.2 : 1) * (kb === 'rush' ? 1.12 : 1);
-    b.meter += incB * (kb === 'guard' ? 0.2 : 1) * (ka === 'rush' ? 1.12 : 1);
+    const thr = 2.4;
+    const incA = Math.max(0, impact - thr) * 0.05 * (0.35 + cb.atk * cb.recoil) * (1.5 - a.s) / ca.burstRes * hiA * rand(0.5, 1.5);
+    const incB = Math.max(0, impact - thr) * 0.05 * (0.35 + ca.atk * ca.recoil) * (1.5 - b.s) / cb.burstRes * hiB * rand(0.5, 1.5);
+    a.meter += incA * (ka === 'guard' ? 0.2 : 1) * (kb === 'rush' ? 1.05 : 1);
+    b.meter += incB * (kb === 'guard' ? 0.2 : 1) * (ka === 'rush' ? 1.05 : 1);
     if (ctrA) { b.s -= lossA * 0.35; a.s += lossA * 0.25; }
     if (ctrB) { a.s -= lossB * 0.35; b.s += lossB * 0.25; }
     if (ka === 'guard') a.s += Math.min(lossA, 0.16) * 0.6;
